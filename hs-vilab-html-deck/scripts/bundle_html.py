@@ -29,6 +29,8 @@ BIG = 250_000          # re-encode raster figures above this size
 def data_uri(path: Path) -> str:
     mime = MIME.get(path.suffix.lower()) or mimetypes.guess_type(path.name)[0] or "application/octet-stream"
     raw = path.read_bytes()
+    if path.suffix.lower() in (".svg", ".css"):
+        raw = raw.replace(b"\r\n", b"\n")   # same bytes whichever line endings git checked out
     if path.suffix.lower() in (".png", ".jpg", ".jpeg") and len(raw) > BIG:
         # one file carries every figure: WebP at high quality keeps axis text sharp at a fraction of the size
         from PIL import Image
@@ -95,7 +97,7 @@ def main() -> int:
         page = work / "deck" / src
         if page.exists():
             out = work / name
-            out.write_text(bundle(page), encoding="utf-8")
+            out.write_text(bundle(page), encoding="utf-8", newline="\n")   # identical on every OS
             outs.append(f"{out.name} ({out.stat().st_size / 1e6:.1f} MB)")
     print("bundled " + ", ".join(outs))
     return 0
