@@ -27,9 +27,11 @@ work/*/review/*.png
 work/*/review/_prompt.md
 work/*/review/deck_before_korean.json
 
-# 빌드 산출물: build_deck.py가 deck/을 매번 다시 만든다(엔진·글꼴·로고 사본, 수식 캐시, index.html).
-# 저장소에는 입력(deck.json, deck/assets/fig/)과 최종본 <slug>.html만 둔다
+# 빌드 산출물: build_deck.py가 deck/을 매번 다시 만든다(엔진·글꼴·로고 사본, index.html).
+# 저장소에는 입력(deck.json, deck/assets/fig/), 수식 캐시(deck/assets/math/: TeX 없이도 같은 결과로
+# 다시 빌드된다)와 최종본 <slug>.html만 둔다
 work/*/deck/*
 !work/*/deck/assets/
 work/*/deck/assets/*
 !work/*/deck/assets/fig/
+!work/*/deck/assets/math/
