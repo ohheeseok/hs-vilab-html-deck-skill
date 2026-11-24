@@ -148,3 +148,11 @@ statement 슬라이드 다크(`meta.statementTheme`), 표지 선, `panel`·`divi
 저장소 분리(2026-11-24): 이 폴더를 독립 git 저장소로 만들었다. 논문 PDF와 QA 캡처는 커밋하지 않는다(`.gitignore`).
 NOTICE는 이 패키지 기준으로 다시 썼다(글꼴 2종, HSU 시그니처). frontend-design(Apache-2.0)에서 옮긴 글이 아직 없어 해당 항목과 `LICENSES/Apache-2.0.txt`를 뺐다.
 `SKILL.md`나 references에 그 글을 옮겨 오면 hs-vilab-frontend-design의 NOTICE 1항과 라이선스 사본을 다시 넣는다.
+
+## 11. 전체 덱 1회 실행 (2026-11-24, §9의 3·4단계)
+
+Self-Flow 20분 세미나 21장(`work/self-flow-full`). codex 초안 → agy 비평·검증(서로 모르게)·조사 → `review/log.md` → codex 수정 1회 → Claude가 `deck.json` 합성 →
+codex 한국어 편집(87건 중 80건 적용) → agy 2차 검증(11건) → 빌드·기계 QA(두 해상도) → agy 시각 검수 2회.
+이 실행으로 SKILL.md와 references 8종, preflight·delegate·export_pdf, 블록 9종, 게이트(장 수·시간·note 상한), QA `collide`가 생겼다.
+결함과 처리는 `hs-vilab-html-deck/CHANGELOG.md` 0.1.0, 덱 기록은 `work/self-flow-full/review/`.
+남은 것: 읽기용 handout, `deck.json` JSON Schema, 대본의 구조화 필드(symbols·derivation 등).

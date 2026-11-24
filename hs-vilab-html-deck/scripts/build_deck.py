@@ -57,6 +57,11 @@ def _text(s: str) -> str:
     s = html.escape(s, quote=False)
     # keep hyphenated names (Self-Flow, SiT-XL/2, text-to-image) on one line
     s = re.sub(r"(?<![\w-])([A-Za-z0-9][\w.]*(?:-[\w.]+)+)", r'<span class="nw">\1</span>', s)
+    # short pairs that must not split at a line end: "약 625M", "no CFG"
+    s = re.sub(r"약 (?=\d)", "약 ", s)
+    s = re.sub(r"\bno CFG\b", "no\u00a0CFG", s)
+    # a count and its unit stay together: "1M step", "50 ODE steps", "600K step"
+    s = re.sub(r"(\d[\d.,]*[KMB]?) (?=(?:ODE |SDE )?steps?\b)", "\\1\u00a0", s)
     s = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", s)
     s = re.sub(r"_\{(.+?)\}", r"<sub>\1</sub>", s)
     return s
@@ -68,8 +73,8 @@ def md(s: str) -> str:
     out = []
     for k, part in enumerate(parts):
         out.append(math_html(part) if k % 2 else _text(part.replace("\\$", "$")))
-    # keep "$s$ = 0.8" on one line
-    return re.sub(r'(<span class="im"(?:(?!</span>).)*</svg></span>)( = [\d.]+)',
+    # keep "$s$ = 0.8" on one line, and a Korean particle on the math it follows ($\ell_1$에서)
+    return re.sub(r'(<span class="im"(?:(?!</span>).)*</svg></span>)( = [\d.]+|[가-힣]+)',
                   r'<span class="nw">\1\2</span>', "".join(out))
 
 
@@ -118,16 +123,28 @@ def check(deck: dict, work: Path, gate: Gate) -> None:
                     signature.append(i)
                 gate(bool(b.get("reveals")), f"{where}: {b['type']} has no 'reveals' (what does operating it show about the paper?)")
                 gate(b.get("print") in ("default", "expand"), f"{where}: {b['type']} 'print' must be default|expand")
+                if b.get("svg") or b["type"] == "stepper":
+                    gate((work / b.get("svg", "")).is_file(), f"{where}: diagram {b.get('svg')!r} not found")
+                else:
+                    for st in b.get("states", []):
+                        gate((work / "deck" / st.get("src", "")).is_file(), f"{where}: state {st.get('id')!r} needs svg on the block or src on the state")
+                if b["type"] == "stepper":
+                    gate(2 <= len(b.get("steps", [])) <= 6, f"{where}: a stepper has 2–6 steps")
+                    gate(bool(b.get("provenance")), f"{where}: stepper has no provenance")
+                    continue
                 ids = [s["id"] for s in b.get("states", [])]
                 gate(len(ids) >= 2, f"{where}: toggle needs at least two states")
                 gate(b.get("start") in ids, f"{where}: toggle 'start' {b.get('start')!r} is not one of its states")
                 for st in b.get("states", []):
                     gate(bool(st.get("provenance")), f"{where}: state {st.get('id')!r} has no provenance")
-                gate((work / b.get("svg", "")).is_file(), f"{where}: diagram {b.get('svg')!r} not found")
             if b["type"] in ("bars", "table", "deltas"):
                 gate(bool(b.get("provenance")), f"{where}: {b['type']} has no provenance")
-            if b["type"] == "figure":
+            if b["type"] in ("figure", "figureNumbered"):
                 gate((work / "deck" / b["src"]).is_file(), f"{where}: figure {b['src']!r} not found")
+            if b["type"] == "figureNumbered":
+                gate(len(b.get("marks", [])) == len(b.get("items", [])), f"{where}: figureNumbered needs one item per mark")
+            if b["type"] == "diagram":
+                gate((work / b.get("svg", "")).is_file(), f"{where}: diagram {b.get('svg')!r} not found")
         if sl.get("figure"):
             gate((work / "deck" / sl["figure"]["src"]).is_file(), f"cover figure {sl['figure']['src']!r} not found")
         # zones: a panel is a region, not a card kit
@@ -152,6 +169,16 @@ def check(deck: dict, work: Path, gate: Gate) -> None:
                     for k in it.get("pair", []):
                         gate(k in keys, f"{where}: delta {it['value']} pairs {k!r}, which no chart or table on the slide draws")
     gate(len(signature) <= 1, f"more than one signature interaction (slides {signature})")
+    content = [sl for sl in slides if sl.get("layout") != "cover"]
+    notes = sum(1 for sl in slides for b in walk(sl.get("body", [])) if b["type"] == "note")
+    cap_n = max(2, math.ceil(len(content) / 4))
+    gate(notes <= cap_n, f"{notes} note blocks; at most {cap_n} (one per four content slides) — note marks interpretation only")
+    if meta.get("target_slides"):
+        gate(n == meta["target_slides"], f"{n} slides; meta.target_slides is {meta['target_slides']}")
+    if meta.get("target_minutes") and any("time" in sl for sl in slides):
+        total = sum(int(sl.get("time", 0)) for sl in slides)
+        goal = meta["target_minutes"] * 60
+        gate(abs(total - goal) <= goal * 0.1, f"slide times add up to {total // 60}:{total % 60:02d}; the talk is {meta['target_minutes']} min (±10%)")
     gate(len(paneled) <= math.floor(n * 0.6), f"panels on {len(paneled)} of {n} slides; keep at least 40% panel-free")
     cap = math.floor(n * 0.2)
     gate(len(set(interactive)) <= cap,
@@ -240,17 +267,28 @@ def r_deltas(b, ctx):
 
 def r_figure(b, ctx):
     cap = f'<figcaption class="caption">{md(b["caption"])}</figcaption>' if b.get("caption") else ""
-    return (f'<figure class="figure"><div class="figure-mat"><img src="{b["src"]}" alt="{attr(b.get("alt", ""))}"></div>'
+    size = f' style="max-height:{int(b["height"])}px;width:auto;max-width:100%"' if b.get("height") else ""
+    return (f'<figure class="figure"><div class="figure-mat"><img src="{b["src"]}" alt="{attr(b.get("alt", ""))}"{size}></div>'
             f"{cap}</figure>")
 
 
+NUMERIC = re.compile(r"^\**\s*[−+\-]?(?:약\s*)?[\d.,]+[ %×MKk]*\s*\**$")
+
+
 def r_table(b, ctx):
+    # numbers align right (decimals line up); a column of words aligns left
+    ncol = len(b["columns"])
+    left = []
+    for j in range(ncol):
+        cells = [r["cells"][j] for g in b["groups"] for r in g["rows"] if j < len(r["cells"]) and r["cells"][j].strip()]
+        auto = j == 0 or not all(NUMERIC.match(c) for c in cells)
+        left.append(b["columns"][j].get("align", "left" if auto else "right") == "left")
+    lc = lambda j: ' class="l"' if left[j] and j else ""
     head = "".join(
-        f'<th scope="col">{md(c["label"])}' + (f' <span class="dir">{c["dir"]}</span>' if c.get("dir") else "") + "</th>"
-        for c in b["columns"]
+        f'<th scope="col"{lc(j)}>{md(c["label"])}' + (f' <span class="dir">{c["dir"]}</span>' if c.get("dir") else "") + "</th>"
+        for j, c in enumerate(b["columns"])
     )
     body = []
-    ncol = len(b["columns"])
     for g in b["groups"]:
         if g.get("label"):
             body.append(f'<tr class="group-row"><td colspan="{ncol}">{md(g["label"])}</td></tr>')
@@ -259,7 +297,8 @@ def r_table(b, ctx):
             for j, c in enumerate(r["cells"]):
                 best = c.startswith("**") and c.endswith("**")
                 txt = md(c[2:-2] if best else c)
-                cls = ' class="best"' if best else ""
+                names = (["best"] if best else []) + (["l"] if left[j] and j else [])
+                cls = f' class="{" ".join(names)}"' if names else ""
                 tag = "th" if j == 0 else "td"
                 scope = ' scope="row"' if j == 0 else ""
                 cells.append(f"<{tag}{scope}{cls}>{txt}</{tag}>")
@@ -326,7 +365,13 @@ def r_toggle(b, ctx):
     states = b["states"]
     start = b["start"]
     ids = " ".join(s["id"] for s in states)
-    svg = inline_svg(work / b["svg"])
+    if b.get("svg"):
+        svg = inline_svg(work / b["svg"])
+    else:
+        # image tabs: one paper figure per state, stacked in one cell so the slide keeps the tallest height
+        svg = '<div class="toggle-media">' + "".join(
+            f'<figure class="figure" data-show="{s["id"]}"><div class="figure-mat">'
+            f'<img src="{s["src"]}" alt="{attr(s.get("alt", ""))}"></div></figure>' for s in states) + "</div>"
 
     # static default: mark everything that is not in the start state as off
     def off(m):
@@ -358,9 +403,15 @@ def r_toggle(b, ctx):
             f'<p class="readout-state">{md(s["title"])}</p><p class="readout-text">{md(s["text"])}</p>{eq}{sym}</div>'
         )
     cap = f'<p class="caption col-push">{md(b["caption"])}</p>' if b.get("caption") else ""
+    cap = "".join(render(x, ctx) for x in b.get("side", [])) + cap
     return (
-        f'<div class="toggle-grid" data-toggle data-states="{ids}" data-start="{start}" data-print="{b["print"]}">'
-        f'<div class="toggle"><div class="seg" role="group" aria-label="비교할 방식">{buttons}</div>{svg}</div>'
+        f'<div class="toggle-grid" data-toggle data-states="{ids}" data-start="{start}" data-print="{b["print"]}"'
+        + (f' style="grid-template-columns:minmax(0,{b["cols"][0]}fr) minmax(0,{b["cols"][1]}fr)"' if b.get("cols") else "")
+        + '>'
+        f'<div class="seg{" seg--compact" if len(states) >= 4 else ""}" role="group" aria-label="비교할 방식">{buttons}</div>'
+        f'<div class="toggle">{svg}'
+        + (f'<p class="caption media-caption">{md(b["mediaCaption"])}</p>' if b.get("mediaCaption") else "")
+        + '</div>'
         + (f'<div class="toggle-side readout"><div class="panel panel--sm">{"".join(panels)}</div>{cap}'
            if b.get("panel") else f'<div class="toggle-side readout">{"".join(panels)}{cap}')
         + f'<p class="sr-only" data-live aria-live="polite"></p></div></div>'
@@ -381,10 +432,95 @@ def r_panel(b, ctx):
     return f'<div class="{cls}">{head}' + "".join(render(x, ctx) for x in b.get("body", [])) + "</div>"
 
 
+def r_bullets(b, ctx):
+    return r_items(b["items"], b.get("numbered", False), b.get("size"))
+
+
+def r_cards(b, ctx):
+    """Parallel items as columns divided by rules — not boxes (a panel is the only surface)."""
+    cols = b.get("columns", len(b["items"]))
+    parts = []
+    for k, it in enumerate(b["items"], 1):
+        num = f'<span class="card-num" aria-hidden="true">{k}</span>' if b.get("numbered") else ""
+        parts.append(f'<section class="card">{num}<h3 class="card-title">{md(it["title"])}</h3>'
+                     + (f'<p class="card-text">{md(it["text"])}</p>' if it.get("text") else "")
+                     + "</section>")
+    return f'<div class="cards" style="grid-template-columns:repeat({cols},minmax(0,1fr))">' + "".join(parts) + "</div>"
+
+
+def r_callout(b, ctx):
+    return f'<p class="callout">{md(b["text"])}</p>'
+
+
+def r_equation(b, ctx):
+    lines = b.get("lines") or [b["tex"]]
+    eqs = "".join(f'<div class="equation-line">{math_html(t, display=True)}'
+                  + (f'<span class="eq-tag">({md(tag)})</span>' if tag else "") + "</div>"
+                  for t, tag in zip(lines, b.get("tags", [None] * len(lines))))
+    sym = ""
+    if b.get("symbols"):
+        sym = '<dl class="symbols">' + "".join(f"<dt>{md(a)}</dt><dd>{md(d)}</dd>" for a, d in b["symbols"]) + "</dl>"
+    return f'<div class="equation-block"><div class="equation">{eqs}</div>{sym}</div>'
+
+
+def r_process(b, ctx):
+    steps = []
+    for k, s in enumerate(b["steps"], 1):
+        steps.append(f'<li class="process-step"><span class="process-num" aria-hidden="true">{k}</span>'
+                     f'<h3 class="process-title">{md(s["title"])}</h3>'
+                     + (f'<p class="process-text">{md(s["text"])}</p>' if s.get("text") else "") + "</li>")
+    cls = "process process--v" if b.get("direction") == "vertical" else "process"
+    return f'<ol class="{cls}">' + "".join(steps) + "</ol>"
+
+
+def r_compare(b, ctx):
+    """Two (or three) approaches side by side, divided by a rule."""
+    return r_groups({"groups": b["items"], "columns": len(b["items"]), "divider": True, "size": b.get("size")}, ctx)
+
+
+def r_figure_numbered(b, ctx):
+    """A paper figure with numbered marks on it and a numbered list of what each mark shows."""
+    marks = "".join(
+        f'<span class="mark" style="left:{m["x"] * 100:.2f}%;top:{m["y"] * 100:.2f}%" aria-hidden="true">{k}</span>'
+        for k, m in enumerate(b["marks"], 1))
+    cap = f'<figcaption class="caption">{md(b["caption"])}</figcaption>' if b.get("caption") else ""
+    fig = (f'<figure class="figure"><div class="figure-mat"><div class="mark-wrap">'
+           f'<img src="{b["src"]}" alt="{attr(b.get("alt", ""))}">{marks}</div></div>{cap}</figure>')
+    return fig + r_items(b["items"], numbered=True, size=b.get("size"))
+
+
+def r_diagram(b, ctx):
+    svg = inline_svg(ctx["work"] / b["svg"])
+    cap = f'<figcaption class="caption">{md(b["caption"])}</figcaption>' if b.get("caption") else ""
+    return f'<figure class="figure figure--diagram">{svg}{cap}</figure>'
+
+
+def r_stepper(b, ctx):
+    """Next-key steps over one diagram. Elements carry data-from-step="k" in the SVG; step 0 is the start.
+    The side list shows each step's line from its step on, so the slide reads complete when expanded."""
+    svg = inline_svg(ctx["work"] / b["svg"])
+    items = []
+    for k, s in enumerate(b["steps"]):
+        attr_ = f' data-from-step="{k}"' + (' class="is-off"' if k > 0 else "")
+        items.append(f'<li{attr_}><span class="step-num" aria-hidden="true">{k + 1}</span>'
+                     f'<span class="step-title">{md(s["title"])}</span>'
+                     + (f'<span class="step-text">{md(s["text"])}</span>' if s.get("text") else "") + "</li>")
+    # hide everything that appears from a later step in the static (no-JS, step 0) render
+    svg = re.sub(r'(<\w+)\b([^>]*\bdata-from-step="([1-9]\d*)"[^>]*)>',
+                 lambda m: (m.group(0).replace('class="', 'class="is-off ', 1) if 'class="' in m.group(2)
+                            else f'{m.group(1)} class="is-off"{m.group(2)}>'), svg)
+    cap = f'<p class="caption">{md(b["caption"])}</p>' if b.get("caption") else ""
+    side = '<ol class="steps">' + "".join(items) + "</ol>"
+    return (f'<div class="stepper" data-stepper data-print="{b["print"]}" style="grid-template-columns:minmax(0,{b.get("cols", [3, 2])[0]}fr) minmax(0,{b.get("cols", [3, 2])[1]}fr)">'
+            f'<figure class="figure figure--diagram">{svg}</figure><div class="stepper-side">{side}{cap}</div></div>')
+
+
 RENDER = {
     "lead": r_lead, "groups": r_groups, "caption": r_caption, "note": r_note, "deltas": r_deltas,
     "figure": r_figure, "table": r_table, "bars": r_bars, "toggle": r_toggle, "split": r_split,
-    "panel": r_panel,
+    "panel": r_panel, "bullets": r_bullets, "cards": r_cards, "callout": r_callout,
+    "equation": r_equation, "process": r_process, "compare": r_compare,
+    "figureNumbered": r_figure_numbered, "diagram": r_diagram, "stepper": r_stepper,
 }
 
 
@@ -466,6 +602,7 @@ def slide_html(deck, i, ctx):
     layout = sl.get("layout", "content")
     cls = ["slide"]
     dark = is_dark(deck, sl)
+    steppers = []
     if layout == "cover":
         cls.append("slide--cover")
         inner = cover(deck, sl)
@@ -474,13 +611,18 @@ def slide_html(deck, i, ctx):
             cls.append("slide--statement")
         if sl.get("tone") == "wash":
             cls.append("slide--wash")
+        if sl.get("valign") == "center":
+            cls.append("slide--center")
         body = "".join(render(b, ctx) for b in sl.get("body", []))
+        steppers = [b for b in walk(sl.get("body", [])) if b["type"] == "stepper"]
         inner = (f'<h2 class="slide-title">{md(sl["title"])}</h2>'
                  f'<div class="slide-body">{body}</div>{footer(deck, i, dark)}')
     notes = ""
     if sl.get("notes"):
         notes = '<template class="notes">' + "".join(f"<p>{md(x)}</p>" for x in sl["notes"]) + "</template>"
     hidden = "" if i == 0 else " inert"
+    if steppers:
+        hidden += f' data-steps="{len(steppers[0]["steps"]) - 1}" data-step="0"'
     return (f'<section class="{" ".join(cls)}{" is-current" if i == 0 else ""}" id="s{i + 1}" '
             f'data-id="{sl["id"]}"{' data-theme="dark"' if dark else ""} aria-label="{attr(sl["title"])}" aria-roledescription="slide"{hidden}>'
             f"{inner}{notes}</section>")
@@ -508,6 +650,66 @@ PAGE = """<!doctype html>
 </body>
 </html>
 """
+
+
+SCRIPT_PAGE = """<!doctype html>
+<html lang="{lang}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>대본 · {title}</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/fonts.css">
+<link rel="stylesheet" href="assets/base.css">
+<style>
+body{{max-width:880px;margin:0 auto;padding:48px 24px 96px;font-size:20px;line-height:1.7;color:var(--color-text)}}
+h1{{font-size:32px;line-height:1.3;color:var(--color-text-heading);margin-bottom:8px}}
+.total{{color:var(--color-text-muted);margin-bottom:40px}}
+.slide-script{{padding:28px 0;border-top:1px solid var(--color-border-subtle);break-inside:avoid}}
+.slide-script h2{{font-size:24px;line-height:1.4;color:var(--color-text-heading);display:flex;gap:16px;align-items:baseline}}
+.slide-script h2 .n{{font-variant-numeric:tabular-nums;color:var(--color-text-muted);min-width:2.5em}}
+.slide-script h2 .t{{margin-left:auto;font-size:18px;font-weight:var(--weight-medium);color:var(--color-text-muted);font-variant-numeric:tabular-nums;white-space:nowrap}}
+.msg{{margin:8px 0 12px;font-weight:var(--weight-bold);color:var(--color-text-heading)}}
+.cue{{font-size:18px;color:var(--color-info-fg);background:var(--color-info-bg);border-radius:var(--radius-control);padding:8px 14px;margin:8px 0}}
+.slide-script p{{margin:8px 0}}
+.im svg{{display:inline-block;vertical-align:baseline}}
+@media print{{body{{padding:0;font-size:12pt}}.cue{{border:1px solid var(--color-info-border)}}}}
+</style>
+</head>
+<body>
+<h1>{title}</h1>
+<p class="total">발표 대본 · {n}장 · 합계 {total}</p>
+{body}
+</body>
+</html>
+"""
+
+
+def mmss(sec: int) -> str:
+    return f"{sec // 60}:{sec % 60:02d}"
+
+
+def script_html(deck) -> str:
+    """The speaker script: one section per slide with its time, key sentence, interaction cues
+    ([1], [2] … in the notes match the state keys) and the spoken text. Never shown on the stage."""
+    parts, total = [], 0
+    for i, sl in enumerate(deck["slides"], 1):
+        t = int(sl.get("time", 0))
+        total += t
+        cues = []
+        for b in walk(sl.get("body", [])):
+            if b["type"] == "toggle":
+                keys = " · ".join(f"[{k + 1}] {plain(s['label'])}" for k, s in enumerate(b["states"]))
+                cues.append(f"토글: {keys}. 숫자 키로 상태를 고른다. 시작 상태 {plain(next(s['label'] for s in b['states'] if s['id'] == b['start']))}.")
+            if b["type"] == "stepper":
+                cues.append(f"단계 {len(b['steps'])}개: 다음 키가 단계를 먼저 넘긴다.")
+        cue = "".join(f'<p class="cue">{html.escape(c)}</p>' for c in cues)
+        notes = "".join(f"<p>{md(x)}</p>" for x in sl.get("notes", []))
+        msg = f'<p class="msg">{md(sl["message"])}</p>' if sl.get("message") else ""
+        parts.append(f'<section class="slide-script"><h2><span class="n">{i}</span>{md(sl["title"])}'
+                     f'<span class="t">{mmss(t)} · 누적 {mmss(total)}</span></h2>{msg}{cue}{notes}</section>')
+    return SCRIPT_PAGE.format(lang=deck["meta"].get("lang", "ko"), title=html.escape(deck["meta"]["title"]),
+                              n=len(deck["slides"]), total=mmss(total), body="\n".join(parts))
 
 
 def copy_assets(out: Path) -> None:
@@ -545,6 +747,9 @@ def main() -> int:
     page = PAGE.format(lang=deck["meta"].get("lang", "ko"), title=html.escape(deck["meta"]["title"]), slides=slides)
     (out / "index.html").write_text(page, encoding="utf-8")
     print(f"wrote {out / 'index.html'} ({len(deck['slides'])} slides)")
+    if any(sl.get("notes") for sl in deck["slides"]):
+        (out / "script.html").write_text(script_html(deck), encoding="utf-8")
+        print(f"wrote {out / 'script.html'}")
     return 0
 
 

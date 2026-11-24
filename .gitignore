@@ -13,3 +13,16 @@ work/*/qa/
 
 # 로컬 전용 설정
 .claude/settings.local.json
+
+# 논문 원문에서 뽑은 텍스트와 그것을 그대로 담은 위임 지시문
+work/*/source/
+work/*/brief*.md
+work/*/review/*.log
+# 검토자에게 넘긴 사본(논문 텍스트, 캡처, 규칙 사본)과 실행 로그
+work/*/review/ref*/
+work/*/review/kref/
+work/*/review/vis*/
+work/*/review/*.err
+work/*/review/*.png
+work/*/review/_prompt.md
+work/*/review/deck_before_korean.json

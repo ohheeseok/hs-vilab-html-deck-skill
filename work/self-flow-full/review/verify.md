@@ -1,0 +1,29 @@
+[V1] must · 슬라이드 9 · `ImageNet 256×256, SiT-XL 약 675M, SD-VAE, 4M step` 수치(FID 7.27/5.89/5.70, Δ −0.19 등; 수치는 Table 1 p.5와 일치, "약 3M step"은 App. G.1 p.23·Fig. 20(a) 캡션과 일치)에 핵심 평가 조건과 일부 지표 누락 · 논문의 실제: 정량 표는 모두 **CFG 미사용(no CFG)**이며 ImageNet SD-VAE는 **250 SDE steps**(App. A.3 p.17, A.4 p.18). Table 1(p.5)의 Precision(0.69/0.70/0.72, Self-Flow 최고)과 SiT-XL/2(7M)가 빠졌고, Fig. 20(a)(p.23)에는 2M·4M 점만 찍혀 ~3M은 두 점 사이 시각적 교차점 · 고칠 문구: `SD-VAE, no CFG, 250 SDE steps, 4M step · ... Pre. 0.69 / 0.70 / 0.72 · Fig. 20(a) 2M–4M 구간 중 약 3M step 부근 교차`.
+
+[V2] must · 슬라이드 13 · `video-weighted (0.131, 0.628, 0.241)` 수치·Δ(3.35→3.19 Δ −0.16, 62.7→58.0 Δ −4.7, 160.1→157.4 Δ −2.7; App. D Table 6 p.20과 일치, FVD는 표 `58`·Fig. 8(a) `58.0`)에 주요 실험 조건 누락 · 논문의 실제: 약 625M, **1M step**(Fig. 17 p.21), **no CFG**, T2I AE가 SD-VAE에서 **FLUX.2 AE**로 변경(§4.2 p.7), 이미지 학습셋 **200M 전체**(App. A.1 p.16), 배치 샘플링 비율 **57/30/13%**(App. D p.21) · 고칠 문구: `~625M, 1M step, no CFG, T2I는 FLUX.2 AE·200M 이미지(배치 비율 57/30/13%)` 조건 병기.
+
+[V3] must · 슬라이드 14 · `100K step에서 Pick Up Coke Can과 Open/Close Drawer 격차 축소, Move Near와 Open and Place 격차 유지` · 논문의 실제: Fig. 8(b)(p.7)·Fig. 18(b)(p.22)에서 100K의 `Open/Close Drawer`는 **FM(78%)이 Self-Flow(~72%)를 소폭 역전**했고, `Move Near`는 30K(~20% vs ~10%)→100K(50% vs ~20%)로 격차가 **확대**됨. 또한 과제별 최대 성공률(73%·78%·50%·29%, Fig. 8(b))과 적은 평가 횟수(15·18·10·**7회** × 2반복, App. E p.21) 누락 · 고칠 문구: `100K에서 Pick Up Coke Can은 수렴(73%), Open/Close Drawer는 FM(78%)이 소폭 앞서며, Move Near(50%)는 격차 확대·Open and Place(29%)는 격차 유지(과제별 15·18·10·7회 × 2회 평가)`.
+
+[V4] must · 슬라이드 18 · `초기·중간층에서 개선`만 서술 · 논문의 실제: Fig. 4(b)(p.5)에서 4–16층은 Self-Flow가 높으나 **후반층(20·24·28층)에서는 Vanilla Flow Matching보다 오히려 낮음**(Ours ~55/49/41% vs Vanilla ~58/54/45%; §4.1 p.5도 후반 하락 미언급) · 고칠 문구: `초기·중간층(4–16층)에서 개선되나 후반층(20–28층)에서는 Vanilla보다 낮음`.
+
+[V5] must · 슬라이드 21 · `App. A.3은 baseline의 p(t)가 같다고 설명하고, App. B는 오디오의 선택된 trainshift를 1.0 대 0.75로 보고한다` · 논문의 실제: App. A.3(p.17)은 "모든 비교 방법(all baselines)의 $p(t)$가 동일하며 **학습 전 사전 선정(selected prior to training)**된다"고 서술했으나, App. B(p.19)·Table 5에서는 **세 baseline은 모두 0.75로 같고 Self-Flow만 1.0**으로 방법별 사후 선정됨. Fig. 14(p.19)는 전체 궤적을 그리나 trainshift 라벨이 없어 동일 trainshift 수치 비교는 **없음**(나머지 3개 토론 전제—동일 3종 FAD 선정·20k 단일 검증셋[App. A.1 p.16, B p.19], linear probe 한계[Fig. 4(b) p.5], 256토큰·약 3K 토큰[App. A.2 p.17]—는 사실과 일치) · 고칠 문구: `App. A.3은 학습 전 동일한 p(t)를 모든 방법에 고정했다고 쓰나, App. B·Table 5에서는 사후 선정으로 세 baseline은 0.75, Self-Flow만 1.0을 택했다(Fig. 14 비라벨). 동일 trainshift에서 세 FAD 차이는 얼마인가?`.
+
+[V6] should · 장부 및 슬라이드 1·8·12·21 · 본문 Fig. 1–11·Table 1–4는 장부에 빠짐없이 포함되었으나 일부 `use`와 생략 사유 부정확 · 논문의 실제: (1) Fig. 1(a)(p.1 PDF)의 `2.8× faster` 화살표는 REPA 1M FID(3.92, Table 2) 기준으로 명확히 그려져 있어 "텍스트에서 특정 어려워 생략"은 부정확. (2) 슬라이드 8은 Fig. 21(p.24) 그래프를 쓰지 않고 `l=8, k=20` 라벨만 인용하므로 `use: 8`·`assets` 불필요(8번의 `0.3D/0.7D`, `l=8/k=20`, EMA `0.9999`, `γ=0.8`은 §3.4 p.4·App. A.3 p.17·App. H p.24와 모두 일치). (3) 슬라이드 21은 `assets: none`인데 장부에 `Table 5 — use: 12, 21`로 기재, 슬라이드 12는 Table 4·5의 세 FAD 열이 중복 · 고칠 문구: Fig. 1(a) 생략 사유 수정, Fig. 21 `use: 8`과 Table 5 `use: 21`을 출처 인용으로 분리, 슬라이드 12는 Table 5(+350K 표기)로 통합.
+
+[V7] should · 슬라이드 4·6 · Fig. 2(a, b) 실험 조건 누락 · 논문의 실제: Fig. 2(a)는 REPA 기본 설정(ImageNet 256×256, SiT-XL, SD-VAE, no CFG; §3.1–3.2 p.3), Fig. 2(b)도 동일 구간(FID 15–55)이나 §3.3(pp.3–4)에 데이터셋 명시 **없음** · 고칠 문구: `REPA 설정(ImageNet 256×256, SiT-XL, no CFG)` 명시(Fig. 2(b)는 본문 데이터셋 미명시이나 동일 ImageNet 구간임을 부기).
+
+[V8] should · 슬라이드 10 · `sFID는 SRA 8.05, Self-Flow 8.14` 비교 및 조건 누락(FID·FD-DINOv2 수치와 Δ −0.31·−5.37은 Table 2 p.6과 일치) · 논문의 실제: Table 2(p.6)에서 `REPA SigLIP 2`의 sFID도 **8.13**으로 Self-Flow(8.14)보다 낮아 2위. `no CFG, 50 ODE steps, sampleshift 1.78, uniform p(t)`(App. A.2–A.4 pp.17–18) 누락 · 고칠 문구: `no CFG, 50 ODE steps` 추가 및 `sFID는 SRA 8.05, REPA-SigLIP 2 8.13, Self-Flow 8.14`.
+
+[V9] should · 슬라이드 11 · Table 3 수치·Δ(FVD −3.14, FID −0.36; Table 3 p.6과 일치)에 세부 조건 누락 · 논문의 실제: `45프레임·192p, no CFG, 50 ODE steps, sampleshift 15.0`(App. A.2–A.4 pp.17–18) 및 **5% low-SNR [0.95, 1.00] 혼합**(App. C pp.19–20; 미적용 시 Fig. 15(d) p.20에서 Self-Flow framewise FID ~9.5로 Vanilla·SRA보다 악화) · 고칠 문구: `45프레임·192p, no CFG, low-SNR 5% 혼합(App. C)` 추가.
+
+[V10] should · 슬라이드 12 · Table 4·5 수치(p.6·p.19와 모두 일치)에 학습 규모·선정 방식 누락 · 논문의 실제: FMA **1M 학습·20k 검증**, no CFG(App. A.1 p.16, A.3 p.17), `REPA MERT`, Self-Flow의 `R_M=0.5`(7번의 0.25/0.10/0.50은 App. A.3 p.17·Table 5 p.19와 일치)는 오디오에서 `{0.05, 0.1, 0.25, 0.5}` 탐색으로 선정, Fig. 14(p.19) 캡션은 **early-stopping** 언급 · 고칠 문구: `FMA 1M(10초), no CFG, REPA MERT, Self-Flow는 R_M 탐색으로 0.5 선정` 명시.
+
+[V11] should · 슬라이드 15 · `Fig. 9 ... 4B mixed-modality 모델` 및 Fig. 10(a) 모델 조건 누락 · 논문의 실제: §4.3(p.9)·App. I(p.24)·Figs. 32–34는 `multi-modal 4B`(**고해상도 100K step**)로 표기(`mixed-modality` 표기 **없음**). Fig. 10(a)의 T2I 설정(~625M·20M 페어·SD-VAE·1M step, §4 p.5) 누락 · 고칠 문구: `4B multi-modal 모델(고해상도 100K step)`으로 수정, Fig. 10(a)에 `T2I ~625M·20M 페어` 병기.
+
+[V12] should · 슬라이드 16 · RAE FID `3.24→2.95`(Δ −0.29; Table 1 p.5와 일치)·Fig. 20(b)(p.23) 조건 누락 · 논문의 실제: RAE는 SiT-XL **~675M·no CFG·plateau-logit-normal**(App. A.2–A.4 pp.17–18, G.2 p.23), FLUX.2 AE T2I는 **~625M·no CFG** · 고칠 문구: 두 실험 모두 `no CFG`와 모델 크기(675M / 625M) 명시.
+
+[V13] should · 슬라이드 17 · `Self-Flow 625M이 REPA 1B보다 높은 CLIP score`(§4.1 p.6·Fig. 6(a, b) p.6 양축 모두 사실 확인됨)에 조건·격차 크기·FLOPs 정의 한계 누락 · 논문의 실제: T2I `SD-VAE·20M 페어·no CFG`, 1M step 차이는 약 0.10(30.88 vs ~30.78). Fig. 6(b) `Training FLOPs`에 teacher/DINOv2 forward 반영 여부 본문 설명 **없음** · 고칠 문구: `T2I(SD-VAE·20M·no CFG), 1M step 기준 ~30.88 vs ~30.78(FLOPs 산정식 본문 미기재)` 부기.
+
+[V14] should · 슬라이드 19 · `L_rep 제거 +4점 초과, mask 제거 +1점 초과` 및 `ℓ1 교체 시 후반 FID 상승` · 논문의 실제: `+4점/+1점 초과`는 §4.4(p.9) 본문 및 Fig. 11(a)(p.9) 600K(~12.6 vs ~8.5, ~9.6 vs ~8.5)와 부합하나 **정확한 표 수치·측정 step 명시는 없음**(no CFG 누락). `w/ ℓ1 loss`는 §4.4(p.10)가 "후반 FID 증가(feature norm 증가, 저자 설명)"라 쓰지만, Fig. 11(a) 200K–600K 그래프상 절대 FID 급상승보다 **500K–600K 정체 및 Ours 대비 격차 확대**(~9.4 vs ~8.5)로 보임 · 고칠 문구: `§4.4 요약(정확한 표 수치 없음, 600K·no CFG 기준)` 명시 및 `ℓ1 교체는 500K–600K에서 하락 정체·Ours 대비 악화(원인은 저자 설명)`.
+
+확인됨: 1, 2, 3, 5, 7, 20, 22

@@ -1,0 +1,1 @@
+{"tex": "\\mathcal{L}_{\\mathrm{gen}} = \\mathbb{E}\\,\\lVert f_\\theta(x_t, t) - (x_1 - x_0) \\rVert^2", "w": 15.295784000000001, "h": 0.9795400000000001, "d": 0.309079}

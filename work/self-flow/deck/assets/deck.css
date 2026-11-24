@@ -173,6 +173,7 @@ sub{font-size:max(24px,.75em);line-height:0}
   border-radius:var(--radius-media);
   padding:20px;
   display:flex;align-items:center;justify-content:center;
+  align-self:flex-start;max-width:100%;   /* the mat wraps the figure and sits on the column's left edge */
 }
 .slide:not(.slide--wash):not(.slide--statement) .figure-mat{padding:0}
 .figure-mat img{width:100%;height:auto;max-height:100%;object-fit:contain}
@@ -453,3 +454,100 @@ sub{font-size:max(24px,.75em);line-height:0}
   .slide.is-leaving{display:flex}
   .slide{print-color-adjust:exact;-webkit-print-color-adjust:exact}
 }
+
+/* ---------- cards: parallel items as ruled columns, not boxes (a panel is the only surface) ---------- */
+.cards{display:grid;column-gap:var(--gap-col);row-gap:40px}
+.card{display:flex;flex-direction:column;gap:12px;padding-top:24px;border-top:2px solid var(--hs-grey-40);min-width:0}
+.card-num{font-size:var(--t-caption);font-weight:var(--weight-bold);color:var(--color-link);font-variant-numeric:tabular-nums}
+.card-title{font-size:var(--t-36);line-height:1.3;font-weight:var(--weight-bold);color:var(--color-text-heading);text-wrap:balance}
+.card-text{font-size:var(--t-table);line-height:1.5;color:var(--color-text);text-wrap:pretty}
+.slide[data-theme="dark"] .card{border-top-color:var(--divider)}
+.slide[data-theme="dark"] .card-num{color:var(--color-link)}
+
+/* ---------- callout: the one emphasis on a slide ---------- */
+.callout{font-size:var(--t-40);line-height:1.35;font-weight:var(--weight-bold);color:var(--color-text-heading);text-wrap:balance;max-width:28em}
+
+/* ---------- display equations with a symbol key ---------- */
+.equation-block{display:flex;flex-direction:column;gap:28px}
+.equation-block .equation{display:flex;flex-direction:column;gap:24px}
+.equation-line{display:flex;align-items:center;gap:32px}
+.eq-tag{font-size:var(--t-caption);color:var(--color-text-muted);font-variant-numeric:tabular-nums}
+.equation-block .symbols{font-size:var(--t-table);row-gap:14px}
+
+/* ---------- process: numbered steps joined by arrows ---------- */
+.process{margin:0;padding:0;list-style:none;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:56px}
+.process-step{position:relative;display:flex;flex-direction:column;gap:12px;min-width:0}
+.process-step + .process-step::before{
+  content:"";position:absolute;left:-44px;top:22px;width:32px;height:2px;background:var(--hs-grey-70);
+}
+.process-step + .process-step::after{
+  content:"";position:absolute;left:-20px;top:17px;border:6px solid transparent;border-left:9px solid var(--hs-grey-70);
+}
+.process-num{
+  width:48px;height:48px;border-radius:50%;display:grid;place-items:center;
+  font-size:var(--t-caption);font-weight:var(--weight-bold);color:var(--color-text-heading);
+  border:2px solid var(--color-text-heading);font-variant-numeric:tabular-nums;
+}
+.process-title{font-size:var(--t-body);line-height:1.35;font-weight:var(--weight-bold);color:var(--color-text-heading)}
+.process-text{font-size:var(--t-caption);line-height:1.5;color:var(--color-text)}
+.process--v{grid-auto-flow:row;gap:28px}
+.process--v .process-step{display:grid;grid-template-columns:48px 1fr;column-gap:24px;row-gap:4px}
+.process--v .process-num{grid-row:span 2}
+.process--v .process-step + .process-step::before{left:23px;top:-24px;width:2px;height:20px}
+.process--v .process-step + .process-step::after{display:none}
+
+/* ---------- figure with numbered marks ---------- */
+.mark-wrap{position:relative;display:block;line-height:0}
+.mark-wrap img{display:block;width:100%;height:auto}
+.mark{
+  position:absolute;transform:translate(-50%,-50%);width:44px;height:44px;border-radius:50%;
+  display:grid;place-items:center;font-size:var(--t-caption);line-height:1;font-weight:var(--weight-bold);
+  color:#fff;background:var(--color-text-heading);border:3px solid #fff;font-variant-numeric:tabular-nums;
+}
+.figure--diagram{gap:16px}
+.figure--diagram > svg{display:block;width:100%;height:auto}
+
+/* ---------- stepper: next key reveals one step of a diagram at a time ---------- */
+.stepper{display:grid;gap:72px;flex:1 1 auto;min-height:0;align-items:start}
+.stepper-side{display:flex;flex-direction:column;gap:28px;min-width:0}
+.steps{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:28px}
+.steps > li{display:grid;grid-template-columns:48px 1fr;column-gap:20px;row-gap:6px;transition:opacity var(--duration-base) var(--ease-standard)}
+.steps .step-num{
+  grid-row:span 2;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;
+  font-size:var(--t-caption);font-weight:var(--weight-bold);color:#fff;background:var(--color-text-heading);
+}
+.steps .step-title{font-size:var(--t-body);line-height:1.35;font-weight:var(--weight-bold);color:var(--color-text-heading)}
+.steps .step-text{font-size:var(--t-table);line-height:1.45;color:var(--color-text)}
+.steps > li.is-off{opacity:0;visibility:hidden}
+.stepper .is-off{opacity:0}
+.figure--diagram .is-off{opacity:0}
+
+/* ---------- toggle over paper figures (image tabs) ---------- */
+.toggle-grid{grid-template-rows:minmax(0,1fr)}
+.toggle-media{display:grid;grid-template-rows:minmax(0,1fr);min-height:0;flex:1 1 auto}
+.toggle-media > .figure{grid-area:1/1;min-height:0;height:100%}
+.toggle-media .figure-mat{flex:1 1 auto;min-height:0;display:flex;justify-content:flex-start;align-items:flex-start}
+.toggle-media .figure-mat img{width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain}
+.toggle-media > .figure.is-off{visibility:hidden}
+.toggle-grid--wide{grid-template-columns:1fr 520px}
+.table th.l,.table td.l{text-align:left}
+.seg--compact button{padding:14px 20px}
+.seg--compact .key{margin-right:8px}
+.seg{flex-wrap:nowrap}
+.seg button{white-space:nowrap}
+
+/* a figure beside a toggle readout keeps its size; if the column is too short it spills (QA), never overlaps */
+.toggle-side > .figure{flex:none}
+.toggle .media-caption{margin-top:0}
+/* sparse slides (Q&A, a short list) may sit on the optical centre instead of the top */
+.slide--center .slide-body{justify-content:center;padding-bottom:72px}
+
+/* the toggle's buttons sit on their own row across both columns, so the visual and the readout
+   can take any ratio without the buttons running into the readout */
+.toggle-grid{grid-template-rows:auto minmax(0,1fr);row-gap:24px}
+.toggle-grid > .seg{grid-column:1}
+.toggle-grid > .toggle{grid-column:1;grid-row:2}
+.toggle-grid > .toggle-side{grid-column:2;grid-row:1/-1}
+/* four or more states: the buttons need the full width, the readout starts under them */
+.toggle-grid > .seg--compact{grid-column:1/-1}
+.toggle-grid > .seg--compact ~ .toggle-side{grid-row:2}

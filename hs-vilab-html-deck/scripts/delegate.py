@@ -1,0 +1,119 @@
+"""Hand one pass to another AI CLI on this machine and get its answer back as a file.
+
+Usage:
+    python delegate.py which                                   # which CLIs are here, per role
+    python delegate.py text     --prompt-file brief.md  --dir <ref> --out outline.md
+    python delegate.py review   --prompt-file critic.md --dir <ref> --out review/critic.md
+    python delegate.py research --prompt-file questions.md          --out review/research.md
+    python delegate.py vision   --prompt-file brief.md  --dir <bundle> --out review/visual.md
+
+Roles and who fills them (ORDER): the draft, revision and Korean edit go to codex; critique,
+verification, research and visual review go to agy. Each falls back to the other CLI, and when
+neither is installed the script exits 3 and says so — the conductor then runs that role as a
+subagent and names the fallback in the delivery report. A silent fallback is not allowed.
+
+<dir> is the folder the delegate may read (paper.txt, paper.pdf, outline.md, captures, rules).
+Both CLIs run read-only and are told to print, not to write files.
+
+Two things that broke on the first full run and are handled here:
+  * codex resolved a Google Drive path through its Drive connector and wandered; the prompt
+    now names the folder as the only place to read, and codex gets it with --cd.
+  * On Windows a command line holds ~32K characters; a brief with the paper inline does not
+    fit agy's --print=. A long prompt is written into <dir> and agy is told to read it there.
+
+Models: HSDECK_CODEX_MODEL (default gpt-6.2-sol), HSDECK_AGY_MODEL (default gemini-4-neon-high).
+"""
+from __future__ import annotations
+
+import argparse
+import os
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+ORDER = {"text": ["codex", "agy"], "review": ["agy", "codex"], "research": ["agy", "codex"],
+         "vision": ["agy", "codex"]}
+CODEX_MODEL = os.environ.get("HSDECK_CODEX_MODEL", "gpt-6.2-sol")
+AGY_MODEL = os.environ.get("HSDECK_AGY_MODEL", "gemini-4-neon-high")
+INLINE_MAX = 20000
+RULE = ("\n\n(규칙: 아래 폴더 밖의 파일·커넥터·웹을 쓰지 마라. 파일을 만들거나 고치지 말고 결과만 출력하라. "
+        "읽을 폴더: {dir})")
+RULE_WEB = "\n\n(규칙: 파일을 만들거나 고치지 마라. 답마다 출처 URL을 붙여라.)"
+
+
+def find(cmd: str) -> str | None:
+    return shutil.which(cmd) or shutil.which(cmd + ".cmd") or shutil.which(cmd + ".exe")
+
+
+def pick(role: str) -> str | None:
+    return next((c for c in ORDER[role] if find(c)), None)
+
+
+def run_codex(prompt: str, folder: Path | None, out: Path, timeout: int) -> int:
+    cmd = [find("codex"), "exec", "--skip-git-repo-check", "-s", "read-only", "-m", CODEX_MODEL,
+           "-c", "model_reasoning_effort=high", "-o", str(out)]
+    if folder:
+        cmd += ["--cd", str(folder)]
+    cmd += ["-"]
+    log = out.with_suffix(".log")
+    with open(log, "w", encoding="utf-8") as lf:
+        r = subprocess.run(cmd, input=prompt, text=True, encoding="utf-8", stdout=lf, stderr=subprocess.STDOUT,
+                           timeout=timeout)
+    return r.returncode
+
+
+def run_agy(prompt: str, folder: Path | None, out: Path, timeout: int) -> int:
+    if folder and len(prompt) > INLINE_MAX:
+        (folder / "_prompt.md").write_text(prompt, encoding="utf-8")
+        prompt = f"이 폴더의 `_prompt.md`를 읽고 그 지시를 수행하라. 폴더: {folder}"
+    cmd = [find("agy"), "--model", AGY_MODEL, "--effort", "high", f"--print-timeout={timeout}s"]
+    if folder:
+        cmd += ["--add-dir", str(folder)]
+    cmd += [f"--print={prompt}"]
+    with open(out, "w", encoding="utf-8") as of, open(out.with_suffix(".err"), "w", encoding="utf-8") as ef:
+        r = subprocess.run(cmd, stdout=of, stderr=ef, stdin=subprocess.DEVNULL, text=True, encoding="utf-8",
+                           timeout=timeout + 60)
+    return r.returncode
+
+
+def main() -> int:
+    for st in (sys.stdout, sys.stderr):
+        try:
+            st.reconfigure(encoding="utf-8")
+        except Exception:  # noqa: BLE001
+            pass
+    ap = argparse.ArgumentParser()
+    ap.add_argument("role", choices=["which", *ORDER])
+    ap.add_argument("--prompt-file")
+    ap.add_argument("--dir", help="the only folder the delegate may read")
+    ap.add_argument("--out")
+    ap.add_argument("--timeout", type=int, default=1800)
+    a = ap.parse_args()
+    if a.role == "which":
+        for role in ORDER:
+            print(f"{role:9s} -> {pick(role) or 'none (run as a subagent and say so)'}")
+        return 0
+    who = pick(a.role)
+    if not who:
+        print(f"{a.role}: neither codex nor agy is installed. Run this role as a subagent and name the "
+              "fallback in the delivery report.", file=sys.stderr)
+        return 3
+    if who != ORDER[a.role][0]:
+        print(f"{a.role}: {ORDER[a.role][0]} is missing, falling back to {who} — say so in the delivery.")
+    folder = Path(a.dir).resolve() if a.dir else None
+    out = Path(a.out).resolve()
+    out.parent.mkdir(parents=True, exist_ok=True)
+    prompt = Path(a.prompt_file).read_text(encoding="utf-8")
+    prompt += RULE.format(dir=folder) if folder else RULE_WEB
+    rc = (run_codex if who == "codex" else run_agy)(prompt, folder, out, a.timeout)
+    size = out.stat().st_size if out.exists() else 0
+    print(f"{a.role} by {who}: exit {rc}, {size} bytes -> {out}")
+    if rc or size == 0:
+        print("  empty or failed: read the .log/.err next to the output before retrying.", file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

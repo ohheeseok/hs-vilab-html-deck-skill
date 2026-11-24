@@ -8,6 +8,7 @@ capture is the finished slide. Captures go to qa/ at 1920x1080 and qa/<W>x<H>/ o
 For each slide and each toggle state:
   * screenshot -> qa/s<NN>[-<state>].png
   * overflow: any element whose box leaves the slide, or a text box that clips;
+  * collide: two visible text line boxes (or text and an image) overlapping anywhere on the slide;
   * spill: content leaving its band (a direct child of the slide), or two bands overlapping;
   * type floor: any rendered glyph run under 24 stage px;
   * title wrap: a slide title taller than one line;
@@ -98,6 +99,36 @@ MEASURE = r"""
       }
     }
   });
+  // collide: two visible pieces of text (line boxes) — or text and an image — that overlap anywhere
+  // on the slide. The band check only sees a slide's direct children; this catches a caption that
+  // a shrinking flex item lets run over its neighbour inside one column.
+  out.collide = [];
+  const boxes = [];
+  const walker = document.createTreeWalker(slide, NodeFilter.SHOW_TEXT);
+  for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+    const el = n.parentElement;
+    if (!n.textContent.trim() || !el || el.closest('svg,.mark,.sr-only,template') || !visible(el)) continue;
+    const rg = document.createRange(); rg.selectNodeContents(n);
+    for (const r of rg.getClientRects()) if (r.width > 1 && r.height > 1) boxes.push({el, r});
+  }
+  for (const img of slide.querySelectorAll('img')) {
+    if (!visible(img)) continue;
+    const r = img.getBoundingClientRect(); if (r.width && r.height) boxes.push({el: img, r});
+  }
+  // line boxes include the font's full ascent/descent, so lines of one paragraph touch: compare
+  // only text from different blocks, and count an overlap of at least 35% of the shorter box
+  const block = el => { for (let e = el; e && e !== slide; e = e.parentElement)
+                          if (!/^inline/.test(getComputedStyle(e).display)) return e; return slide; };
+  boxes.forEach(b => { b.blk = b.el.tagName === 'IMG' ? b.el : block(b.el); });
+  const hit = (a, b) => Math.min(a.right, b.right) - Math.max(a.left, b.left) > 3 * k &&
+                        Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 0.35 * Math.min(a.height, b.height);
+  for (let i = 0; i < boxes.length && out.collide.length < 5; i++)
+    for (let j = i + 1; j < boxes.length; j++) {
+      const A = boxes[i], B = boxes[j];
+      if (A.blk === B.blk || A.blk.contains(B.blk) || B.blk.contains(A.blk)) continue;
+      if (A.el.tagName === 'IMG' && B.el.tagName === 'IMG') continue;
+      if (hit(A.r, B.r)) { out.collide.push({a: path(A.el), b: path(B.el), text: (A.el.textContent || '').trim().slice(0, 24)}); break; }
+    }
   const t = slide.querySelector('.slide-title, .cover-title');
   if (t) {
     const lh = parseFloat(getComputedStyle(t).lineHeight);
@@ -188,7 +219,7 @@ def main() -> int:
 
     bad = []
     for s in report["slides"]:
-        for key in ("overflow", "small", "clipped", "contrast", "spill"):
+        for key in ("overflow", "small", "clipped", "contrast", "spill", "collide"):
             if s[key]:
                 bad.append(f"{s['name']}: {key} {s[key][:3]}")
         if s["titleWrap"]:

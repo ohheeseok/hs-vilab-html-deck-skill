@@ -7,14 +7,17 @@
 - 디자인: hs-vilab-frontend-design의 토큰·글꼴·규칙(HSU 색, Geomini + Gmarket Sans, 글자 크기 사다리 80/56/48/40/36/32/28/24px, 24px 하한)
 - 제작 흐름과 내용 규칙: hs-vilab-deck(PPT판)을 HTML로 옮긴 것
 
-> **상태: 개발 중.** 무대 엔진, 빌드, 수식, QA와 6장짜리 샘플 덱까지 만들었습니다.
-> `SKILL.md`, 스키마, 나머지 블록, handout·script·PDF 내보내기는 아직 없습니다. 진행 계획은 [docs/PLAN.md](docs/PLAN.md) §9에 있습니다.
+> **상태: 0.1.0.** 논문 한 편을 21장 덱으로 끝까지 만들어 본 첫 실행을 마쳤습니다([work/self-flow-full](work/self-flow-full)).
+> 스킬 본문은 [hs-vilab-html-deck/SKILL.md](hs-vilab-html-deck/SKILL.md), 변경 내역은 [CHANGELOG.md](hs-vilab-html-deck/CHANGELOG.md)에 있습니다.
+> 읽기용 handout(세로 흐름 문서)과 `deck.json` 스키마 파일은 아직 없습니다.
 
 ## 샘플
 
-[work/self-flow](work/self-flow)는 *Self-Supervised Flow Matching for Scalable Multi-Modal Synthesis*(Chefer et al., 2026) 리뷰 6장입니다.
-표지, 다크 요약, 토글 인터랙션 도식, 막대 차트, 표, 정리와 토론으로 구성했습니다.
-`work/self-flow/deck/index.html`을 브라우저로 열면 됩니다.
+- [work/self-flow-full](work/self-flow-full) — *Self-Supervised Flow Matching for Scalable Multi-Modal Synthesis*(Chefer et al., 2026) 20분 세미나 21장. 이 스킬의 첫 전체 실행입니다.
+  - codex가 개요를 쓰고, agy가 비평·검증·자료조사·시각 검수를 맡았습니다. Claude는 조율했습니다.
+  - 지적과 처리 기록은 `review/log.md`, `review/visual_triage_r1.md`에 있습니다.
+  - `deck/index.html`은 발표용, `deck/script.html`은 대본입니다. PDF는 `export_pdf.py`로 만듭니다.
+- [work/self-flow](work/self-flow) — 같은 논문의 디자인 샘플 6장입니다. 엔진과 표지를 정할 때 썼습니다.
 
 | 키 | 동작 |
 |---|---|
@@ -39,15 +42,22 @@ hs-vilab-html-deck/          스킬 본체
     engine/deck.css deck.js                무대 엔진 (의존성 없는 바닐라 JS)
     brand/                                 HSU 영문 가로 시그니처 SVG
   scripts/
-    build_deck.py      deck.json → deck/index.html, 게이트 위반 시 아무것도 쓰지 않음
+    preflight.py       환경 점검(Python, Playwright, TeX, 글꼴, codex·agy)
+    delegate.py        codex·agy에 한 단계씩 넘기고 결과 파일을 받음(없으면 대체를 알림)
+    extract_figures.py 논문 텍스트·그림 목록·영역 크롭(400 dpi)
+    build_deck.py      deck.json → deck/index.html + script.html, 게이트 위반 시 아무것도 쓰지 않음
     make_equations.py  LaTeX → 인라인 SVG (Arev Sans 수식, dvisvgm)
-    qa_render.py       Playwright 캡처 + 기계 QA (넘침, 24px 하한, 대비, 글꼴, 구역 겹침)
+    qa_render.py       Playwright 캡처 + 기계 QA (넘침, 띠 이탈, 글자 겹침, 24px 하한, 대비, 글꼴)
+    export_pdf.py      벡터 PDF, 토글 상태는 쪽을 나눠 펼침
+    deck_text.py · apply_text_edits.py   한국어 편집 표를 뽑고 적용(숫자 바뀌는 행은 거부)
     brand_ai2svg.py    윤곽선 .ai → 여백 없는 SVG
-  NOTICE
+  SKILL.md  VERSION  CHANGELOG.md  NOTICE
+  references/          내러티브 규칙·역할, 블록, 인터랙션, 디자인, QA, 한국어 편집
 docs/
   PLAN.md              확정 계획과 변경 기록
   plan-review/         codex·agy 검토와 시각 검수 기록
-work/self-flow/        샘플: deck.json, 손으로 그린 도식 SVG, 빌드 결과
+work/self-flow-full/   전체 실행: deck.json, outline, review/ 기록, 빌드 결과
+work/self-flow/        디자인 샘플 6장
 ```
 
 ## 빌드와 QA
