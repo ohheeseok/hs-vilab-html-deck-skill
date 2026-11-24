@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# 논문 PDF는 입력 파일이다. 저장소에 넣지 않는다(크고, 저작권이 논문 저자에게 있다)
+*.pdf
+
+# QA 캡처: qa_render.py가 매번 다시 만든다
+work/*/qa/
+
+# 로컬 전용 설정
+.claude/settings.local.json

@@ -1,0 +1,72 @@
+<svg class="diagram" viewBox="0 0 1080 690" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="dia-dt-title dia-dt-desc">
+  <title id="dia-dt-title">Dual-Timestep Scheduling의 입력 구성 (Fig. 3을 다시 그림)</title>
+  <desc id="dia-dt-desc">6×6 토큰으로 나눈 이미지. Vanilla flow matching에서는 36개 토큰 모두 t = 0.3으로 노이즈를 섞는다. Dual-Timestep Scheduling에서는 마스크 M에 든 9개 토큰(25%)만 s = 0.8로 더 강하게 노이즈를 섞고, teacher는 모든 토큰을 min(t, s) = 0.3으로 섞은 입력을 받는다.</desc>
+  <defs>
+    <marker id="dia-dt-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="var(--color-text-muted)"/>
+    </marker>
+    <marker id="dia-dt-arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="var(--color-accent)"/>
+    </marker>
+    <g id="dia-dt-grid" stroke="#FFFFFF" stroke-width="2">
+      <path d="M70 0V420M140 0V420M210 0V420M280 0V420M350 0V420M0 70H420M0 140H420M0 210H420M0 280H420M0 350H420"/>
+    </g>
+  </defs>
+
+  <!-- ===== student ===== -->
+  <foreignObject x="0" y="0" width="640" height="48"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-h">Student 입력 $x_\tau$</div></foreignObject>
+  <image href="assets/fig/tok_uniform.jpg" x="0" y="52" width="420" height="420" data-show="vanilla"/>
+  <image href="assets/fig/tok_dual.jpg" x="0" y="52" width="420" height="420" data-show="dual"/>
+  <use href="#dia-dt-grid" x="0" y="52"/>
+  <g data-show="dual" fill="none" stroke="var(--hs-warm)" stroke-width="5">
+    <rect x="72.5" y="54.5" width="65" height="65"/>
+    <rect x="282.5" y="54.5" width="65" height="65"/>
+    <rect x="142.5" y="124.5" width="65" height="65"/>
+    <rect x="72.5" y="194.5" width="65" height="65"/>
+    <rect x="142.5" y="194.5" width="65" height="65"/>
+    <rect x="282.5" y="264.5" width="65" height="65"/>
+    <rect x="212.5" y="334.5" width="65" height="65"/>
+    <rect x="352.5" y="334.5" width="65" height="65"/>
+    <rect x="212.5" y="404.5" width="65" height="65"/>
+  </g>
+
+  <g data-show="vanilla">
+    <rect x="0" y="494" width="26" height="26" fill="var(--hs-grey-40)"/>
+    <foreignObject x="40" y="488" width="600" height="38"><div xmlns="http://www.w3.org/1999/xhtml" class="fo">모든 토큰 36개 · $t$ = 0.3</div></foreignObject>
+  </g>
+  <g data-show="dual">
+    <rect x="0" y="494" width="26" height="26" fill="var(--hs-grey-40)"/>
+    <foreignObject x="40" y="488" width="600" height="38"><div xmlns="http://www.w3.org/1999/xhtml" class="fo">나머지 27개 · $t$ = 0.3</div></foreignObject>
+    <rect x="2.5" y="534.5" width="21" height="21" fill="none" stroke="var(--hs-warm)" stroke-width="5"/>
+    <foreignObject x="40" y="526" width="600" height="38"><div xmlns="http://www.w3.org/1999/xhtml" class="fo">마스크 $M$ 9개 (25%) · $s$ = 0.8</div></foreignObject>
+  </g>
+
+  <rect x="150" y="584" width="240" height="72" rx="6" fill="var(--color-surface)" stroke="var(--color-border-control)" stroke-width="2"/>
+  <foreignObject x="150" y="584" width="240" height="72"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box">$f_\theta$ student</div></foreignObject>
+  <path d="M150 620H108" stroke="var(--color-text-muted)" stroke-width="2" marker-end="url(#dia-dt-arrow)"/>
+  <foreignObject x="0" y="596" width="100" height="48"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-h fo-r">$\mathcal{L}_{\mathrm{gen}}$</div></foreignObject>
+
+  <!-- ===== teacher (dual only) ===== -->
+  <g data-show="dual">
+    <foreignObject x="660" y="0" width="420" height="48"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-h">Teacher 입력 $x_{\tau_{\min}}$</div></foreignObject>
+    <image href="assets/fig/tok_uniform.jpg" x="660" y="52" width="420" height="420"/>
+    <use href="#dia-dt-grid" x="660" y="52"/>
+    <rect x="660" y="494" width="26" height="26" fill="var(--hs-grey-40)"/>
+    <foreignObject x="700" y="488" width="380" height="38"><div xmlns="http://www.w3.org/1999/xhtml" class="fo">모든 토큰 · $\tau_{\min}$ = min($t$, $s$) = 0.3</div></foreignObject>
+
+    <rect x="750" y="584" width="240" height="72" rx="6" fill="var(--color-surface)" stroke="var(--color-border-control)" stroke-width="2"/>
+    <foreignObject x="750" y="584" width="240" height="72"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box">$f_{\theta'}$ teacher</div></foreignObject>
+
+    <path d="M398 610H742" stroke="var(--color-accent)" stroke-width="4" marker-start="url(#dia-dt-arrow-accent)"/>
+    <foreignObject x="398" y="556" width="344" height="48"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-h fo-c">$\mathcal{L}_{\mathrm{rep}}$ cosine</div></foreignObject>
+    <path d="M390 640H742" stroke="var(--color-text-muted)" stroke-width="2" stroke-dasharray="8 8" marker-end="url(#dia-dt-arrow)"/>
+    <text x="570" y="680" font-size="24" fill="var(--color-text-muted)" text-anchor="middle">EMA 가중치 · gradient 없음</text>
+  </g>
+
+  <!-- ===== no teacher (vanilla only) ===== -->
+  <g data-show="vanilla">
+    <rect x="661" y="53" width="418" height="602" rx="6" fill="none" stroke="var(--color-border-control)" stroke-width="2" stroke-dasharray="10 10"/>
+    <text x="870" y="336" font-size="28" font-weight="700" fill="var(--color-text-muted)" text-anchor="middle">teacher 없음</text>
+    <foreignObject x="661" y="352" width="418" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-muted">학습 신호는 $\mathcal{L}_{\mathrm{gen}}$ 하나</div></foreignObject>
+  </g>
+</svg>

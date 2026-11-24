@@ -1,0 +1,300 @@
+/* hs-vilab-frontend-design — design tokens.
+   Self-contained: no @import, no external URL. Pair with fonts.css (and base.css
+   if you want the element defaults). Light theme lives on :root; the dark theme is
+   applied by the OS setting unless the page pins data-theme="light", and always
+   when it sets data-theme="dark". The two dark blocks must stay identical —
+   scripts/verify_skill.py checks that. */
+
+:root{
+  color-scheme:light;
+
+  /* ---- Brand palette: fixed values, never re-tinted per project ---- */
+  --hs-sky-blue:#048DDB;     /* Pantone 2915 C */
+  --hs-blue:#0A4DA1;         /* Pantone 2728 C */
+  --hs-dark-blue:#032E6E;    /* Pantone 281 C  */
+  --hs-grey:#626466;         /* Pantone 424 C  */
+
+  --hs-sky-blue-60:#69BCEA;
+  --hs-sky-blue-30:#B4DDF4;
+  --hs-sky-blue-10:#E6F4FC;
+  --hs-blue-hover:#084087;   /* one step between Blue and Dark Blue */
+  --hs-blue-10:#E7EDF5;
+  --hs-grey-70:#8A8C8E;
+  --hs-grey-40:#B9BABB;
+  --hs-grey-15:#E4E5E5;
+  --hs-grey-06:#F3F4F4;
+  --hs-ink:#434343;
+  --hs-teal:#134F5C;
+  --hs-warm:#E8A02E;         /* the one warm accent: markers only, never text */
+
+  /* ---- Typography ---- */
+  --font-sans:"Geomini","GmarketSans","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  --font-latin:"Geomini","Helvetica Neue",Arial,sans-serif;
+  --font-korean:"GmarketSans","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  --font-mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+
+  --weight-light:300;
+  --weight-regular:400;
+  --weight-medium:500;
+  --weight-bold:700;
+
+  /* Classic typographic scale (12·14·16·18·21·24·30·36·48·60·72) in rem */
+  --text-xs:.75rem;
+  --text-sm:.875rem;
+  --text-base:1rem;
+  --text-md:1.125rem;
+  --text-lg:1.3125rem;
+  --text-xl:1.5rem;
+  --text-2xl:1.875rem;
+  --text-3xl:2.25rem;
+  --text-4xl:3rem;
+  --text-5xl:3.75rem;
+  --text-6xl:4.5rem;
+
+  --leading-tight:1.15;
+  --leading-snug:1.3;
+  --leading-normal:1.6;      /* Hangul body needs more than the Latin default */
+  --leading-loose:1.75;
+
+  --tracking-tight:-0.015em; /* large display sizes only */
+  --tracking-normal:0;
+
+  --measure-ko:36em;         /* ~32–40 Hangul characters per line */
+  --measure-en:68ch;
+
+  /* ---- Space (4px base) ---- */
+  --space-1:.25rem;
+  --space-2:.5rem;
+  --space-3:.75rem;
+  --space-4:1rem;
+  --space-5:1.25rem;
+  --space-6:1.5rem;
+  --space-8:2rem;
+  --space-10:2.5rem;
+  --space-12:3rem;
+  --space-16:4rem;
+  --space-20:5rem;
+  --space-24:6rem;
+  --space-32:8rem;
+
+  /* ---- Shape: radius is assigned by role, not one value everywhere ---- */
+  --radius-none:0;
+  --radius-media:2px;        /* figures, tables, image frames */
+  --radius-control:4px;      /* buttons, inputs, badges */
+  --radius-panel:6px;        /* panels that hold a discrete object */
+  --radius-overlay:8px;      /* dialogs, popovers, menus */
+  --radius-pill:999px;       /* tags and status chips only */
+
+  --border-hairline:1px;
+  --border-rule:2px;
+
+  /* ---- Motion ---- */
+  --duration-fast:120ms;
+  --duration-base:180ms;
+  --duration-slow:280ms;
+  --ease-standard:cubic-bezier(.4,0,.2,1);
+  --ease-out:cubic-bezier(0,0,.2,1);
+
+  /* ---- Semantic roles: light ---- */
+  --color-bg:#FFFFFF;
+  --color-surface:#FFFFFF;
+  --color-surface-sunken:var(--hs-grey-06);
+  --color-surface-raised:#FFFFFF;
+  --color-surface-brand:var(--hs-sky-blue-10);
+
+  --color-text:var(--hs-ink);
+  --color-text-heading:var(--hs-dark-blue);
+  --color-text-muted:var(--hs-grey);
+  --color-text-disabled:var(--hs-grey-70);
+
+  --color-link:var(--hs-blue);
+  --color-link-hover:var(--hs-dark-blue);
+
+  --color-primary:var(--hs-blue);
+  --color-primary-hover:var(--hs-blue-hover);
+  --color-primary-active:var(--hs-dark-blue);
+  --color-on-primary:#FFFFFF;
+
+  --color-accent:var(--hs-sky-blue);   /* non-text: focus, selection, chart highlight, large display */
+  --color-warm:var(--hs-warm);
+
+  --color-border-subtle:var(--hs-grey-15);   /* dividers only (1.26:1) */
+  --color-border-control:var(--hs-grey-70);  /* inputs, checkboxes: ≥3:1 */
+  --color-border-control-hover:var(--hs-grey);
+
+  --color-focus:var(--hs-sky-blue);
+  --focus-ring:0 0 0 2px var(--color-bg),0 0 0 4px var(--color-focus);
+
+  --color-selection:var(--hs-sky-blue-30);
+  --color-disabled-bg:var(--hs-grey-06);
+
+  --color-info-fg:var(--hs-blue);
+  --color-info-bg:var(--hs-blue-10);
+  --color-info-border:#3B71B4;
+  --color-success-fg:#1E7A5A;
+  --color-success-bg:#E6F3EE;
+  --color-success-border:#2F8F6B;
+  --color-warning-fg:#784B00;
+  --color-warning-bg:#FFF4DF;
+  --color-warning-border:#B4761A;
+  --color-danger-fg:#B3271E;
+  --color-danger-bg:#FBEAE8;
+  --color-danger-border:#C8463C;
+
+  --shadow-none:none;
+  --shadow-popover:0 4px 16px rgba(3,46,110,.12);
+  --shadow-overlay:0 2px 6px rgba(3,46,110,.08),0 12px 32px rgba(3,46,110,.16);
+
+  /* Charts: ink-first; one series may take the accent */
+  --chart-ink:var(--hs-ink);
+  --chart-grid:var(--hs-grey-15);
+  --chart-axis:var(--hs-grey);
+  --chart-highlight:var(--hs-sky-blue);
+  --chart-cat-1:var(--hs-dark-blue);
+  --chart-cat-2:var(--hs-sky-blue);
+  --chart-cat-3:var(--hs-teal);
+  --chart-cat-4:var(--hs-grey);
+  --chart-seq-1:var(--hs-sky-blue-10);
+  --chart-seq-2:var(--hs-sky-blue-30);
+  --chart-seq-3:var(--hs-sky-blue-60);
+  --chart-seq-4:var(--hs-sky-blue);
+  --chart-seq-5:var(--hs-blue);
+  --chart-seq-6:var(--hs-dark-blue);
+
+  /* Media keeps a white mat in both themes — figures are authored on white */
+  --color-media-mat:#FFFFFF;
+}
+
+/* ---- Semantic roles: dark (system setting) ---- */
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --color-bg:#0E131B;
+    --color-surface:#161D28;
+    --color-surface-sunken:#0A0E14;
+    --color-surface-raised:#1E2736;
+    --color-surface-brand:#12263D;
+
+    --color-text:#D5DDE8;
+    --color-text-heading:#F1F5FA;
+    --color-text-muted:#A8B5C8;
+    --color-text-disabled:#6B7D96;
+
+    --color-link:#58B8F2;
+    --color-link-hover:#8FD0F7;
+
+    --color-primary:#4EB3F0;
+    --color-primary-hover:#6BC3F5;
+    --color-primary-active:#8FD0F7;
+    --color-on-primary:#0E131B;
+
+    --color-accent:#4EB3F0;
+    --color-warm:#E8A02E;
+
+    --color-border-subtle:#263142;
+    --color-border-control:#6B7D96;
+    --color-border-control-hover:#8A9AB0;
+
+    --color-focus:#66C4FF;
+
+    --color-selection:#1F4A70;
+    --color-disabled-bg:#161D28;
+
+    --color-info-fg:#8FC8F5;
+    --color-info-bg:#12263D;
+    --color-info-border:#3A7FB8;
+    --color-success-fg:#6FD3A8;
+    --color-success-bg:#10291F;
+    --color-success-border:#2F8F6B;
+    --color-warning-fg:#F2C46B;
+    --color-warning-bg:#2E2410;
+    --color-warning-border:#B4761A;
+    --color-danger-fg:#FF9A8F;
+    --color-danger-bg:#33171A;
+    --color-danger-border:#C8463C;
+
+    --shadow-popover:0 4px 16px rgba(0,0,0,.45);
+    --shadow-overlay:0 2px 6px rgba(0,0,0,.35),0 12px 32px rgba(0,0,0,.55);
+
+    --chart-ink:#D5DDE8;
+    --chart-grid:#263142;
+    --chart-axis:#A8B5C8;
+    --chart-highlight:#4EB3F0;
+    --chart-cat-1:#D3ECFB;
+    --chart-cat-2:#4EB3F0;
+    --chart-cat-3:#6FC2B0;
+    --chart-cat-4:#8A9AB0;
+    --chart-seq-1:#1E3A57;
+    --chart-seq-2:#2C5F8F;
+    --chart-seq-3:#3A86C4;
+    --chart-seq-4:#4EB3F0;
+    --chart-seq-5:#8FD0F7;
+    --chart-seq-6:#D3ECFB;
+  }
+}
+
+/* ---- Semantic roles: dark (pinned) — keep identical to the block above ---- */
+:root[data-theme="dark"],.slide[data-theme="dark"]{   /* deck: a statement slide can pin dark on its own */
+  color-scheme:dark;
+  --color-bg:#0E131B;
+  --color-surface:#161D28;
+  --color-surface-sunken:#0A0E14;
+  --color-surface-raised:#1E2736;
+  --color-surface-brand:#12263D;
+
+  --color-text:#D5DDE8;
+  --color-text-heading:#F1F5FA;
+  --color-text-muted:#A8B5C8;
+  --color-text-disabled:#6B7D96;
+
+  --color-link:#58B8F2;
+  --color-link-hover:#8FD0F7;
+
+  --color-primary:#4EB3F0;
+  --color-primary-hover:#6BC3F5;
+  --color-primary-active:#8FD0F7;
+  --color-on-primary:#0E131B;
+
+  --color-accent:#4EB3F0;
+  --color-warm:#E8A02E;
+
+  --color-border-subtle:#263142;
+  --color-border-control:#6B7D96;
+  --color-border-control-hover:#8A9AB0;
+
+  --color-focus:#66C4FF;
+
+  --color-selection:#1F4A70;
+  --color-disabled-bg:#161D28;
+
+  --color-info-fg:#8FC8F5;
+  --color-info-bg:#12263D;
+  --color-info-border:#3A7FB8;
+  --color-success-fg:#6FD3A8;
+  --color-success-bg:#10291F;
+  --color-success-border:#2F8F6B;
+  --color-warning-fg:#F2C46B;
+  --color-warning-bg:#2E2410;
+  --color-warning-border:#B4761A;
+  --color-danger-fg:#FF9A8F;
+  --color-danger-bg:#33171A;
+  --color-danger-border:#C8463C;
+
+  --shadow-popover:0 4px 16px rgba(0,0,0,.45);
+  --shadow-overlay:0 2px 6px rgba(0,0,0,.35),0 12px 32px rgba(0,0,0,.55);
+
+  --chart-ink:#D5DDE8;
+  --chart-grid:#263142;
+  --chart-axis:#A8B5C8;
+  --chart-highlight:#4EB3F0;
+  --chart-cat-1:#D3ECFB;
+  --chart-cat-2:#4EB3F0;
+  --chart-cat-3:#6FC2B0;
+  --chart-cat-4:#8A9AB0;
+  --chart-seq-1:#1E3A57;
+  --chart-seq-2:#2C5F8F;
+  --chart-seq-3:#3A86C4;
+  --chart-seq-4:#4EB3F0;
+  --chart-seq-5:#8FD0F7;
+  --chart-seq-6:#D3ECFB;
+}

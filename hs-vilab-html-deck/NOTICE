@@ -1,0 +1,42 @@
+hs-vilab-html-deck
+
+This package contains material from the following works.
+
+1. Geomini
+   Copyright 2026 The Geomini Project Authors (https://github.com/fontbob/geomini)
+   SIL Open Font License 1.1 (assets/fonts/LICENSES/Geomini-OFL.txt).
+   Bundled as assets/fonts/Geomini-Variable.woff2.
+
+2. Gmarket Sans
+   Copyright (c) 2019 eBay Korea Co., Ltd., with Reserved Font Name "Gmarket Sans Font".
+   SIL Open Font License 1.1 (assets/fonts/LICENSES/GmarketSans-OFL.txt).
+   Bundled as assets/fonts/GmarketSans-{Light,Medium,Bold}.woff2.
+
+   This is the Gmarket Sans distribution licence as embedded in the original fonts
+   (name ID 13). Besides the five standard OFL conditions it has a sixth: images of work
+   produced with the font (printouts, advertising, online video) may be used by the
+   copyright holder to promote the font unless the user explicitly declines.
+
+   The .woff2 files are WOFF2 encodings of the original TrueType files made with
+   fontTools (woff2.compress, no recalculation). Decoded and compared with the originals,
+   the glyph outlines and instructions of all 12,262 glyphs, the name table and every
+   other table are unchanged, except for what the WOFF2 encoding itself does: glyf/loca
+   are stored in the WOFF2 transformed form, head.flags bit 11 is set and the checksum
+   recomputed, and the original 8-byte DSIG table — an empty stub with zero signatures —
+   is dropped because WOFF2 encoding invalidates signatures. No WOFF metadata was added.
+   On that basis the original names are kept (OFL FAQ 2.2.1). Subsetting or otherwise
+   editing these files creates a Modified Version, which must not use the Reserved Font
+   Name.
+
+3. Hansung University signature
+   assets/brand/hsu-signature-en{,-white,-blue}.svg are the HSU UI English horizontal
+   signature, converted from Hansung University's official .ai file with
+   scripts/brand_ai2svg.py (outlines unchanged, page cropped to the artwork, colours
+   kept or set to one colour). The signature is a Hansung University mark; it is
+   included to build materials for Hansung University and VILAB.
+
+Hansung University brand color values are institutional brand specifications and are
+used here to build interfaces for Hansung University and VILAB.
+
+The design tokens (assets/tokens.css, fonts.css, base.css) are copied from
+hs-vilab-frontend-design by the same author. They contain no third-party text.
