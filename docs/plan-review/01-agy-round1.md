@@ -2,24 +2,24 @@
 
 1. **`file://` 오프라인 실행과 발표자 보기(`P`)·`--single`의 구조적 파탄**
    - 초안은 외부 CDN 금지(오프라인 발표장)와 `P` 키 새 창 + `BroadcastChannel` 동기화, `--single` 단일 HTML을 동시에 넣었다. 그러나 로컬에서 `index.html`을 직접 여는 `file://` 환경은 브라우저가 opaque origin(`null`)으로 취급해 `BroadcastChannel`이 창 간 통신에 실패한다. `--single`에서는 별도 `presenter.html` 파일 자체가 존재할 수 없다.
-   - 근거: 초안「출력물·런타임」; [hs-vilab-frontend-design/SKILL.md](file:///C:/Users/hansung-vilab/AppData/Local/Temp/claude/fb94f9fa00318b9f/880bbcc3-01f2-4525-afc1-78d99856ea91/scratchpad/ref/hs-vilab-frontend-design/SKILL.md) §3(오프라인 제약).
+   - 근거: 초안「출력물·런타임」; `hs-vilab-frontend-design/SKILL.md` §3(오프라인 제약).
 
 2. **`dvisvgm` 수식 SVG와 다크모드(`T`)·인라인 ID 충돌**
    - `dvisvgm`은 `#000` 고정 `<path>`와 전역 `<defs>` ID(`g0-1` 등)를 출력한다. `<img src>`로 넣으면 다크모드(`--color-bg: #0E131B`)에서 수식이 배경에 묻히고, 여러 슬라이드에 그대로 인라인 삽입하면 서로 다른 수식의 `<defs>` ID가 덮어씌워져 글리프가 깨진다.
-   - 근거: [hs-vilab-frontend-design/SKILL.md](file:///C:/Users/hansung-vilab/AppData/Local/Temp/claude/fb94f9fa00318b9f/880bbcc3-01f2-4525-afc1-78d99856ea91/scratchpad/ref/hs-vilab-frontend-design/SKILL.md) §11, [design-system.md](file:///C:/Users/hansung-vilab/AppData/Local/Temp/claude/fb94f9fa00318b9f/880bbcc3-01f2-4525-afc1-78d99856ea91/scratchpad/ref/hs-vilab-frontend-design/references/design-system.md) §9.2(테마 연동 SVG는 인라인 + `currentColor`/토큰 필수).
+   - 근거: `hs-vilab-frontend-design/SKILL.md` §11, `design-system.md` §9.2(테마 연동 SVG는 인라인 + `currentColor`/토큰 필수).
 
 3. **`eyebrow`·`label`·`note` 좌측 바의 미해소 디자인 충돌**
    - `hs-vilab-deck`은 30분 미만 발표의 섹션 표기를 대문자 `eyebrow`(`STAGE 1 · PRETRAINING`)와 대문자·자간 확장 `label`, 좌측 띠 `note`에 의존한다. 반면 `frontend-design`은 모든 제목 위 eyebrow, all-caps/자간 확장 소형 라벨, `A · B · C` 메타 문자열, 카드·콜아웃·행 좌측 색 띠를 금지한다. 초안 충돌표에 이 항목이 통째로 빠져 있다.
-   - 근거: [deck.schema.json](file:///C:/Users/hansung-vilab/AppData/Local/Temp/claude/fb94f9fa00318b9f/880bbcc3-01f2-4525-afc1-78d99856ea91/scratchpad/ref/hs-vilab-deck-skill/hs-vilab-deck/schema/deck.schema.json)(`slides.eyebrow`, `x-blockOptions.label`), [narrative-rules.md](file:///C:/Users/hansung-vilab/AppData/Local/Temp/claude/fb94f9fa00318b9f/880bbcc3-01f2-4525-afc1-78d99856ea91/scratchpad/ref/hs-vilab-deck-skill/hs-vilab-deck/references/narrative-rules.md) §1 vs [hs-vilab-frontend-design/SKILL.md](file:///C:/Users/hansung-vilab/AppData/Local/Temp/claude/fb94f9fa00318b9f/880bbcc3-01f2-4525-afc1-78d99856ea91/scratchpad/ref/hs-vilab-frontend-design/SKILL.md) §4·§7, [design-system.md](file:///C:/Users/hansung-vilab/AppData/Local/Temp/claude/fb94f9fa00318b9f/880bbcc3-01f2-4525-afc1-78d99856ea91/scratchpad/ref/hs-vilab-frontend-design/references/design-system.md) §4·§6.
+   - 근거: `deck.schema.json`(`slides.eyebrow`, `x-blockOptions.label`), `narrative-rules.md` §1 vs `hs-vilab-frontend-design/SKILL.md` §4·§7, `design-system.md` §4·§6.
 
 4. **폰트 가중치(`400 → GmarketSans Light`) 단순 복사로 인한 프로젝터 판독 실패**
    - 초안은 `frontend-design`의 `fonts.css`를 그대로 복사한다. 그러나 `fonts.css`는 웹 근거리 열람용으로 `400 → GmarketSans Light`를 매핑한다. 1920×1080 강의실 프로젝터에서는 `Light` 한글 획이 날아간다(`hs-vilab-deck`은 `Medium`/`Bold`만 사용).
-   - 근거: [design-system.md](file:///C:/Users/hansung-vilab/AppData/Local/Temp/claude/fb94f9fa00318b9f/880bbcc3-01f2-4525-afc1-78d99856ea91/scratchpad/ref/hs-vilab-frontend-design/references/design-system.md) §4 vs [hs-vilab-deck/SKILL.md](file:///C:/Users/hansung-vilab/AppData/Local/Temp/claude/fb94f9fa00318b9f/880bbcc3-01f2-4525-afc1-78d99856ea91/scratchpad/ref/hs-vilab-deck-skill/hs-vilab-deck/SKILL.md) 3b·3c.
+   - 근거: `design-system.md` §4 vs `hs-vilab-deck/SKILL.md` 3b·3c.
 
 5. **독립 실행 위반 및 필수 검증 게이트 누락**
    - `hs-vilab-deck`의 한국어 편집(1d)은 외부 스킬 `heeseok-korean-anti-slop`과 `scan_slop.py`를 pass/fail 게이트로 사용한다. 초안은 `korean-style.md`만 두고 스캐너 번들을 빠뜨려 독립 실행 시 기계적 슬롭 탐지가 사라진다.
    - 또한 초안 파이프라인은 `1a′`의 `research_verified.md` 교차검증 게이트, `4.5` 2차 리뷰(Q4), 그리고 **인터랙티브 상태 내부 텍스트·수치의 `provenance` 기록 및 1e Verifier 재검증**을 누락했다.
-   - 근거: [hs-vilab-deck/SKILL.md](file:///C:/Users/hansung-vilab/AppData/Local/Temp/claude/fb94f9fa00318b9f/880bbcc3-01f2-4525-afc1-78d99856ea91/scratchpad/ref/hs-vilab-deck-skill/hs-vilab-deck/SKILL.md) 1a′·1c·1d·1e·4.5, [narrative-roles.md](file:///C:/Users/hansung-vilab/AppData/Local/Temp/claude/fb94f9fa00318b9f/880bbcc3-01f2-4525-afc1-78d99856ea91/scratchpad/ref/hs-vilab-deck-skill/hs-vilab-deck/references/narrative-roles.md) step 2·6, [narrative-rules.md](file:///C:/Users/hansung-vilab/AppData/Local/Temp/claude/fb94f9fa00318b9f/880bbcc3-01f2-4525-afc1-78d99856ea91/scratchpad/ref/hs-vilab-deck-skill/hs-vilab-deck/references/narrative-rules.md) §2·§3.
+   - 근거: `hs-vilab-deck/SKILL.md` 1a′·1c·1d·1e·4.5, `narrative-roles.md` step 2·6, `narrative-rules.md` §2·§3.
 
 6. **상호 배타적 인터랙티브 상태와 "기본 상태 = 모든 단계 공개" 규칙의 모순**
    - `stepper`, `toggle`, `slider`, `metricSwitch`는 상태가 상호 배타적이라 "모든 단계를 한 화면에 동시 공개"할 수 없다. 초안대로 기본 상태 1개만 PDF로 인쇄하면 나머지 상태의 핵심 정보(비교 모드 B, 후반 스텝, 타 지표)가 배포본 `deck.pdf`에서 통째로 소실된다.
@@ -27,7 +27,7 @@
 
 7. **인터랙티브 절제 원칙 부재 ("슬라이드당 최대 1개"만으로는 과잉)**
    - 슬라이드당 1개만 제한하면 18장 덱에 10개 이상의 인터랙션이 들어갈 수 있다. 이는 한 곳에 집중하고 나머지를 조용히 두라는 디자인 원칙을 깨며, 발표 중 조작 부담을 키운다.
-   - 근거: [hs-vilab-frontend-design/SKILL.md](file:///C:/Users/hansung-vilab/AppData/Local/Temp/claude/fb94f9fa00318b9f/880bbcc3-01f2-4525-afc1-78d99856ea91/scratchpad/ref/hs-vilab-frontend-design/SKILL.md) §5, [design-system.md](file:///C:/Users/hansung-vilab/AppData/Local/Temp/claude/fb94f9fa00318b9f/880bbcc3-01f2-4525-afc1-78d99856ea91/scratchpad/ref/hs-vilab-frontend-design/references/design-system.md) §9.1.
+   - 근거: `hs-vilab-frontend-design/SKILL.md` §5, `design-system.md` §9.1.
 
 ---
 
@@ -72,7 +72,7 @@
 - **발표 현장 리모컨(클리커) 키 충돌 프로토콜**: 리모컨은 `PageDown`/`ArrowRight`만 보낸다. `slider`/`toggle`에 포커스가 남아 있으면 화살표가 슬라이드 전환을 가로채 발표가 멈춘다. `stepper`만 `ArrowRight`/`PageDown`으로 내부 스텝을 순차 진행(`#/7/1`→`#/7/2`)하고, 나머지 컨트롤은 숫자키(`1`–`4`)·클릭·`Esc` 포커스 해제로 분리해야 한다.
 - **PDF 인쇄용 인터랙티브 전개 정책(`printMode`)**: 상호 배타적 블록은 `deck.json`에 `"default" | "expand"`를 지정해, `expand` 시 `export_pdf.py`가 핵심 상태(예: toggle A/B)를 연속 페이지로 캡처하게 해야 한다.
 - **발표자 대본의 인터랙션 큐(`notes.interaction_cue`)**: 발표자가 어느 문장에서 어떤 버튼/단계를 눌러야 하는지 대본과 발표자 노트에 연동되지 않으면 인터랙션이 흐름을 끊는다.
-- **1920×1080 프로젝터용 최소 글자 크기 및 그림 축소율 게이트**: `frontend-design`의 12px 하한은 웹용이다. 1920×1080 무대에서는 본문 24–28px, 표/캡션 18–20px, 출처 16px 하한이 필요하다. 또한 CSS `object-fit: contain`은 넘침 없이 그림을 조용히 축소하므로, [block-vocabulary.md](file:///C:/Users/hansung-vilab/AppData/Local/Temp/claude/fb94f9fa00318b9f/880bbcc3-01f2-4525-afc1-78d99856ea91/scratchpad/ref/hs-vilab-deck-skill/hs-vilab-deck/references/block-vocabulary.md) 규칙 3(`MEA.img` 90% 폭 규칙)을 DOM 비율 검사로 옮겨야 한다.
+- **1920×1080 프로젝터용 최소 글자 크기 및 그림 축소율 게이트**: `frontend-design`의 12px 하한은 웹용이다. 1920×1080 무대에서는 본문 24–28px, 표/캡션 18–20px, 출처 16px 하한이 필요하다. 또한 CSS `object-fit: contain`은 넘침 없이 그림을 조용히 축소하므로, `block-vocabulary.md` 규칙 3(`MEA.img` 90% 폭 규칙)을 DOM 비율 검사로 옮겨야 한다.
 - **오프라인·폰트 서브셋 안전장치**: Playwright `request` 훅으로 외부 요청 0건을 강제하고, 추후 서브셋 시 인터랙티브 숨김 상태의 문자열·수학 기호까지 추출 대상에 포함해야 한다.
 - **OS 다크모드 자동 추종 방지**: `tokens.css`의 `@media (prefers-color-scheme: dark)`를 그대로 두면 발표장 PC OS 설정 때문에 의도치 않게 다크로 열려 빔프로젝터 가독성이 깨진다. 덱은 `data-theme="light"`를 기본 고정하고 명시적 전환(`T`)만 허용해야 한다.
 - **Q0–Q작업 질문 수 관리**: 초안은 인터랙티브 정도를 추가할지 물었으나 기존 4개 질문이 이미 상한(≤4)이다. 질문을 늘리지 말고 기본값(핵심 2–4장 자동 배치)으로 두고 필요 시 `Q-작업` 체크박스에 1항목으로 흡수하라.

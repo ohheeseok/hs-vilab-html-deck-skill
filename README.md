@@ -15,7 +15,7 @@
 
 - [work/self-flow-full](work/self-flow-full) — *Self-Supervised Flow Matching for Scalable Multi-Modal Synthesis*(Chefer et al., 2026) 20분 세미나 21장. 이 스킬의 첫 전체 실행입니다.
   - codex가 개요를 쓰고, agy가 비평·검증·자료조사·시각 검수를 맡았습니다. Claude는 조율했습니다.
-  - 지적과 처리 기록은 `review/log.md`, `review/visual_triage_r1.md`에 있습니다.
+  - 지적과 처리 기록은 `review/log.md`, `review/visual_triage_r1.md`·`visual_triage_r2.md`에 있습니다.
   - **최종본은 [self-flow-full.html](work/self-flow-full/self-flow-full.html) 한 파일**입니다. 글꼴·그림이 모두 들어 있어 이 파일만 옮겨도 열립니다. 대본은 `self-flow-full-script.html`입니다.
   - PDF는 배포용 렌더링 확인에만 씁니다(`export_pdf.py`).
 - [work/self-flow](work/self-flow) — 같은 논문의 디자인 샘플입니다(6장 + 마무리). 엔진과 표지를 정할 때 썼습니다. 최종본은 `self-flow.html`입니다.
@@ -58,25 +58,35 @@ hs-vilab-html-deck/          스킬 본체
 docs/
   PLAN.md              확정 계획과 변경 기록
   plan-review/         codex·agy 검토와 시각 검수 기록
-work/self-flow-full/   전체 실행: deck.json, outline, review/ 기록, 빌드 결과
-work/self-flow/        디자인 샘플 6장
+work/self-flow-full/   전체 실행
+  deck.json            슬라이드 내용(빌드의 입력)
+  deck/assets/fig/     논문 그림 크롭과 토큰 격자(입력)
+  outline*.md review/  개요와 codex·agy 검토·처리 기록
+  self-flow-full.html  최종본(단일 파일) · self-flow-full-script.html 대본
+work/self-flow/        디자인 샘플 6장 + 마무리(같은 구성)
 ```
+
+`deck/`의 나머지(엔진·글꼴·로고 사본, 수식 캐시, `index.html`)는 빌드할 때마다 다시 생기므로 저장소에 넣지 않습니다.
 
 ## 빌드와 QA
 
 필요한 것은 아래와 같습니다.
 - Python 3.10 이상
 - `latex`와 `dvisvgm`(MiKTeX 또는 TeX Live)
-- QA용 `playwright`와 Chromium
-- 로고 변환용 `pymupdf`(로고를 바꿀 때만)
+- `pillow`(최종본에 넣을 그림을 WebP로 압축)
+- QA·PDF용 `playwright`와 Chromium
+- 그림 추출·PDF 병합·로고 변환용 `pymupdf`
 
 ```
-python hs-vilab-html-deck/scripts/build_deck.py work/self-flow
-python hs-vilab-html-deck/scripts/qa_render.py work/self-flow
-python hs-vilab-html-deck/scripts/qa_render.py work/self-flow --viewport 1024x768
+python hs-vilab-html-deck/scripts/preflight.py
+python hs-vilab-html-deck/scripts/build_deck.py work/self-flow-full
+python hs-vilab-html-deck/scripts/qa_render.py work/self-flow-full
+python hs-vilab-html-deck/scripts/qa_render.py work/self-flow-full --viewport 1024x768
+python hs-vilab-html-deck/scripts/qa_render.py work/self-flow-full --html work/self-flow-full/self-flow-full.html
+python hs-vilab-html-deck/scripts/export_pdf.py work/self-flow-full
 ```
 
-QA 캡처는 `work/self-flow/qa/`에 생기고, 저장소에는 넣지 않습니다.
+빌드는 `deck/`과 최종본 `self-flow-full.html`을 함께 다시 만듭니다. QA 캡처(`qa/`)와 PDF는 저장소에 넣지 않습니다.
 
 ## 라이선스
 
