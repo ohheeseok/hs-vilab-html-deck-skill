@@ -551,3 +551,13 @@ sub{font-size:max(24px,.75em);line-height:0}
 /* four or more states: the buttons need the full width, the readout starts under them */
 .toggle-grid > .seg--compact{grid-column:1/-1}
 .toggle-grid > .seg--compact ~ .toggle-side{grid-row:2}
+
+/* ---------- ending: thanks + Q&A, the cover's grammar without the figure ---------- */
+.ending-main{flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;gap:24px}
+.ending-sub{font-size:var(--t-title);line-height:1.2;font-weight:var(--weight-bold);color:var(--color-link)}
+.ending-foot{display:grid;grid-template-columns:1fr 360px;gap:56px;align-items:end;margin-top:32px}
+.ending-links{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;
+  font-size:var(--t-caption);line-height:1.45;color:var(--color-text-muted)}
+.presenter-contact{font-size:var(--t-caption);color:var(--color-text-muted)}
+/* a one-slide section still shows its whole name (the bold current label is the widest) */
+.progress li{min-width:max-content}

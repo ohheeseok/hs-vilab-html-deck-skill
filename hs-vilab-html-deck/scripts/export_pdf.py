@@ -13,6 +13,7 @@ Needs: playwright (+ chromium), pymupdf.
 from __future__ import annotations
 
 import json
+import re
 import sys
 import tempfile
 from pathlib import Path
@@ -21,6 +22,56 @@ import pymupdf
 from playwright.sync_api import sync_playwright
 
 ONLY_CURRENT = "@media print{.slide:not(.is-current){display:none !important}}"
+
+# Chromium's paginated print layout resolves percentage heights (an image fitted with max-height:100%
+# inside a grid cell) differently from the screen, so a fitted figure grew and pushed its caption
+# past the page. Freeze every image and svg at the size the screen gave it before printing.
+FREEZE = """(i) => {
+  const s = document.querySelectorAll('.slide')[i];
+  const k = s.getBoundingClientRect().width / 1920;
+  for (const el of s.querySelectorAll('img, svg.chart, .figure--diagram > svg, .toggle-media')) {
+    const r = el.getBoundingClientRect();
+    if (!r.width || !r.height) continue;
+    el.style.width = (r.width / k) + 'px';
+    el.style.height = (r.height / k) + 'px';
+    el.style.maxWidth = 'none'; el.style.maxHeight = 'none'; el.style.flex = 'none';
+  }
+}"""
+
+
+def overlaps(pdf: Path) -> list[str]:
+    """Text lines from different blocks that overlap on a printed page (≥ 35% of the shorter line)."""
+    bad = []
+    with pymupdf.open(pdf) as d:
+        for n, pg in enumerate(d, 1):
+            lines = []
+            for b in pg.get_text("dict")["blocks"]:
+                for ln in b.get("lines", []):
+                    t = "".join(sp["text"] for sp in ln["spans"]).strip()
+                    if t:
+                        lines.append((b["number"], pymupdf.Rect(ln["bbox"]), t))
+            for a in range(len(lines)):
+                for c in range(a + 1, len(lines)):
+                    ba, ra, ta = lines[a]
+                    bc, rc, tc = lines[c]
+                    if ba == bc:
+                        continue
+                    x = ra & rc
+                    if x.width > 2 and x.height > 0.35 * min(ra.height, rc.height):
+                        bad.append(f"page {n}: '{ta[:24]}' overlaps '{tc[:24]}'")
+                        break
+            if pg.rect.width and any(r.y1 > pg.rect.height + 1 or r.x1 > pg.rect.width + 1 for _, r, _ in lines):
+                bad.append(f"page {n}: text beyond the page edge")
+            # the footer's progress bar is a row of thin rules near the bottom; a body line must not cross it
+            rules = [dr["rect"] for dr in pg.get_drawings()
+                     if dr["rect"].y0 > 0.85 * pg.rect.height and dr["rect"].height < 6 and dr["rect"].width > 20]
+            if rules:
+                bar = min(r.y0 for r in rules)
+                for _, r, t in lines:
+                    if r.y0 < bar < r.y1 - 1:
+                        bad.append(f"page {n}: '{t[:24]}' runs into the footer")
+                        break
+    return bad
 
 
 def main() -> int:
@@ -63,6 +114,7 @@ def main() -> int:
                 if st:
                     page.evaluate(f"window.__deck.setState({i}, {json.dumps(st)})")
                 page.wait_for_timeout(150)
+                page.evaluate(FREEZE, i)
                 f = Path(tmp) / f"{i:03d}-{k}.pdf"
                 page.pdf(path=str(f), width="1920px", height="1080px", print_background=True,
                          margin={"top": "0", "right": "0", "bottom": "0", "left": "0"})
@@ -73,7 +125,11 @@ def main() -> int:
     merged.set_metadata({"title": page_title(index), "creator": "hs-vilab-html-deck"})
     merged.save(out)
     print(f"wrote {out} — {len(labels)} pages ({', '.join(labels)})")
-    return 0
+    bad = overlaps(out)
+    for x in bad:
+        print("  " + x)
+    print("PDF check: " + ("text overlaps or leaves the page — look before distributing" if bad else "no overlapping text"))
+    return 1 if bad else 0
 
 
 def page_title(index: Path) -> str:

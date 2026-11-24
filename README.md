@@ -7,7 +7,7 @@
 - 디자인: hs-vilab-frontend-design의 토큰·글꼴·규칙(HSU 색, Geomini + Gmarket Sans, 글자 크기 사다리 80/56/48/40/36/32/28/24px, 24px 하한)
 - 제작 흐름과 내용 규칙: hs-vilab-deck(PPT판)을 HTML로 옮긴 것
 
-> **상태: 0.1.0.** 논문 한 편을 21장 덱으로 끝까지 만들어 본 첫 실행을 마쳤습니다([work/self-flow-full](work/self-flow-full)).
+> **상태: 0.2.0.** 논문 한 편을 21장 덱으로 끝까지 만들어 본 첫 실행을 마쳤습니다([work/self-flow-full](work/self-flow-full)).
 > 스킬 본문은 [hs-vilab-html-deck/SKILL.md](hs-vilab-html-deck/SKILL.md), 변경 내역은 [CHANGELOG.md](hs-vilab-html-deck/CHANGELOG.md)에 있습니다.
 > 읽기용 handout(세로 흐름 문서)과 `deck.json` 스키마 파일은 아직 없습니다.
 
@@ -16,8 +16,9 @@
 - [work/self-flow-full](work/self-flow-full) — *Self-Supervised Flow Matching for Scalable Multi-Modal Synthesis*(Chefer et al., 2026) 20분 세미나 21장. 이 스킬의 첫 전체 실행입니다.
   - codex가 개요를 쓰고, agy가 비평·검증·자료조사·시각 검수를 맡았습니다. Claude는 조율했습니다.
   - 지적과 처리 기록은 `review/log.md`, `review/visual_triage_r1.md`에 있습니다.
-  - `deck/index.html`은 발표용, `deck/script.html`은 대본입니다. PDF는 `export_pdf.py`로 만듭니다.
-- [work/self-flow](work/self-flow) — 같은 논문의 디자인 샘플 6장입니다. 엔진과 표지를 정할 때 썼습니다.
+  - **최종본은 [self-flow-full.html](work/self-flow-full/self-flow-full.html) 한 파일**입니다. 글꼴·그림이 모두 들어 있어 이 파일만 옮겨도 열립니다. 대본은 `self-flow-full-script.html`입니다.
+  - PDF는 배포용 렌더링 확인에만 씁니다(`export_pdf.py`).
+- [work/self-flow](work/self-flow) — 같은 논문의 디자인 샘플입니다(6장 + 마무리). 엔진과 표지를 정할 때 썼습니다. 최종본은 `self-flow.html`입니다.
 
 | 키 | 동작 |
 |---|---|
@@ -45,10 +46,11 @@ hs-vilab-html-deck/          스킬 본체
     preflight.py       환경 점검(Python, Playwright, TeX, 글꼴, codex·agy)
     delegate.py        codex·agy에 한 단계씩 넘기고 결과 파일을 받음(없으면 대체를 알림)
     extract_figures.py 논문 텍스트·그림 목록·영역 크롭(400 dpi)
-    build_deck.py      deck.json → deck/index.html + script.html, 게이트 위반 시 아무것도 쓰지 않음
+    build_deck.py      deck.json → deck/ + 최종본 <slug>.html(단일 파일), 게이트 위반 시 아무것도 쓰지 않음
+    bundle_html.py     글꼴·CSS·JS·그림을 넣은 단일 HTML(빌드가 호출)
     make_equations.py  LaTeX → 인라인 SVG (Arev Sans 수식, dvisvgm)
     qa_render.py       Playwright 캡처 + 기계 QA (넘침, 띠 이탈, 글자 겹침, 24px 하한, 대비, 글꼴)
-    export_pdf.py      벡터 PDF, 토글 상태는 쪽을 나눠 펼침
+    export_pdf.py      배포용 렌더링 확인 PDF(토글 상태는 쪽을 나눠 펼침) + 쪽별 겹침 검사
     deck_text.py · apply_text_edits.py   한국어 편집 표를 뽑고 적용(숫자 바뀌는 행은 거부)
     brand_ai2svg.py    윤곽선 .ai → 여백 없는 SVG
   SKILL.md  VERSION  CHANGELOG.md  NOTICE

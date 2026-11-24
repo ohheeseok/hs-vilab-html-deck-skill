@@ -14,7 +14,7 @@ that does not fit is to cut, split or re-layout, never to shrink.
 | field | | |
 |---|---|---|
 | `id` | required | short slug, used in QA file names |
-| `layout` | `content` (default) · `cover` · `statement` | statement = TL;DR and discussion, dark when `meta.statementTheme` is `dark` |
+| `layout` | `content` (default) · `cover` · `statement` · `ending` | statement = TL;DR and discussion, dark when `meta.statementTheme` is `dark` |
 | `section` | required except cover | an id from `meta.sections`; drives the footer progress bar |
 | `title` | required | introduces the slide; one line (QA fails a wrap) |
 | `message` | required except cover | the one key sentence; spoken, not printed on the slide |
@@ -24,6 +24,10 @@ that does not fit is to cut, split or re-layout, never to shrink.
 | `time` | seconds | summed against `meta.target_minutes` (build gate ±10%) |
 | `notes` | list of strings | the spoken script, 합쇼체; `[1]` `[2]` mark toggle-state cues |
 | `provenance` | object | claim → `verbatim` / `derived` / `interpretation` / `external` + where |
+
+Ending (the last slide, required by the build): `layout: "ending"`, `title` (default 감사합니다),
+`subtitle` (default Q&A), `links` (a few short lines: paper, code). Presenter and signature come from
+`meta.presenter` (an optional `contact` line); no footer, no section, no message.
 
 Cover: `title`, `subtitle`, `figure` (`src`, `alt`, `caption`). The presenter block comes from
 `meta.presenter`, the small paper credit from `meta.paper` (omit it, or set `meta.coverCredit:

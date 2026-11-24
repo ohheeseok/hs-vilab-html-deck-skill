@@ -164,7 +164,11 @@ def main() -> int:
         w, h = sys.argv[sys.argv.index("--viewport") + 1].split("x")
         vp = (int(w), int(h))
     index = work / "deck" / "index.html"
+    if "--html" in sys.argv:  # the bundled single file
+        index = Path(sys.argv[sys.argv.index("--html") + 1]).resolve()
     qa = work / "qa" if vp == (1920, 1080) else work / "qa" / f"{vp[0]}x{vp[1]}"
+    if "--html" in sys.argv:
+        qa = qa / "bundle"
     qa.mkdir(parents=True, exist_ok=True)
     report = {"viewport": vp, "slides": [], "console": [], "external": [], "failed": []}
     with sync_playwright() as p:

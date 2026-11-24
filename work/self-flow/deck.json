@@ -548,6 +548,15 @@
           "divider": true
         }
       ]
+    },
+    {
+      "id": "ending",
+      "layout": "ending",
+      "title": "감사합니다",
+      "subtitle": "Q&A",
+      "links": [
+        "Self-Flow · bfl.ai/research/self-flow"
+      ]
     }
   ]
 }

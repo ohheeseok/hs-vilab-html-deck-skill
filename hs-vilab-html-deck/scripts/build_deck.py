@@ -112,7 +112,7 @@ def check(deck: dict, work: Path, gate: Gate) -> None:
     for i, sl in enumerate(slides, 1):
         where = f"slide {i} ({sl.get('id')})"
         gate(bool(sl.get("title")), f"{where}: no title")
-        if sl.get("layout") != "cover":
+        if sl.get("layout") not in ("cover", "ending"):
             gate(bool(sl.get("message")), f"{where}: no message (one key sentence per slide)")
             gate(sl.get("section") in sec_ids, f"{where}: section {sl.get('section')!r} is not in meta.sections")
             gate(bool(sl.get("cite")), f"{where}: no cite")
@@ -169,7 +169,8 @@ def check(deck: dict, work: Path, gate: Gate) -> None:
                     for k in it.get("pair", []):
                         gate(k in keys, f"{where}: delta {it['value']} pairs {k!r}, which no chart or table on the slide draws")
     gate(len(signature) <= 1, f"more than one signature interaction (slides {signature})")
-    content = [sl for sl in slides if sl.get("layout") != "cover"]
+    content = [sl for sl in slides if sl.get("layout") not in ("cover", "ending")]
+    gate(slides[-1].get("layout") == "ending", "the last slide is not an ending (layout: \"ending\" — 감사합니다 / Q&A)")
     notes = sum(1 for sl in slides for b in walk(sl.get("body", [])) if b["type"] == "note")
     cap_n = max(2, math.ceil(len(content) / 4))
     gate(notes <= cap_n, f"{notes} note blocks; at most {cap_n} (one per four content slides) — note marks interpretation only")
@@ -597,6 +598,29 @@ def cover(deck, sl):
     )
 
 
+def ending(deck, sl):
+    """The closing slide: thanks, Q&A, the presenter and the signature, a few links. No footer."""
+    meta = deck["meta"]
+    pr = meta["presenter"]
+    aff = "".join(f'<span class="presenter-aff">{md(a)}</span>'
+                  for a in ([pr["affiliation"]] if isinstance(pr.get("affiliation"), str) else pr.get("affiliation", [])))
+    links = "".join(f"<li>{md(x)}</li>" for x in sl.get("links", []))
+    return (
+        '<div class="ending-main">'
+        f'<h1 class="cover-title ending-title">{md(sl.get("title", "감사합니다"))}</h1>'
+        f'<p class="ending-sub">{md(sl.get("subtitle", "Q&A"))}</p>'
+        "</div>"
+        '<div class="cover-rule" aria-hidden="true"></div>'
+        '<div class="ending-foot">'
+        + (f'<ul class="ending-links">{links}</ul>' if links else "<div></div>")
+        + '<div class="byline">'
+        f'<p class="presenter"><span class="presenter-name">{md(pr["name"])}</span>{aff}</p>'
+        + (f'<p class="presenter-contact">{md(pr["contact"])}</p>' if pr.get("contact") else "")
+        + '<img class="cover-logo" src="assets/brand/hsu-signature-en.svg" alt="Hansung University">'
+        "</div></div>"
+    )
+
+
 def slide_html(deck, i, ctx):
     sl = deck["slides"][i]
     layout = sl.get("layout", "content")
@@ -606,6 +630,9 @@ def slide_html(deck, i, ctx):
     if layout == "cover":
         cls.append("slide--cover")
         inner = cover(deck, sl)
+    elif layout == "ending":
+        cls.append("slide--cover slide--ending")
+        inner = ending(deck, sl)
     else:
         if layout == "statement":
             cls.append("slide--statement")
@@ -750,6 +777,10 @@ def main() -> int:
     if any(sl.get("notes") for sl in deck["slides"]):
         (out / "script.html").write_text(script_html(deck), encoding="utf-8")
         print(f"wrote {out / 'script.html'}")
+    # the deliverable: one self-contained file at the top of the work folder
+    import bundle_html
+    bundle_html.main.__globals__["sys"].argv = ["bundle_html.py", str(work)]
+    bundle_html.main()
     return 0
 
 

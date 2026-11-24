@@ -23,10 +23,10 @@ directory, `$W` is `work/<slug>/`.
 [1]  narrative     codex draft -> agy critic + agy verifier (blind) + agy research
                    -> log.md -> codex revision -> gate -> deck.json (you)
                    -> Korean editor -> verifier again on deck.json
-[2]  render        figure crops, diagrams -> build_deck.py -> deck/index.html, script.html
+[2]  render        figure crops, diagrams -> build_deck.py -> deck/ + <slug>.html, <slug>-script.html
 [3]  QA            qa_render.py at 1920×1080 and 1024×768 -> agy visual review
 [4]  revise        deck.json (or the engine) -> back to [2]; visual round 2
-[5]  export        export_pdf.py -> deck.pdf ; delivery report
+[5]  deliver       <slug>.html (self-contained, written by the build) ; PDF render check
 ```
 
 Design follows `references/design-system-deck.md` (from hs-vilab-frontend-design); content and
@@ -98,6 +98,7 @@ do not draft, and nobody reviews their own work.**
    - the paper's limits and conditions present; a seminar ends on discussion points found in the
      paper (evidence and cost kinds, interpretation marked)
    - slide count and per-slide `time` match the talk
+   - the deck ends on an `ending` slide (감사합니다 / Q&A, presenter, a few links)
 6. **Synthesise `deck.json`** — blocks (`references/block-vocabulary.md`), copy, `notes` (spoken
    script, 합쇼체, `[n]` toggle cues), `provenance` for every claim (`verbatim`, `derived`,
    `interpretation`, `external`), the figure ledger in `meta.figures`. Interactions per
@@ -150,20 +151,40 @@ fit rule): those fixes are the point of running this skill. Rebuild, re-run both
 **second visual round** with round 1's findings and triage attached: it checks the fixes and finds
 the regressions they caused.
 
-## [5] Export and deliver
+## [5] Deliver — the HTML is the final version
+
+The build writes the deliverable itself: **`$W/<slug>.html`**, one self-contained file at the top of
+the work folder (fonts, styles, engine, figures and brand marks inlined; large figures re-encoded
+as WebP). It opens from a mail attachment or a USB stick with nothing next to it and no network.
+`$W/<slug>-script.html` is the speaker script, the same way — printable, never on the stage.
+`deck/` is the build's working copy (QA reads it); do not hand it out.
+
+Run QA on the delivered file too, copied alone into an empty folder:
 
 ```bash
-python $S/scripts/export_pdf.py $W     # deck.pdf: one page per slide, toggle states expanded (6a, 6b, …)
+python $S/scripts/qa_render.py $W --html <empty-dir>/<slug>.html
+python $S/scripts/qa_render.py $W --html <empty-dir>/<slug>.html --viewport 1024x768
 ```
 
-`deck/` is the deliverable folder: `index.html` (present; keys: PageDown/→/Space, PageUp/←,
-Home/End, 1–9 toggle state, G overview, F fullscreen, `?notes=1` rehearsal notes), `script.html`
-(the speaker script, printable — never on the stage). Report only:
+The PDF is not a version of the deck; it only checks that the deck still renders when it is
+printed for distribution:
 
-1. the files — `deck/index.html`, `deck/script.html`, `deck.pdf`
+```bash
+python $S/scripts/export_pdf.py $W     # deck.pdf, toggle states expanded (6a, 6b, …), then a page check
+```
+
+It must end with `PDF check: no overlapping text`. Chromium's paginated layout once grew fitted
+figures and pushed their captions over the footer on five pages while the screen was clean;
+`export_pdf.py` now freezes every figure at its screen size before printing and checks each page
+for overlapping lines and text crossing the progress bar.
+
+Keys: PageDown/→/Space, PageUp/←, Home/End, 1–9 toggle state, G overview, F fullscreen,
+`?notes=1` rehearsal notes, `?motion=0` no motion. Report only:
+
+1. the file — `<slug>.html` (and `<slug>-script.html`); the PDF only if asked for
 2. slide count and planned time
 3. the figures and tables taken from the paper
-4. QA status at 1920×1080 and 1024×768, and the visual rounds
+4. QA status at 1920×1080 and 1024×768 on the delivered file, the PDF check, the visual rounds
 5. who filled each role, and every fallback to a subagent or to you
 6. what was not done
 

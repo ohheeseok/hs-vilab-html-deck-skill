@@ -1732,49 +1732,24 @@
       ]
     },
     {
-      "id": "qa",
-      "section": "discussion",
-      "title": "질의응답",
-      "message": "어떤 비교가 Self-Flow의 작동 기전을 가장 잘 가려낼 수 있을지 함께 논의한다.",
+      "id": "ending",
+      "layout": "ending",
+      "title": "감사합니다",
+      "subtitle": "Q&A",
+      "links": [
+        "Self-Flow · arXiv:2603.06507 · bfl.ai/research/self-flow",
+        "코드 · github.com/black-forest-labs/Self-Flow (ImageNet 256×256 추론, Hugging Face Hila/Self-Flow)"
+      ],
       "cite": [
         "p. 1"
       ],
       "time": 15,
-      "body": [
-        {
-          "type": "lead",
-          "text": "Self-Flow의 이득이 어디서 오는지 가려낼 실험은 무엇일까?"
-        },
-        {
-          "type": "groups",
-          "columns": 2,
-          "divider": true,
-          "size": "sm",
-          "groups": [
-            {
-              "heading": "논문",
-              "items": [
-                "arXiv:2603.06507 (2026-03-06, v1)",
-                "bfl.ai/research/self-flow"
-              ]
-            },
-            {
-              "heading": "코드와 가중치",
-              "items": [
-                "github.com/black-forest-labs/Self-Flow",
-                "ImageNet 256×256 추론 코드, Hugging Face Hila/Self-Flow 체크포인트"
-              ]
-            }
-          ]
-        }
-      ],
       "provenance": {
         "링크": "external R1, R2"
       },
       "notes": [
-        "여기까지입니다. 특히 어떤 실험을 더 하면 Self-Flow의 이득이 어디서 오는지 가려낼 수 있을지 의견을 듣고 싶습니다."
-      ],
-      "valign": "center"
+        "들어 주셔서 감사합니다. 특히 어떤 실험을 더 하면 Self-Flow의 이득이 어디서 오는지 가려낼 수 있을지 의견을 듣고 싶습니다."
+      ]
     }
   ]
 }

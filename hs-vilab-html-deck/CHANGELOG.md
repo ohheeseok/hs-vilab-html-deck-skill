@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.2.0 — 2026-11-24
+
+- **The HTML is the final version.** The build writes one self-contained `<slug>.html` (and
+  `<slug>-script.html`) at the top of the work folder — fonts, styles, engine, figures inlined,
+  large figures re-encoded as WebP (the 21-slide deck: 8.1 MB). `bundle_html.py`; `qa_render.py
+  --html` runs QA on the delivered file.
+- **PDF captions ran past the page** on five pages (image toggles): Chromium's paginated layout
+  resolves a figure fitted with `max-height:100%` differently from the screen. `export_pdf.py`
+  freezes every figure at its screen size before printing and then checks each page (overlapping
+  lines, text crossing the progress bar, text beyond the edge); the check was confirmed to catch
+  all five pages on a PDF printed without the freeze. The PDF is a render check, not a deliverable.
+- **Ending slide**: `layout: "ending"` (감사합니다 / Q&A, presenter, signature, links); the build
+  requires the deck to end on one.
+- A one-section progress segment never shrinks below its label (a one-slide 정리와 토론 clipped).
+
 ## 0.1.0 — 2026-11-24
 
 First end-to-end run: the Self-Flow paper as a 20-minute, 21-slide lab-seminar deck

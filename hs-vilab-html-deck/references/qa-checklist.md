@@ -12,6 +12,7 @@ A clean build is not a correct render. Three gates, in this order.
 - panels ≤ 2 per slide, none nested, none on dark slides, ≥ 40% of slides panel-free
 - interactive slides ≤ ⌊N × 0.2⌋, at most one `signature`; each has `reveals`, `start`, `print`
 - `note` blocks ≤ max(2, ⌈content slides / 4⌉)
+- the last slide is an `ending`
 - slide count = `meta.target_slides`; `time` sum within ±10% of `meta.target_minutes`
 - every referenced file (figure, diagram, state image) exists
 
@@ -32,7 +33,14 @@ Per slide and per toggle state, in Chromium over `file://` with every non-file r
 | console, external, failed | a script error, a network request, a missing file |
 | burst | six PageDowns 60ms apart do not land on one finished slide |
 
+Run it on `deck/` while iterating and on the bundled `<slug>.html` (copied alone) before delivery.
 Fix upstream (deck.json or the engine), never by raising a threshold.
+
+## 2b. PDF render check (`export_pdf.py`)
+
+The HTML is the deliverable; the PDF only proves the deck survives printing. Every figure is frozen
+at its screen size before each page prints, then each page is read back: text lines from different
+blocks must not overlap, no line may cross the footer's progress bar, nothing beyond the page edge.
 
 ## 3. Visual gate (agy, `delegate.py vision`; the current AI when agy is missing — say so)
 
