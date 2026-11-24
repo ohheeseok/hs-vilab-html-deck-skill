@@ -68,4 +68,9 @@ QA 캡처는 `work/self-flow/qa/`에 생기고, 저장소에는 넣지 않습니
 
 ## 라이선스
 
-포함한 글꼴과 HSU 시그니처의 출처·조건은 [hs-vilab-html-deck/NOTICE](hs-vilab-html-deck/NOTICE)에 있습니다.
+코드와 문서는 [MIT 라이선스](LICENSE)입니다.
+
+다음은 MIT 라이선스에 포함되지 않고 각자의 조건을 따릅니다. 출처와 조건은 [hs-vilab-html-deck/NOTICE](hs-vilab-html-deck/NOTICE)에 있습니다.
+- 함께 넣은 글꼴(Geomini, Gmarket Sans): SIL Open Font License 1.1
+- HSU 시그니처: 한성대학교 소유의 학교 로고
+- 샘플의 논문 그림 조각: 저작권이 논문 저자에게 있음
