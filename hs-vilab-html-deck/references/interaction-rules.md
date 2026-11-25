@@ -13,8 +13,10 @@ or more conditions, or an ordered procedure whose steps matter.
   = only the start state), and `provenance` per state.
 - One automatic motion per slide (the engine's): slide cross-fade 180ms, bars grow 280ms, a focus
   row tints 180ms, toggle states fade 180ms. A second key press finishes a running motion at once.
-  `?motion=0` turns motion off (QA, slow laptops); `?motion=1` keeps it on even when the OS asks
-  for reduced motion.
+  Motion plays by default, even when the OS asks for reduced motion (lab and lecture-room PCs often
+  have Windows animation effects off): `meta.motion` is `on` unless set to `auto` (follow the OS) or
+  `off`. In the address, `?motion=0` turns it off (QA, PDF, slow laptops), `?motion=1` on,
+  `?motion=auto` follows the OS; the address wins over `meta.motion`.
 
 ## toggle
 

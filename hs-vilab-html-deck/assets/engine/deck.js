@@ -19,11 +19,13 @@
   var W = 1920, H = 1080, GAP = 64;
   var cur = 0, overview = false;
   var params = new URLSearchParams(location.search);
-  /* ?motion=0 (QA captures, a slow laptop) turns every animation off */
-  if (params.get("motion") === "0") doc.classList.add("no-motion");
-  /* ?motion=1: the presenter wants the motion even though the OS asks for reduced motion
-     (Windows "Animation effects" off is common on lab machines) */
-  if (params.get("motion") === "1") doc.classList.add("force-motion");
+  /* motion: ?motion=0|1 in the address wins; otherwise the deck's own default (meta.motion,
+     written by the build as <html data-motion>): "on" plays the motion even when the OS asks for
+     reduced motion (Windows "Animation effects" off is common on lab machines), "off" never
+     plays it, "auto" follows the OS. ?motion=0 is also what QA and the PDF use. */
+  var motion = params.get("motion") || doc.getAttribute("data-motion") || "auto";
+  if (motion === "0" || motion === "off") doc.classList.add("no-motion");
+  if (motion === "1" || motion === "on") doc.classList.add("force-motion");
   function still() {
     if (doc.classList.contains("no-motion") || overview) return true;
     if (doc.classList.contains("force-motion")) return false;

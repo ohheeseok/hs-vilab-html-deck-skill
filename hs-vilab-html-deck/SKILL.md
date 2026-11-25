@@ -208,7 +208,7 @@ figures and pushed their captions over the footer on five pages while the screen
 for overlapping lines and text crossing the progress bar.
 
 Keys: PageDown/→/Space, PageUp/←, Home/End, 1–9 toggle state, G overview, F fullscreen,
-`?notes=1` rehearsal notes, `?motion=0` no motion. Report only:
+`?notes=1` rehearsal notes, `?motion=0` no motion (motion is on by default — `meta.motion`). Report only:
 
 1. the file — `<slug>.html` (and `<slug>-script.html`); the PDF only if asked for
 2. slide count and planned time

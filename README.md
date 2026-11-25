@@ -7,7 +7,7 @@
 - 디자인: hs-vilab-frontend-design의 토큰·글꼴·규칙(HSU 색, Geomini + Gmarket Sans, 글자 크기 사다리 80/56/48/40/36/32/28/24px, 24px 하한)
 - 제작 흐름과 내용 규칙: hs-vilab-deck(PPT판)을 HTML로 옮긴 것
 
-> **상태: 0.3.0.** 논문 두 편을 각각 21장 덱으로 끝까지 만들었습니다([work/self-flow-full](work/self-flow-full), [work/repa](work/repa)). 두 번째 실행에서 찾은 엔진·QA 결함을 고쳤습니다.
+> **상태: 0.3.1.** 논문 두 편을 각각 21장 덱으로 끝까지 만들었습니다([work/self-flow-full](work/self-flow-full), [work/repa](work/repa)). 두 번째 실행에서 찾은 엔진·QA 결함을 고쳤습니다.
 > 스킬 본문은 [hs-vilab-html-deck/SKILL.md](hs-vilab-html-deck/SKILL.md), 변경 내역은 [CHANGELOG.md](hs-vilab-html-deck/CHANGELOG.md)에 있습니다.
 > 읽기용 handout(세로 흐름 문서)과 `deck.json` 스키마 파일은 아직 없습니다.
 
@@ -34,7 +34,7 @@
 | F | 전체 화면 |
 | Esc | 돌아가기 |
 
-주소 뒤에 `?motion=0`을 붙이면 모든 모션이 꺼집니다. `?motion=1`을 붙이면 OS의 '동작 줄이기' 설정과 상관없이 모션이 켜집니다.
+모션은 기본으로 켜져 있습니다. OS에서 '애니메이션 효과'나 '동작 줄이기'를 꺼 둔 PC에서도 파일을 그냥 열면 모션이 나옵니다. 주소 뒤에 `?motion=0`을 붙이면 모션이 모두 꺼지고, `?motion=auto`를 붙이면 OS 설정을 따릅니다. 덱의 기본값은 `deck.json`의 `meta.motion`(`on` · `auto` · `off`)으로 바꿀 수 있습니다.
 
 샘플의 논문 그림 조각(`deck/assets/fig/`)은 리뷰 목적으로 인용한 것이고, 저작권은 논문 저자에게 있습니다. 논문 PDF는 저장소에 넣지 않습니다.
 

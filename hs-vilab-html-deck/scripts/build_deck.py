@@ -108,6 +108,7 @@ def check(deck: dict, work: Path, gate: Gate) -> None:
     sec_ids = {s["id"] for s in meta.get("sections", [])}
     n = len(slides)
     interactive, signature, paneled = [], [], []
+    gate(meta.get("motion", "on") in ("on", "auto", "off"), f"meta.motion is {meta.get('motion')!r}; use on | auto | off")
     pr = meta.get("presenter") or {}
     gate(bool(pr.get("name")), "meta.presenter.name is missing (the cover names who presents)")
     p = meta.get("paper")
@@ -667,7 +668,7 @@ def slide_html(deck, i, ctx):
 
 
 PAGE = """<!doctype html>
-<html lang="{lang}" data-theme="light" class="no-js">
+<html lang="{lang}" data-theme="light" data-motion="{motion}" class="no-js">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -782,7 +783,10 @@ def main() -> int:
     copy_assets(out)
     ctx = {"work": work}
     slides = "\n".join(slide_html(deck, i, ctx) for i in range(len(deck["slides"])))
-    page = PAGE.format(lang=deck["meta"].get("lang", "ko"), title=html.escape(deck["meta"]["title"]), slides=slides)
+    # motion plays by default: a presenter opens the file on a lab PC with OS animations off and
+    # expects the deck's motion; meta.motion "auto" follows the OS, "off" never animates
+    page = PAGE.format(lang=deck["meta"].get("lang", "ko"), title=html.escape(deck["meta"]["title"]), slides=slides,
+                       motion=deck["meta"].get("motion", "on"))
     (out / "index.html").write_text(page, encoding="utf-8")
     print(f"wrote {out / 'index.html'} ({len(deck['slides'])} slides)")
     if any(sl.get("notes") for sl in deck["slides"]):

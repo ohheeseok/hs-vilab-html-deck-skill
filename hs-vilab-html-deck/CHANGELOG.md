@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.1 — 2026-11-24
+
+- **Motion plays by default.** Opening the file with no address parameter used to follow the OS,
+  and a presenter PC with Windows animation effects off showed no motion unless `?motion=1` was
+  added. The build writes `meta.motion` (default `on`; `auto` follows the OS, `off` never
+  animates) into `<html data-motion>`; `?motion=0|1|auto` in the address still wins.
+
 ## 0.3.0 — 2026-11-24
 
 Second paper: REPA (ICLR 2025), a 20-minute, 21-slide seminar deck (`work/repa`) with a stepper,
