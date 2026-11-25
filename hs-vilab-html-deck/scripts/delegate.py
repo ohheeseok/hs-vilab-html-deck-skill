@@ -20,6 +20,9 @@ Two things that broke on the first full run and are handled here:
     now names the folder as the only place to read, and codex gets it with --cd.
   * On Windows a command line holds ~32K characters; a brief with the paper inline does not
     fit agy's --print=. A long prompt is written into <dir> and agy is told to read it there.
+And on the second paper (REPA): codex 0.170's read-only sandbox could not read a Google Drive
+folder at all (the Korean edit came back "access denied", the revision could not open a figure).
+codex now reads a copy of <dir> staged on the local temp disk; the copy is removed afterwards.
 
 Models: HSDECK_CODEX_MODEL (default gpt-6.2-sol), HSDECK_AGY_MODEL (default gemini-4-neon-high).
 """
@@ -29,6 +32,7 @@ import argparse
 import os
 import shutil
 import subprocess
+import tempfile
 import sys
 from pathlib import Path
 
@@ -105,8 +109,19 @@ def main() -> int:
     out = Path(a.out).resolve()
     out.parent.mkdir(parents=True, exist_ok=True)
     prompt = Path(a.prompt_file).read_text(encoding="utf-8")
-    prompt += RULE.format(dir=folder) if folder else RULE_WEB
-    rc = (run_codex if who == "codex" else run_agy)(prompt, folder, out, a.timeout)
+    # codex's Windows read-only sandbox is denied on a Google Drive (virtual) drive: it then answers
+    # "access denied" with nothing read. Give it a copy of the folder on the local temp disk.
+    stage = None
+    if folder and who == "codex":
+        stage = Path(tempfile.mkdtemp(prefix="hsdeck-"))
+        shutil.copytree(folder, stage, dirs_exist_ok=True)
+    run_dir = stage or folder
+    prompt += RULE.format(dir=run_dir) if run_dir else RULE_WEB
+    try:
+        rc = (run_codex if who == "codex" else run_agy)(prompt, run_dir, out, a.timeout)
+    finally:
+        if stage:
+            shutil.rmtree(stage, ignore_errors=True)
     size = out.stat().st_size if out.exists() else 0
     print(f"{a.role} by {who}: exit {rc}, {size} bytes -> {out}")
     if rc or size == 0:

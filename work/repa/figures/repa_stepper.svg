@@ -1,0 +1,77 @@
+<svg class="diagram" viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="rp-title rp-desc">
+  <title id="rp-title">REPA의 학습 경로 (Fig. 1 왼쪽을 다시 그림)</title>
+  <desc id="rp-desc">위쪽: clean 이미지가 고정된 DINOv2-B를 지나 patch token y*가 된다. 아래쪽: 같은 이미지의 VAE latent에 noise를 섞은 z_t가 SiT block 1–8을 지나 layer 8의 hidden state h_t가 된다. h_t는 MLP h_phi로 투영되어 대응하는 patch의 y*와 유사도를 비교하고, 이것이 REPA loss다. h_t는 block 9–28을 지나 velocity를 예측하고, 학습 loss는 velocity loss와 lambda 배 REPA loss의 합이다. 추론에서는 인코더와 MLP를 쓰지 않는다.</desc>
+  <defs>
+    <marker id="rp-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="var(--color-text-muted)"/>
+    </marker>
+    <marker id="rp-arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="var(--color-accent)"/>
+    </marker>
+    <g id="rp-grid">
+      <rect x="0" y="0" width="128" height="128" fill="var(--hs-sky-blue-10)" stroke="var(--color-border-control)" stroke-width="2"/>
+      <path d="M32 0V128M64 0V128M96 0V128M0 32H128M0 64H128M0 96H128" stroke="var(--color-border-control)" stroke-width="2"/>
+    </g>
+  </defs>
+
+  <!-- ===== step 1: clean path (always visible) ===== -->
+  <image href="assets/fig/cat_clean.png" x="0" y="40" width="110" height="110"/>
+  <foreignObject x="0" y="156" width="110" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c">$x_*$</div></foreignObject>
+  <path d="M114 95H146" stroke="var(--color-text-muted)" stroke-width="2" marker-end="url(#rp-arrow)"/>
+  <rect x="150" y="50" width="230" height="90" rx="6" fill="var(--color-surface)" stroke="var(--color-border-control)" stroke-width="2"/>
+  <foreignObject x="150" y="50" width="230" height="90"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box">DINOv2-B</div></foreignObject>
+  <foreignObject x="150" y="146" width="230" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-muted">pretrained · 고정</div></foreignObject>
+  <path d="M384 95H416" stroke="var(--color-text-muted)" stroke-width="2" marker-end="url(#rp-arrow)"/>
+  <use href="#rp-grid" x="420" y="31"/>
+  <foreignObject x="364" y="166" width="240" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c">$y_*$ patch token</div></foreignObject>
+
+  <!-- ===== step 2: noisy path ===== -->
+  <g data-from-step="1">
+    <foreignObject x="0" y="312" width="420" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-muted">같은 이미지 → VAE latent + noise</div></foreignObject>
+    <image href="assets/fig/cat_noisy.png" x="0" y="360" width="110" height="110"/>
+    <foreignObject x="0" y="476" width="110" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c">$z_t$</div></foreignObject>
+    <path d="M114 415H146" stroke="var(--color-text-muted)" stroke-width="2" marker-end="url(#rp-arrow)"/>
+    <rect x="150" y="370" width="230" height="90" rx="6" fill="var(--color-surface)" stroke="var(--color-border-control)" stroke-width="2"/>
+    <foreignObject x="150" y="370" width="230" height="90"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box">block 1–8</div></foreignObject>
+    <foreignObject x="150" y="466" width="230" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-muted">$f_\theta$</div></foreignObject>
+    <path d="M384 415H416" stroke="var(--color-text-muted)" stroke-width="2" marker-end="url(#rp-arrow)"/>
+    <use href="#rp-grid" x="420" y="351"/>
+    <foreignObject x="400" y="486" width="168" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c">$h_t$ · 8층</div></foreignObject>
+  </g>
+
+  <!-- ===== step 3: alignment ===== -->
+  <g data-from-step="2">
+    <rect x="453" y="33" width="28" height="28" fill="none" stroke="var(--hs-warm)" stroke-width="5"/>
+    <rect x="453" y="353" width="28" height="28" fill="none" stroke="var(--hs-warm)" stroke-width="5"/>
+    <path d="M552 375H600V250H636" fill="none" stroke="var(--color-accent)" stroke-width="3" marker-end="url(#rp-arrow-accent)"/>
+    <rect x="640" y="210" width="200" height="80" rx="6" fill="var(--color-surface)" stroke="var(--color-accent)" stroke-width="2"/>
+    <foreignObject x="640" y="210" width="200" height="80"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box">MLP $h_\phi$</div></foreignObject>
+    <path d="M740 206V144" stroke="var(--color-accent)" stroke-width="3" marker-end="url(#rp-arrow-accent)"/>
+    <path d="M552 95H636" stroke="var(--color-accent)" stroke-width="3" marker-end="url(#rp-arrow-accent)"/>
+    <rect x="640" y="50" width="340" height="90" rx="6" fill="var(--hs-sky-blue-10)" stroke="var(--color-accent)" stroke-width="2"/>
+    <foreignObject x="640" y="50" width="340" height="90"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box">patch별 sim → $\mathcal{L}_{\mathrm{REPA}}$</div></foreignObject>
+  </g>
+
+  <!-- ===== step 4: the rest of the network and the total loss ===== -->
+  <g data-from-step="3">
+    <path d="M552 445H636" stroke="var(--color-text-muted)" stroke-width="2" marker-end="url(#rp-arrow)"/>
+    <rect x="640" y="400" width="200" height="90" rx="6" fill="var(--color-surface)" stroke="var(--color-border-control)" stroke-width="2"/>
+    <foreignObject x="640" y="400" width="200" height="90"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box">block 9–28</div></foreignObject>
+    <foreignObject x="640" y="496" width="200" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-muted">$g_\theta$</div></foreignObject>
+    <path d="M844 445H876" stroke="var(--color-text-muted)" stroke-width="2" marker-end="url(#rp-arrow)"/>
+    <foreignObject x="880" y="400" width="120" height="90"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-h">$v_\theta$</div></foreignObject>
+    <foreignObject x="500" y="548" width="500" height="48"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-r fo-h">$\mathcal{L} = \mathcal{L}_{\mathrm{velocity}} + \lambda\,\mathcal{L}_{\mathrm{REPA}}$</div></foreignObject>
+  </g>
+
+  <!-- ===== step 5: inference ===== -->
+  <g data-from-step="4">
+    <rect x="-6" y="0" width="1012" height="300" fill="var(--color-bg)" opacity=".88"/>
+    <rect x="490" y="542" width="516" height="58" fill="var(--color-bg)" opacity=".88"/>
+    <rect x="-6" y="306" width="416" height="46" fill="var(--color-bg)" opacity=".88"/>
+    <rect x="550" y="300" width="60" height="82" fill="var(--color-bg)" opacity=".88"/>
+    <rect x="449" y="348" width="38" height="38" fill="var(--hs-sky-blue-10)"/>
+    <path d="M420 351H548M452 351V383M484 351V383M452 383H484" fill="none" stroke="var(--color-border-control)" stroke-width="2"/>
+    <foreignObject x="0" y="226" width="600" height="56"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-h">추론: 위쪽 경로와 MLP를 쓰지 않음</div></foreignObject>
+    <foreignObject x="0" y="548" width="490" height="48"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-muted">noise → SiT sampling → VAE decoder</div></foreignObject>
+  </g>
+</svg>

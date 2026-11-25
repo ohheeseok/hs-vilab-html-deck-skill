@@ -18,15 +18,15 @@ A clean build is not a correct render. Three gates, in this order.
 
 ## 2. Mechanical gate (`qa_render.py`, run at 1920×1080 and 1024×768)
 
-Per slide and per toggle state, in Chromium over `file://` with every non-file request blocked:
+Per slide, per toggle state and per stepper step, in Chromium over `file://` with every non-file request blocked:
 
 | key | fails when |
 |---|---|
 | `overflow` | anything leaves the 1920×1080 stage |
-| `spill` | content leaves its band (a direct child of the slide) or two bands overlap — catches a figure pushing past its column, a caption touching the footer, buttons wrapping out |
+| `spill` | content leaves its band (a direct child of the slide) or two bands overlap — catches a figure pushing past its column, a caption touching the footer, buttons wrapping out. Also any block whose content runs into the next block: a split shrinks to make room for a caption below it while its figures do not (REPA run, slides 17, 18 — the lines only touched, so `collide` missed it). A figure with a `height` no longer shrinks; if it does not fit, this reports it |
 | `collide` | two visible text lines (from different blocks), or text and an image, overlap anywhere — catches what `spill` cannot see inside one column (in the full run: a figure caption run over by the toggle caption because a flex item shrank) |
 | `small` | any rendered text below 24 stage px |
-| `clipped` | text cut by an `overflow:hidden` ancestor |
+| `clipped` | text cut by an `overflow:hidden` ancestor, or a diagram label that runs past its `<foreignObject>` box (REPA run: `y* patch toke`) |
 | `contrast` | HTML text below 4.5:1 against its rendered background |
 | `titleWrap` | a slide title on more than one line |
 | faces | a glyph drawn in a fallback font (only Geomini / Gmarket Sans pass) |
@@ -41,6 +41,7 @@ Fix upstream (deck.json or the engine), never by raising a threshold.
 The HTML is the deliverable; the PDF only proves the deck survives printing. Every figure is frozen
 at its screen size before each page prints, then each page is read back: text lines from different
 blocks must not overlap, no line may cross the footer's progress bar, nothing beyond the page edge.
+Toggle states and stepper steps with `print: "expand"` each get a page.
 
 ## 3. Visual gate (agy, `delegate.py vision`; the current AI when agy is missing — say so)
 

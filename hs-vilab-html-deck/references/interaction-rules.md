@@ -41,7 +41,10 @@ A stepper that only re-told the next slide's figure — the critic caught that i
 
 The next key spends the steps first, then leaves the slide; previous walks back. URL `#/n/k`.
 Elements in the SVG carry `data-from-step="k"`; the side list shows step `k` from step `k` on.
-Use for an algorithm or a training procedure whose order is the point. Prints fully revealed.
+Use for an algorithm or a training procedure whose order is the point. `print: "expand"` gives every
+step a PDF page (6a–6e); `"default"` prints the last step. A step may also take things away (REPA run:
+the last step greys out the training path to show what inference keeps) — then print `expand`, or
+the handout shows only that last view. QA captures every step (`sNN-step<k>.png`).
 
 ## Not used
 

@@ -40,6 +40,9 @@ def walk(o, path, out, need_hangul):
 
 
 def main():
+    for st in (sys.stdout, sys.stderr):
+        try: st.reconfigure(encoding="utf-8")   # Windows consoles default to cp949
+        except Exception: pass  # noqa: BLE001
     ap = argparse.ArgumentParser()
     ap.add_argument("deck")
     ap.add_argument("-o", "--out", required=True)

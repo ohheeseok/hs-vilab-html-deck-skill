@@ -61,7 +61,11 @@ def _text(s: str) -> str:
     s = re.sub(r"약 (?=\d)", "약 ", s)
     s = re.sub(r"\bno CFG\b", "no\u00a0CFG", s)
     # a count and its unit stay together: "1M step", "50 ODE steps", "600K step"
-    s = re.sub(r"(\d[\d.,]*[KMB]?) (?=(?:ODE |SDE )?steps?\b)", "\\1\u00a0", s)
+    s = re.sub(r"(\d[\d.,]*[KMB]?) (?=(?:ODE |SDE )?(?:steps?|epochs?|ep)\b)", "\\1\u00a0", s)
+    # a reference and its number, a metric and its value, "= 9.6": one unit each (REPA run)
+    s = re.sub(r"\b(Fig\.|Figs\.|Table|Tables|Eq\.|Sec\.|App\.) (?=[\dA-Z(])", "\\1\u00a0", s)
+    s = re.sub(r"\b(FID|sFID|IS|FVD|FAD|Acc\.|Pre\.|Rec\.) (?=[−+\-]?\d)", "\\1\u00a0", s)
+    s = re.sub(r" = (?=[−+\-]?\d)", "\u00a0=\u00a0", s)
     s = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", s)
     s = re.sub(r"_\{(.+?)\}", r"<sub>\1</sub>", s)
     return s
@@ -74,7 +78,7 @@ def md(s: str) -> str:
     for k, part in enumerate(parts):
         out.append(math_html(part) if k % 2 else _text(part.replace("\\$", "$")))
     # keep "$s$ = 0.8" on one line, and a Korean particle on the math it follows ($\ell_1$에서)
-    return re.sub(r'(<span class="im"(?:(?!</span>).)*</svg></span>)( = [\d.]+|[가-힣]+)',
+    return re.sub(r'(<span class="im"(?:(?!</span>).)*</svg></span>)([ \u00a0]=[ \u00a0][\d.]+[가-힣]*|[가-힣]+)',
                   r'<span class="nw">\1\2</span>', "".join(out))
 
 
@@ -109,6 +113,8 @@ def check(deck: dict, work: Path, gate: Gate) -> None:
     p = meta.get("paper")
     if p:
         gate(bool(p.get("authors")), "meta.paper has no authors (drop meta.paper for your own work)")
+        gate("*" not in p.get("authors", "") or bool(p.get("authorNote")),
+             "meta.paper.authors has * but no authorNote saying what it marks (e.g. \"* 공동 1저자\", \"* 공동 지도\")")
     for i, sl in enumerate(slides, 1):
         where = f"slide {i} ({sl.get('id')})"
         gate(bool(sl.get("title")), f"{where}: no title")
@@ -269,7 +275,10 @@ def r_deltas(b, ctx):
 def r_figure(b, ctx):
     cap = f'<figcaption class="caption">{md(b["caption"])}</figcaption>' if b.get("caption") else ""
     size = f' style="max-height:{int(b["height"])}px;width:auto;max-width:100%"' if b.get("height") else ""
-    return (f'<figure class="figure"><div class="figure-mat"><img src="{b["src"]}" alt="{attr(b.get("alt", ""))}"{size}></div>'
+    # a figure given a height keeps it: shrinking the box but not the image pushed its caption
+    # into the block below (REPA run, slide 18); if it does not fit, QA reports the spill
+    cls = "figure figure--fixed" if b.get("height") else "figure"
+    return (f'<figure class="{cls}"><div class="figure-mat"><img src="{b["src"]}" alt="{attr(b.get("alt", ""))}"{size}></div>'
             f"{cap}</figure>")
 
 
@@ -414,7 +423,7 @@ def r_toggle(b, ctx):
         + (f'<p class="caption media-caption">{md(b["mediaCaption"])}</p>' if b.get("mediaCaption") else "")
         + '</div>'
         + (f'<div class="toggle-side readout"><div class="panel panel--sm">{"".join(panels)}</div>{cap}'
-           if b.get("panel") else f'<div class="toggle-side readout">{"".join(panels)}{cap}')
+           if b.get("panel") else f'<div class="toggle-side readout"><div class="readout-states">{"".join(panels)}</div>{cap}')
         + f'<p class="sr-only" data-live aria-live="polite"></p></div></div>'
     )
 
@@ -510,10 +519,11 @@ def r_stepper(b, ctx):
     svg = re.sub(r'(<\w+)\b([^>]*\bdata-from-step="([1-9]\d*)"[^>]*)>',
                  lambda m: (m.group(0).replace('class="', 'class="is-off ', 1) if 'class="' in m.group(2)
                             else f'{m.group(1)} class="is-off"{m.group(2)}>'), svg)
-    cap = f'<p class="caption">{md(b["caption"])}</p>' if b.get("caption") else ""
+    # the caption names the figure, so it sits under the figure (not under the step list)
+    cap = f'<figcaption class="caption">{md(b["caption"])}</figcaption>' if b.get("caption") else ""
     side = '<ol class="steps">' + "".join(items) + "</ol>"
     return (f'<div class="stepper" data-stepper data-print="{b["print"]}" style="grid-template-columns:minmax(0,{b.get("cols", [3, 2])[0]}fr) minmax(0,{b.get("cols", [3, 2])[1]}fr)">'
-            f'<figure class="figure figure--diagram">{svg}</figure><div class="stepper-side">{side}{cap}</div></div>')
+            f'<figure class="figure figure--diagram">{svg}{cap}</figure><div class="stepper-side">{side}</div></div>')
 
 
 RENDER = {
@@ -565,8 +575,9 @@ def cover_credit(meta) -> str:
     if not p or not meta.get("coverCredit", True) or not p.get("authors"):
         return ""
     bits = [x for x in (p.get("affiliations"), p.get("venue")) if x]
-    if "*" in p["authors"]:
-        bits.append("* 공동 1저자")
+    # what the asterisk means is the paper's to say (co-first authors, equal advising, …)
+    if p.get("authorNote"):
+        bits.append(p["authorNote"])
     tail = ". ".join(bits)
     return (
         '<p class="cover-credit">'

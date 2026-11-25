@@ -7,7 +7,7 @@
 - 디자인: hs-vilab-frontend-design의 토큰·글꼴·규칙(HSU 색, Geomini + Gmarket Sans, 글자 크기 사다리 80/56/48/40/36/32/28/24px, 24px 하한)
 - 제작 흐름과 내용 규칙: hs-vilab-deck(PPT판)을 HTML로 옮긴 것
 
-> **상태: 0.2.0.** 논문 한 편을 21장 덱으로 끝까지 만들어 본 첫 실행을 마쳤습니다([work/self-flow-full](work/self-flow-full)).
+> **상태: 0.3.0.** 논문 두 편을 각각 21장 덱으로 끝까지 만들었습니다([work/self-flow-full](work/self-flow-full), [work/repa](work/repa)). 두 번째 실행에서 찾은 엔진·QA 결함을 고쳤습니다.
 > 스킬 본문은 [hs-vilab-html-deck/SKILL.md](hs-vilab-html-deck/SKILL.md), 변경 내역은 [CHANGELOG.md](hs-vilab-html-deck/CHANGELOG.md)에 있습니다.
 > 읽기용 handout(세로 흐름 문서)과 `deck.json` 스키마 파일은 아직 없습니다.
 
@@ -18,6 +18,10 @@
   - 지적과 처리 기록은 `review/log.md`, `review/visual_triage_r1.md`·`visual_triage_r2.md`에 있습니다.
   - **최종본은 [self-flow-full.html](work/self-flow-full/self-flow-full.html) 한 파일**입니다. 글꼴·그림이 모두 들어 있어 이 파일만 옮겨도 열립니다. 대본은 `self-flow-full-script.html`입니다.
   - PDF는 배포용 렌더링 확인에만 씁니다(`export_pdf.py`).
+- [work/repa](work/repa) — *Representation Alignment for Generation*(REPA, Yu et al., ICLR 2025) 20분 세미나 21장. 두 번째 전체 실행입니다.
+  - 진단(확산 transformer의 표현 격차) → 처방(외부 인코더 정렬) 줄기. 6번은 학습 경로를 한 단계씩 보이는 stepper, 9·12번은 그림 탭입니다.
+  - 처리 기록은 `review/log.md`, `verify2_triage.md`, `visual_triage_r1.md`·`visual_triage_r2.md`에 있습니다.
+  - **최종본은 [repa.html](work/repa/repa.html)**, 대본은 `repa-script.html`입니다.
 - [work/self-flow](work/self-flow) — 같은 논문의 디자인 샘플입니다(6장 + 마무리). 엔진과 표지를 정할 때 썼습니다. 최종본은 `self-flow.html`입니다.
 
 | 키 | 동작 |
@@ -63,6 +67,7 @@ work/self-flow-full/   전체 실행
   deck/assets/fig/     논문 그림 크롭과 토큰 격자(입력)
   outline*.md review/  개요와 codex·agy 검토·처리 기록
   self-flow-full.html  최종본(단일 파일) · self-flow-full-script.html 대본
+work/repa/             두 번째 전체 실행(같은 구성, figures/에 새로 그린 도식)
 work/self-flow/        디자인 샘플 6장 + 마무리(같은 구성)
 ```
 

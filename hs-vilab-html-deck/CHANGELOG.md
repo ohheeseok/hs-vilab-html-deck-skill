@@ -1,5 +1,41 @@
 # Changelog
 
+## 0.3.0 — 2026-11-24
+
+Second paper: REPA (ICLR 2025), a 20-minute, 21-slide seminar deck (`work/repa`) with a stepper,
+two image-tab toggles and the full team. Everything below was found by running it.
+
+Process
+- **[0] asks the same four questions as hs-vilab-deck**: 발표 시간 / 자리·중심 줄기 / 언어 /
+  작업 방식 (four boxes: codex draft, agy research, agy visual review, second round). The
+  presenter is reused from the last deck, not asked.
+- **codex could not read a Google Drive folder.** Its Windows read-only sandbox denied every file
+  on the G: drive: the Korean edit came back "access denied", the revision could not open a
+  figure. `delegate.py` now stages the read folder on the local temp disk for codex.
+- A curve read by a reviewer was wrong again (Fig. 3: layers 6–24, not 4–24; layer 24 above
+  vanilla). `narrative-roles.md` keeps the rule: range + "곡선 근거" until the conductor has looked.
+
+Engine
+- Cover credit: the asterisk was always printed as "* 공동 1저자"; in REPA it marks equal
+  advising. `meta.paper.authorNote` says what it marks; the build refuses `*` without it.
+- `valign: "center"` did nothing on a slide whose body is a `split` (the split stretched).
+- Deltas share one grid: every value and label starts on the same line.
+- A toggle readout without a panel keeps the tallest state's height (the note under it jumped).
+- A stepper caption sits under the diagram. A figure given a `height` keeps it.
+- A nested split uses a 40px gap. Line keeping: `Fig. 3`, `Table 4`, `FID 5.30`, `= 9.6`, and a
+  number after inline math (`$k$ = 10개로`).
+- PDF: a stepper with `print: "expand"` gets a page per step — the fully revealed page showed only
+  REPA's last step, which greys out the training path.
+
+QA (`qa_render.py`) — three defects it could not see
+- a block whose content runs into the next block (a caption pushed under the caption below it);
+- a diagram label running past its `<foreignObject>` (SVG was skipped);
+- stepper steps after the first were never captured or measured.
+
+Scripts: `deck_text.py` no longer crashes on a cp949 console; `apply_text_edits.py` keeps the
+file's indent (the diff shows only edited strings); `extract_figures.py` no longer suggests a
+PPT-only block.
+
 ## 0.2.0 — 2026-11-24
 
 - **The HTML is the final version.** The build writes one self-contained `<slug>.html` (and

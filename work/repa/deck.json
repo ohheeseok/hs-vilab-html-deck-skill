@@ -1,0 +1,1675 @@
+{
+ "meta": {
+  "slug": "repa",
+  "title": "Representation Alignment for Generation: Training Diffusion Transformers Is Easier Than You Think",
+  "lang": "ko",
+  "titleLang": "ko",
+  "occasion": "연구실 논문 세미나, 발표 후 토론",
+  "target_minutes": 20,
+  "target_slides": 21,
+  "statementTheme": "dark",
+  "paper": {
+   "title": "Representation Alignment for Generation: Training Diffusion Transformers Is Easier Than You Think",
+   "authors": "Sihyun Yu, Sangkyung Kwak, Huiwon Jang, Jongheon Jeong, Jonathan Huang, Jinwoo Shin*, Saining Xie*",
+   "affiliations": "KAIST, Korea University, Scaled Foundations, New York University",
+   "venue": "ICLR 2025 (Oral)",
+   "url": "https://arxiv.org/abs/2410.06940",
+   "authorNote": "* 공동 지도(equal advising)"
+  },
+  "presenter": {
+   "name": "오희석",
+   "affiliation": [
+    "한성대학교",
+    "Visual Intelligence Lab"
+   ]
+  },
+  "event": "VILAB 논문 세미나",
+  "team": {
+   "author": "codex (gpt-6.2-sol)",
+   "critic": "agy (gemini-4-neon-high)",
+   "verifier": "agy (gemini-4-neon-high)",
+   "researcher": "agy (gemini-4-neon-high), 사실은 Claude가 출처 페이지에서 확인",
+   "conductor": "Claude"
+  },
+  "sections": [
+   {
+    "id": "summary",
+    "label": "요약"
+   },
+   {
+    "id": "background",
+    "label": "배경"
+   },
+   {
+    "id": "method",
+    "label": "방법"
+   },
+   {
+    "id": "results",
+    "label": "결과"
+   },
+   {
+    "id": "analysis",
+    "label": "분석"
+   },
+   {
+    "id": "discussion",
+    "label": "정리와 토론"
+   }
+  ],
+  "figures": [
+   {
+    "ref": "Fig. 1",
+    "use": 10
+   },
+   {
+    "ref": "Fig. 2",
+    "use": 4
+   },
+   {
+    "ref": "Fig. 3",
+    "use": 9
+   },
+   {
+    "ref": "Fig. 4",
+    "use": 12
+   },
+   {
+    "ref": "Fig. 5",
+    "use": 14
+   },
+   {
+    "ref": "Fig. 6",
+    "cut": "CFG w=4.0의 선별 샘플. vanilla와 같은 조건으로 대조할 수 있는 Fig. 4에 시간을 쓴다"
+   },
+   {
+    "ref": "Fig. 7",
+    "use": 18
+   },
+   {
+    "ref": "Fig. 8",
+    "use": 18
+   },
+   {
+    "ref": "Table 1",
+    "use": 8
+   },
+   {
+    "ref": "Table 2",
+    "use": 15
+   },
+   {
+    "ref": "Table 3",
+    "use": 11
+   },
+   {
+    "ref": "Table 4",
+    "use": 13
+   },
+   {
+    "ref": "Table 5",
+    "use": 16
+   },
+   {
+    "ref": "Table 6",
+    "use": 14
+   },
+   {
+    "ref": "Table 7",
+    "use": 8
+   },
+   {
+    "ref": "Table 8",
+    "use": 17
+   },
+   {
+    "ref": "Table 10",
+    "use": 13
+   },
+   {
+    "ref": "Table 11",
+    "use": 19
+   },
+   {
+    "ref": "Table 12",
+    "use": 19
+   }
+  ]
+ },
+ "slides": [
+  {
+   "id": "cover",
+   "layout": "cover",
+   "title": "Representation Alignment for Generation: Training Diffusion Transformers Is Easier Than You Think",
+   "subtitle": "Diffusion transformer의 중간 표현을 외부 인코더에 정렬하는 REPA",
+   "cite": [
+    "Fig. 1"
+   ],
+   "figure": {
+    "src": "assets/fig/fig1_curve.png",
+    "alt": "Fig. 1 오른쪽. ImageNet 256×256에서 학습 step에 따른 FID-50K. SiT-XL/2 + REPA가 400K step에 vanilla SiT-XL/2의 7M step FID에 도달하며 17.5x faster로 표시된다.",
+    "caption": "**Fig. 1** ImageNet 256×256, no CFG. 학습 step별 FID-50K"
+   },
+   "time": 30,
+   "notes": [
+    "오늘 소개할 REPA는 KAIST·고려대·Scaled Foundations·NYU 연구진의 ICLR 2025 oral 논문입니다.",
+    "오른쪽 그림은 학습 step에 따른 생성 FID를 보여 줍니다. vanilla SiT와 REPA를 적용한 SiT의 FID가 왜 다른지 알아보기 위해 먼저 vanilla SiT가 어떤 표현을 배우는지 보겠습니다."
+   ],
+   "provenance": {
+    "ICLR 2025 (Oral)": "external R1 (arXiv comment)"
+   }
+  },
+  {
+   "id": "tldr",
+   "layout": "statement",
+   "section": "summary",
+   "title": "REPA 요약",
+   "message": "REPA는 noisy latent를 받는 SiT의 중간 표현을 같은 이미지의 clean DINOv2 표현에 patch마다 정렬하는 정규화다.",
+   "cite": [
+    "Abstract",
+    "Sec. 1",
+    "Fig. 2",
+    "Eq. 9",
+    "Table 3"
+   ],
+   "time": 55,
+   "body": [
+    {
+     "type": "lead",
+     "text": "noisy latent를 받는 SiT의 중간 층(XL/2는 8층) 표현을 같은 이미지의 clean 인코더 표현에 patch마다 정렬한다."
+    },
+    {
+     "type": "cards",
+     "numbered": true,
+     "items": [
+      {
+       "title": "진단",
+       "text": "Vanilla SiT는 DINOv2-g보다 linear probe 정확도가 낮고, DINOv2-g와의 정렬도 DINO-B·MoCov3-B보다 낮다 (Fig. 2)"
+      },
+      {
+       "title": "처방",
+       "text": "$\\mathcal{L}=\\mathcal{L}_{\\mathrm{velocity}}+\\lambda\\,\\mathcal{L}_{\\mathrm{REPA}}$. 인코더와 MLP는 학습 때만 쓴다"
+      },
+      {
+       "title": "결과",
+       "text": "SiT-XL/2, no CFG: REPA 400K step FID 7.9, vanilla 7M step 8.3 (Table 3)"
+      }
+     ]
+    }
+   ],
+   "provenance": {
+    "전체": "verbatim: Abstract, Sec. 1, Fig. 2, Eq. (9), Table 3, App. B"
+   },
+   "notes": [
+    "REPA는 noisy latent를 받는 SiT의 중간 층을 학습할 때 같은 이미지의 clean patch 표현을 학습 신호로 씁니다.",
+    "저자들은 먼저 vanilla SiT와 DINOv2의 표현을 평가해 vanilla SiT의 표현이 더 약하다는 점을 확인합니다. 그 격차를 줄이기 위해 기존 loss에 정렬 loss를 더합니다. 인코더와 projector는 학습 때만 씁니다.",
+    "대표 결과를 보면, ImageNet 256×256에서 CFG 없이 평가했을 때 REPA를 쓴 SiT-XL/2의 400K step FID가 vanilla의 7M step FID보다 낮았습니다."
+   ]
+  },
+  {
+   "id": "background",
+   "section": "background",
+   "title": "REPA의 연구 배경",
+   "message": "REPA와 관련된 연구 주제는 세 가지다. denoising transformer, 확산 모델이 배운 표현을 다른 과제에 쓰는 방법, 외부 표현을 써서 생성하는 방법이다.",
+   "cite": [
+    "Sec. 5",
+    "App. I"
+   ],
+   "time": 55,
+   "body": [
+    {
+     "type": "groups",
+     "columns": 3,
+     "divider": true,
+     "groups": [
+      {
+       "heading": "Denoising transformer",
+       "items": [
+        "U-ViT, DiT, SiT",
+        "transformer를 확산·flow 모델의 backbone으로"
+       ]
+      },
+      {
+       "heading": "확산 모델의 내부 표현",
+       "items": [
+        "RepFusion, DreamTeacher",
+        "확산 모델이 배운 표현을 다른 과제에 사용"
+       ]
+      },
+      {
+       "heading": "외부 표현을 쓰는 생성",
+       "items": [
+        "Würstchen, RCG",
+        "의미 표현을 먼저 만든 뒤 생성에 사용"
+       ]
+      }
+     ]
+    },
+    {
+     "type": "callout",
+     "text": "외부 표현에 정렬하면 수렴 속도와 생성 품질이 얼마나, 어떤 조건에서 바뀌는가?"
+    }
+   ],
+   "provenance": {
+    "갈래와 모델": "verbatim: Sec. 5, App. I",
+    "질문": "interpretation (발표의 질문)"
+   },
+   "notes": [
+    "U-ViT, DiT, SiT는 transformer를 denoising backbone으로 쓰는 모델입니다.",
+    "RepFusion과 DreamTeacher는 확산 모델에서 배운 표현을 다른 과제에 씁니다. Würstchen과 RCG는 의미 표현을 먼저 만든 뒤 생성에 씁니다.",
+    "REPA는 외부 표현을 생성 모델의 학습 신호로 씁니다. 외부 표현에 정렬하면 수렴 속도와 생성 품질이 얼마나 달라집니까? 어떤 조건에서 달라집니까?"
+   ],
+   "valign": "center"
+  },
+  {
+   "id": "probe",
+   "section": "background",
+   "tone": "wash",
+   "title": "Vanilla SiT 표현의 분류 성능",
+   "message": "7M step 학습한 vanilla SiT-XL/2도 분류에 쓸 표현을 배우지만, 가장 좋은 층도 DINOv2-g에 못 미친다.",
+   "cite": [
+    "Fig. 2",
+    "Sec. 3.2",
+    "App. C.1"
+   ],
+   "time": 55,
+   "body": [
+    {
+     "type": "split",
+     "cols": [
+      50,
+      50
+     ],
+     "left": [
+      {
+       "type": "figure",
+       "src": "assets/fig/fig2a.png",
+       "alt": "Fig. 2(a). 층 번호에 따른 vanilla SiT-XL/2의 linear probe 정확도. t=0, 0.25, 0.5 세 곡선이 20층 부근에서 최고점을 찍고 내려가며, 모두 위쪽 DINOv2-g 점선보다 낮다.",
+       "caption": "**Fig. 2(a)** Vanilla SiT-XL/2, 7M step. 층별 ImageNet linear probe"
+      }
+     ],
+     "right": [
+      {
+       "type": "bullets",
+       "items": [
+        "probe에서 층 출력을 공간 방향으로 평균한 뒤 linear classifier 학습",
+        "$t$ = 0, 0.25, 0.5 모두 20층 부근에서 정확도가 가장 높고 이후 낮아짐",
+        "모든 층이 DINOv2-g 기준선 아래"
+       ]
+      },
+      {
+       "type": "caption",
+       "text": "곡선에서 확인한 정확도 추이 (표 수치 없음)"
+      }
+     ]
+    }
+   ],
+   "provenance": {
+    "전체": "verbatim: Sec. 3.2, Fig. 2(a), App. C.1 (곡선 근거)"
+   },
+   "notes": [
+    "각 층의 hidden state를 공간 방향으로 평균하고 linear classifier를 학습해 표현을 평가합니다.",
+    "vanilla SiT의 정확도는 20층 부근에서 가장 높고 이후 떨어집니다. 저자들은 뒤쪽 층이 고주파 세부를 만드는 데 더 집중하기 때문이라고 봅니다.",
+    "그래도 가장 좋은 층이 DINOv2-g의 정확도에 크게 못 미칩니다. 논문은 이것을 semantic gap이라고 부릅니다."
+   ]
+  },
+  {
+   "id": "cknna",
+   "section": "background",
+   "tone": "wash",
+   "title": "SiT와 DINOv2의 표현 정렬",
+   "message": "Vanilla SiT는 모델이 크고 학습 step이 많을수록 DINOv2-g와의 정렬이 높다. 7M step의 XL/2도 다른 자기지도 인코더 수준에는 못 미친다.",
+   "cite": [
+    "Fig. 2",
+    "Sec. 1",
+    "Sec. 3.2",
+    "App. C.1"
+   ],
+   "time": 60,
+   "body": [
+    {
+     "type": "split",
+     "cols": [
+      72,
+      28
+     ],
+     "left": [
+      {
+       "type": "split",
+       "cols": [
+        1,
+        1
+       ],
+       "left": [
+        {
+         "type": "figure",
+         "src": "assets/fig/fig2b.png",
+         "alt": "Fig. 2(b). 층별 CKNNA. SiT의 t=0, 0.25, 0.5 곡선이 20층 부근에서 가장 높고, MAE-L 점선은 넘지만 DINO-B와 MoCov3-B 점선보다 낮다.",
+         "caption": "**Fig. 2(b)** 층별 CKNNA"
+        }
+       ],
+       "right": [
+        {
+         "type": "figure",
+         "src": "assets/fig/fig2c.png",
+         "alt": "Fig. 2(c). 학습 step에 따른 CKNNA. SiT-B/2와 SiT-XL/2 모두 step이 늘수록 조금씩 높아지며 7M의 SiT-XL/2 점도 DINO-B 점선 아래에 있다.",
+         "caption": "**Fig. 2(c)** 학습 step별 CKNNA"
+        }
+       ]
+      }
+     ],
+     "right": [
+      {
+       "type": "bullets",
+       "items": [
+        "CKNNA: 공통 최근접 이웃 $k$ = 10개로 정렬 측정, ImageNet val 10,000장",
+        "일부 층은 MAE-L보다 높고, DINO-B·MoCov3-B보다 낮다",
+        "모델이 크고 학습 step이 많을수록 CKNNA가 높다 (B/2는 400K까지)"
+       ]
+      },
+      {
+       "type": "caption",
+       "text": "기준 표현은 clean DINOv2-g. 표 수치 없이 곡선에서 읽은 서술"
+      }
+     ]
+    }
+   ],
+   "provenance": {
+    "CKNNA 정의": "verbatim: App. C.1",
+    "그림 서술": "verbatim: Sec. 3.2, Fig. 2(b)(c) (곡선 근거)"
+   },
+   "notes": [
+    "CKNNA는 두 표현 공간의 공통 최근접 이웃을 세어 정렬을 측정합니다. 기준은 clean 이미지에서 얻은 DINOv2-g 표현입니다.",
+    "왼쪽 그림에서 SiT 일부 층의 CKNNA는 MAE-L보다 높지만 DINO-B와 MoCov3-B보다 낮습니다. 오른쪽 그림에서는 모델이 크고 학습 step이 많을수록 정렬이 높아집니다. 그래도 7M step의 XL/2는 DINO-B보다 낮습니다.",
+    "논문은 두 가지 어려움을 짚습니다. 그중 하나는 입력 차이입니다. 인코더는 clean 이미지를 받고 확산 모델은 noisy latent를 받습니다. 그래서 인코더를 직접 결합하는 대신 정규화로 SiT의 표현을 인코더 표현에 정렬합니다."
+   ],
+   "valign": "center"
+  },
+  {
+   "id": "method",
+   "section": "method",
+   "title": "REPA의 학습 경로",
+   "message": "REPA는 SiT 8층 표현을 투영 MLP로 옮겨 같은 이미지의 clean patch token에 정렬한다. 추론에서는 인코더와 MLP를 쓰지 않는다.",
+   "cite": [
+    "Fig. 1",
+    "Sec. 3.1",
+    "Sec. 3.3",
+    "Sec. 4.1",
+    "App. B",
+    "App. D",
+    "Table 7"
+   ],
+   "time": 85,
+   "body": [
+    {
+     "type": "stepper",
+     "svg": "figures/repa_stepper.svg",
+     "cols": [
+      3,
+      2
+     ],
+     "signature": true,
+     "print": "expand",
+     "reveals": "정렬 loss를 적용하는 층. 학습에만 쓰는 경로(인코더·MLP·REPA loss)와 추론 경로의 차이",
+     "steps": [
+      {
+       "title": "Clean target",
+       "text": "clean 이미지 → 고정된 DINOv2-B → $y_*$"
+      },
+      {
+       "title": "Noisy 입력",
+       "text": "VAE latent + noise → block 1–8 → $h_t$"
+      },
+      {
+       "title": "8층 정렬",
+       "text": "SiLU 3층 MLP $h_\\phi$로 투영, patch별 유사도"
+      },
+      {
+       "title": "나머지 층과 loss",
+       "text": "block 9–28에서 velocity를 예측하고 두 loss를 함께 줄임"
+      },
+      {
+       "title": "추론",
+       "text": "인코더·MLP 없이 sampling → VAE decoder"
+      }
+     ],
+     "caption": "**Fig. 1** 왼쪽을 다시 그림 · SiT-XL/2(28층)",
+     "provenance": {
+      "경로": "verbatim: Fig. 1, Sec. 3.1, Sec. 3.3",
+      "설정": "verbatim: Sec. 4.1, Table 7, App. D",
+      "추론": "verbatim: App. B (projector는 학습 때만)"
+     }
+    }
+   ],
+   "notes": [
+    "[1] 위쪽 경로에서는 clean 이미지를 고정된 DINOv2-B에 넣어 patch token을 만듭니다. 이 token이 정렬 목표입니다.",
+    "[2] 아래쪽은 원래의 확산 학습입니다. 같은 이미지의 VAE latent에 noise를 섞어 SiT에 넣고, 첫 여덟 block을 지나 8층의 hidden state를 얻습니다. 256×256 이미지에서 token은 256개입니다.",
+    "[3] 8층의 token을 3층 MLP로 인코더 차원에 투영하고, 같은 위치의 patch끼리 유사도를 높입니다. [4] 나머지 block에서 기존 방식대로 velocity를 예측하고, 학습할 때는 두 loss를 함께 줄입니다.",
+    "[5] 생성할 때는 인코더와 MLP를 호출하지 않습니다. 추론 비용은 vanilla SiT와 같습니다."
+   ]
+  },
+  {
+   "id": "loss",
+   "section": "method",
+   "title": "REPA loss와 학습 목적",
+   "message": "REPA는 대응 patch의 유사도를 높이는 항에 λ를 곱해 기존 denoising loss에 더한다.",
+   "cite": [
+    "Eq. 8",
+    "Eq. 9",
+    "Eq. 4",
+    "Sec. 3.3",
+    "Sec. 4.2",
+    "Table 7"
+   ],
+   "time": 70,
+   "body": [
+    {
+     "type": "equation",
+     "lines": [
+      "\\mathcal{L}_{\\mathrm{REPA}}(\\theta,\\phi) = -\\,\\mathbb{E}_{x_*,\\epsilon,t}\\Big[\\frac{1}{N}\\sum_{n=1}^{N}\\mathrm{sim}\\big(y_*^{[n]},\\,h_\\phi(h_t^{[n]})\\big)\\Big]",
+      "\\mathcal{L} = \\mathcal{L}_{\\mathrm{velocity}} + \\lambda\\,\\mathcal{L}_{\\mathrm{REPA}}"
+     ],
+     "tags": [
+      "8",
+      "9"
+     ],
+     "symbols": [
+      [
+       "$y_*^{[n]}$",
+       "clean 이미지의 $n$번째 patch token (인코더 출력)"
+      ],
+      [
+       "$h_\\phi(h_t^{[n]})$",
+       "noisy 입력의 정렬 층(XL/2는 8층) token을 MLP로 투영"
+      ],
+      [
+       "$\\mathrm{sim}$",
+       "cosine similarity 또는 NT-Xent"
+      ],
+      [
+       "$\\mathcal{L}_{\\mathrm{velocity}}$",
+       "SiT의 velocity 예측 loss (Eq. 4)"
+      ],
+      [
+       "$\\lambda$",
+       "정렬 가중치. 기본 SiT 실험은 0.5"
+      ]
+     ]
+    },
+    {
+     "type": "caption",
+     "text": "DiT는 Improved DDPM 목적에 같은 항을 더한다 (Sec. 3.3)"
+    }
+   ],
+   "provenance": {
+    "식": "verbatim: Eq. (8), (9)",
+    "기호": "verbatim: Sec. 3.3, Eq. (4), Table 7"
+   },
+   "notes": [
+    "첫 식에서는 대응하는 patch마다 유사도를 구하고 평균에 음의 부호를 붙여 loss를 계산합니다. 이 loss를 줄이면 유사도가 높아집니다.",
+    "두 번째 식처럼 이 항에 λ를 곱해 velocity loss에 더합니다. SiT 실험에서는 λ를 0.5로 둡니다.",
+    "유사도 함수는 cosine similarity와 NT-Xent 두 가지를 비교했고, DiT에서는 Improved DDPM 목적에 같은 항을 더합니다."
+   ],
+   "valign": "center"
+  },
+  {
+   "id": "setup",
+   "section": "method",
+   "tone": "wash",
+   "title": "ImageNet 실험 설정",
+   "message": "주 실험은 ImageNet 256×256에서 같은 VAE latent와 batch 256을 쓰고, 정렬 층과 target은 모델 크기에 따라 다르다.",
+   "cite": [
+    "Table 1",
+    "Table 7",
+    "Sec. 4.1",
+    "App. D"
+   ],
+   "time": 45,
+   "body": [
+    {
+     "type": "split",
+     "cols": [
+      60,
+      40
+     ],
+     "left": [
+      {
+       "type": "table",
+       "columns": [
+        {
+         "label": "모델"
+        },
+        {
+         "label": "층"
+        },
+        {
+         "label": "hidden"
+        },
+        {
+         "label": "heads"
+        },
+        {
+         "label": "정렬 층"
+        },
+        {
+         "label": "target · 목적"
+        }
+       ],
+       "groups": [
+        {
+         "rows": [
+          {
+           "cells": [
+            "SiT-B/2",
+            "12",
+            "768",
+            "12",
+            "4",
+            "DINOv2-B · cosine"
+           ]
+          },
+          {
+           "cells": [
+            "SiT-L/2",
+            "24",
+            "1,024",
+            "16",
+            "8",
+            "DINOv2-L · NT-Xent"
+           ]
+          },
+          {
+           "cells": [
+            "SiT-XL/2",
+            "28",
+            "1,152",
+            "16",
+            "8",
+            "DINOv2-B · cosine"
+           ],
+           "focus": true
+          }
+         ]
+        }
+       ],
+       "provenance": "verbatim: Table 1, Table 7"
+      },
+      {
+       "type": "caption",
+       "text": "**Table 1 · 7** 구조는 DiT·SiT와 같다. target · 목적은 Table 7의 표기"
+      }
+     ],
+     "right": [
+      {
+       "type": "groups",
+       "groups": [
+        {
+         "heading": "공통",
+         "items": [
+          "SD-VAE latent $32\\times32\\times4$, patch 2 → 256 token",
+          "batch 256, $\\lambda$ = 0.5"
+         ]
+        },
+        {
+         "heading": "평가",
+         "items": [
+          "FID-50K, SDE Euler–Maruyama, NFE 250"
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "provenance": {
+    "전체": "verbatim: Sec. 4.1, Table 1, Table 7, App. D"
+   },
+   "notes": [
+    "주 실험은 ImageNet 256×256에서 Stable Diffusion VAE latent와 batch 256을 공통으로 씁니다.",
+    "정렬 loss는 B/2의 4층, L/2와 XL/2의 8층에 적용합니다. target과 유사도 함수는 Table 7에 적힌 대로입니다.",
+    "기본 평가에서는 SDE sampler를 250 step 실행하고, 이미지 5만 장으로 FID를 계산합니다."
+   ],
+   "valign": "center"
+  },
+  {
+   "id": "fig3",
+   "section": "results",
+   "tone": "wash",
+   "title": "REPA 적용 후 표현 지표",
+   "message": "8층에 REPA를 적용한 SiT-XL/2는 평가한 6–24층 모두에서 linear probe 정확도가 높고, DINOv2-g 정렬은 8층 부근에서 크게 높아진다.",
+   "cite": [
+    "Fig. 3",
+    "Sec. 1",
+    "Table 7"
+   ],
+   "time": 80,
+   "body": [
+    {
+     "type": "toggle",
+     "cols": [
+      9,
+      11
+     ],
+     "start": "probe",
+     "print": "expand",
+     "reveals": "패널마다 같은 축에 그린 vanilla와 REPA를 확대해 분류 정확도와 정렬이 달라지는 층을 비교",
+     "states": [
+      {
+       "id": "probe",
+       "label": "분류",
+       "src": "assets/fig/fig3a.png",
+       "alt": "Fig. 3(a). 층별 linear probe 정확도. SiT-XL/2 + REPA(빨강)의 정확도는 8층에서 약 73%로 가장 높고 이후 조금씩 내려가며, 모든 층에서 vanilla SiT-XL/2(파랑)보다 높다.",
+       "title": "층별 linear probe",
+       "text": "평가한 6–24층 모두에서 REPA의 정확도가 vanilla보다 높다. DINOv2-g와의 격차가 줄어든다.",
+       "provenance": "verbatim: Fig. 3(a) (곡선 근거)"
+      },
+      {
+       "id": "align",
+       "label": "정렬",
+       "src": "assets/fig/fig3b.png",
+       "alt": "Fig. 3(b). DINOv2-g와의 층별 CKNNA. REPA는 8층에서 약 0.53으로 가장 높고 이후 낮아져 20–22층에서는 vanilla보다 낮고 24층에서는 다시 높다.",
+       "title": "DINOv2-g와의 CKNNA",
+       "text": "8층 부근에서 가장 높다. 20–22층에서는 vanilla보다 낮고, 24층에서는 다시 높다.",
+       "provenance": "verbatim: Fig. 3(b) (곡선 근거)"
+      },
+      {
+       "id": "fidacc",
+       "label": "FID–Acc.",
+       "src": "assets/fig/fig3c.png",
+       "alt": "Fig. 3(c). 가로축 validation 정확도, 세로축 FID-50K. REPA 궤적이 vanilla보다 오른쪽 아래에 있다.",
+       "title": "FID와 분류 정확도 비교",
+       "text": "같은 학습 step에서 REPA는 vanilla보다 validation Acc.가 높고 FID가 낮다.",
+       "provenance": "verbatim: Fig. 3(c) 캡션"
+      }
+     ],
+     "mediaCaption": "**Fig. 3** REPA: SiT-XL/2, 8층, DINOv2-B target. (a)(b) 1M step 층별 평가, (c) 학습 step 진행",
+     "caption": "패널마다 원래 축. CKNNA 축 범위는 Fig. 2(b) 0–0.3, Fig. 3(b) 0–0.6"
+    }
+   ],
+   "notes": [
+    "Fig. 3은 앞서 본 진단 그림에 REPA 모델의 결과를 추가한 그림입니다. 각 패널에서 vanilla와 REPA의 결과를 같은 축에 표시했습니다.",
+    "[1] 그림에 표시된 모든 층에서 REPA의 linear probe 정확도가 더 높습니다. [2] CKNNA는 정렬을 적용한 8층 부근에서 크게 높아지지만, 20–22층에서는 vanilla보다 낮고 24층에서는 다시 높습니다. 학습 target은 DINOv2-B이고, 평가 기준은 DINOv2-g입니다.",
+    "[3] 같은 학습 step에서 보면 분류 정확도와 생성 FID가 함께 좋아집니다. 참고로 CKNNA 축 범위는 Fig. 2와 다르니, Fig. 2와는 숫자로 비교해 주십시오."
+   ]
+  },
+  {
+   "id": "curve",
+   "section": "results",
+   "tone": "wash",
+   "title": "SiT-XL/2의 학습 곡선",
+   "message": "ImageNet 256×256에서 CFG 없이 평가했을 때 SiT-XL/2 + REPA의 400K step FID는 vanilla의 7M step FID보다 낮다.",
+   "cite": [
+    "Fig. 1",
+    "Table 3",
+    "Sec. 4.3"
+   ],
+   "time": 55,
+   "body": [
+    {
+     "type": "split",
+     "cols": [
+      60,
+      40
+     ],
+     "left": [
+      {
+       "type": "figure",
+       "src": "assets/fig/fig1_curve.png",
+       "alt": "Fig. 1 오른쪽. 학습 step에 따른 FID-50K. SiT-XL/2 + REPA(빨강)가 400K에서 7.9로, vanilla SiT-XL/2의 7M 값 8.3보다 낮다. 17.5x faster 화살표.",
+       "caption": "**Fig. 1** ImageNet 256×256, no CFG, FID-50K"
+      }
+     ],
+     "right": [
+      {
+       "type": "deltas",
+       "items": [
+        {
+         "value": "17.5×",
+         "label": "학습 step",
+         "small": "vanilla 7M → REPA 400K"
+        },
+        {
+         "value": "−0.4",
+         "label": "FID",
+         "small": "8.3 → 7.9"
+        }
+       ],
+       "provenance": "derived: Table 3 (7M/400K, 8.3−7.9)"
+      },
+      {
+       "type": "bullets",
+       "size": "sm",
+       "items": [
+        "SiT-XL/2 675M, Table 3",
+        "REPA는 1M에 6.4, 4M에 5.9"
+       ]
+      }
+     ]
+    }
+   ],
+   "provenance": {
+    "수치": "verbatim: Table 3",
+    "17.5×": "derived: 7M / 400K"
+   },
+   "notes": [
+    "두 모델은 모두 675M 파라미터의 SiT-XL/2이고 CFG 없이 평가했습니다.",
+    "Vanilla 7M step의 FID는 8.3, REPA 400K step의 FID는 7.9입니다. 17.5배는 이 두 checkpoint의 학습 step 비율입니다.",
+    "REPA 모델을 더 학습하면 FID는 1M에 6.4, 4M에 5.9까지 내려갑니다."
+   ]
+  },
+  {
+   "id": "fixed400k",
+   "section": "results",
+   "tone": "wash",
+   "title": "DiT·SiT의 400K step 비교",
+   "message": "학습량을 400K step으로 맞추면 Table 3의 DiT·SiT 다섯 모델 모두 REPA 쪽 FID가 낮다.",
+   "cite": [
+    "Table 3",
+    "Sec. 4.3"
+   ],
+   "time": 50,
+   "body": [
+    {
+     "type": "split",
+     "cols": [
+      62,
+      38
+     ],
+     "left": [
+      {
+       "type": "table",
+       "columns": [
+        {
+         "label": "모델"
+        },
+        {
+         "label": "Vanilla",
+         "dir": "↓"
+        },
+        {
+         "label": "+ REPA",
+         "dir": "↓"
+        },
+        {
+         "label": "ΔFID"
+        }
+       ],
+       "groups": [
+        {
+         "rows": [
+          {
+           "cells": [
+            "DiT-L/2",
+            "23.3",
+            "15.6",
+            "−7.7"
+           ]
+          },
+          {
+           "cells": [
+            "DiT-XL/2",
+            "19.5",
+            "12.3",
+            "−7.2"
+           ]
+          },
+          {
+           "cells": [
+            "SiT-B/2",
+            "33.0",
+            "24.4",
+            "−8.6"
+           ]
+          },
+          {
+           "cells": [
+            "SiT-L/2",
+            "18.8",
+            "9.7",
+            "−9.1"
+           ]
+          },
+          {
+           "cells": [
+            "SiT-XL/2",
+            "17.2",
+            "**7.9**",
+            "−9.3"
+           ],
+           "focus": true
+          }
+         ]
+        }
+       ],
+       "provenance": "verbatim: Table 3; Δ derived"
+      },
+      {
+       "type": "caption",
+       "text": "**Table 3** ImageNet 256×256, 400K step, no CFG, FID-50K"
+      }
+     ],
+     "right": [
+      {
+       "type": "groups",
+       "groups": [
+        {
+         "heading": "다른 checkpoint 비교",
+         "items": [
+          "DiT-XL/2: vanilla 7M과 REPA 850K 모두 FID 9.6",
+          "step 비율 약 8.2×"
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "provenance": {
+    "수치": "verbatim: Table 3",
+    "Δ, 8.2×": "derived"
+   },
+   "notes": [
+    "여기서는 모든 모델의 학습량을 400K step으로 맞췄습니다.",
+    "다섯 모델 모두 REPA를 쓰면 FID가 낮고, SiT-XL/2에서는 9.3 내려갑니다.",
+    "DiT-XL/2에서는 vanilla 7M과 REPA 850K의 FID가 9.6으로 같습니다. 이 경우 step 비율은 약 8.2배입니다."
+   ],
+   "valign": "center"
+  },
+  {
+   "id": "fig4",
+   "section": "results",
+   "tone": "wash",
+   "title": "초기 학습의 생성 예시",
+   "message": "같은 초기 noise로 생성한 두 SiT-XL/2의 100K–400K 출력을 클래스마다 확대해 비교한다.",
+   "cite": [
+    "Fig. 4",
+    "Sec. 4.3"
+   ],
+   "time": 65,
+   "body": [
+    {
+     "type": "toggle",
+     "cols": [
+      11,
+      9
+     ],
+     "start": "parrot",
+     "print": "expand",
+     "reveals": "같은 noise·sampler 조건에서 REPA 출력의 물체 형태가 갖춰지는 학습 step을 클래스별로 비교",
+     "states": [
+      {
+       "id": "parrot",
+       "label": "앵무새",
+       "src": "assets/fig/fig4_parrot.png",
+       "alt": "Fig. 4 일부. 앵무새. 위 SiT-XL/2, 아래 SiT-XL/2 + REPA, 열은 100K·200K·400K.",
+       "title": "앵무새",
+       "text": "vanilla에서는 200K까지 머리 형태가 제대로 나오지 않는다. REPA에서는 100K부터 눈과 부리가 있는 머리가 나온다.",
+       "provenance": "interpretation: Fig. 4를 발표자가 읽음"
+      },
+      {
+       "id": "balloon",
+       "label": "열기구",
+       "src": "assets/fig/fig4_balloon.png",
+       "alt": "Fig. 4 일부. 열기구. 위 SiT-XL/2, 아래 SiT-XL/2 + REPA, 열은 100K·200K·400K.",
+       "title": "열기구",
+       "text": "vanilla에서는 400K에도 풍선 아래에 형체가 뚜렷하지 않은 구조가 남는다. REPA에서는 200K에 온전한 열기구 형태가 나온다.",
+       "provenance": "interpretation: Fig. 4를 발표자가 읽음"
+      },
+      {
+       "id": "burger",
+       "label": "햄버거",
+       "src": "assets/fig/fig4_burger.png",
+       "alt": "Fig. 4 일부. 햄버거. 위 SiT-XL/2, 아래 SiT-XL/2 + REPA, 열은 100K·200K·400K.",
+       "title": "햄버거",
+       "text": "vanilla는 400K에도 빵 두 덩이에 가깝다. REPA는 400K에 번·패티·감자튀김이 구분된다.",
+       "provenance": "interpretation: Fig. 4를 발표자가 읽음"
+      }
+     ],
+     "mediaCaption": "**Fig. 4** 같은 noise·sampler·step 수, no CFG. 클래스마다 원 그림을 잘라 다시 배치",
+     "side": [
+      {
+       "type": "note",
+       "text": "저자가 고른 생성 예시에 대한 발표자의 해석"
+      }
+     ]
+    }
+   ],
+   "notes": [
+    "두 모델은 같은 초기 noise, 같은 sampler와 step 수로 생성했고 CFG는 쓰지 않았습니다. 위가 vanilla, 아래가 REPA입니다.",
+    "[1] 앵무새는 vanilla에서 200K까지 머리 모양이 제대로 나오지 않습니다. REPA에서는 100K부터 눈과 부리가 있는 머리가 나옵니다. [2] 열기구는 vanilla에서 400K에도 풍선 아래에 형태를 알아보기 어려운 구조가 남습니다. REPA에서는 200K에 온전한 열기구 형태가 나옵니다.",
+    "[3] 햄버거는 400K에서 REPA 쪽에만 번과 패티, 감자튀김이 구분됩니다. 다만 이 관찰은 제 해석입니다. 저자가 고른 예시라는 점도 감안해 주십시오."
+   ]
+  },
+  {
+   "id": "system",
+   "section": "results",
+   "tone": "wash",
+   "title": "ImageNet CFG 시스템 비교",
+   "message": "같은 800 epochs REPA checkpoint에서 guidance interval은 일반 CFG보다 FID가 낮고 sFID는 높다.",
+   "cite": [
+    "Table 4",
+    "Table 10",
+    "Sec. 4.3",
+    "App. G",
+    "Table 7"
+   ],
+   "time": 60,
+   "body": [
+    {
+     "type": "split",
+     "cols": [
+      66,
+      34
+     ],
+     "left": [
+      {
+       "type": "table",
+       "columns": [
+        {
+         "label": "모델"
+        },
+        {
+         "label": "epochs"
+        },
+        {
+         "label": "FID",
+         "dir": "↓"
+        },
+        {
+         "label": "sFID",
+         "dir": "↓"
+        },
+        {
+         "label": "IS",
+         "dir": "↑"
+        }
+       ],
+       "groups": [
+        {
+         "label": "Latent diffusion · 다른 방법",
+         "rows": [
+          {
+           "cells": [
+            "MaskDiT",
+            "1,600",
+            "2.28",
+            "5.67",
+            "276.6"
+           ]
+          },
+          {
+           "cells": [
+            "DiT-XL/2",
+            "1,400",
+            "2.27",
+            "4.60",
+            "278.2"
+           ]
+          },
+          {
+           "cells": [
+            "MDTv2-XL/2*",
+            "1,080",
+            "1.58",
+            "4.52",
+            "**314.7**"
+           ]
+          }
+         ]
+        },
+        {
+         "label": "SiT-XL/2",
+         "rows": [
+          {
+           "cells": [
+            "SiT-XL/2",
+            "1,400",
+            "2.06",
+            "4.50",
+            "270.3"
+           ]
+          },
+          {
+           "cells": [
+            "+ REPA",
+            "200",
+            "1.96",
+            "**4.49**",
+            "264.0"
+           ]
+          },
+          {
+           "cells": [
+            "+ REPA",
+            "800",
+            "1.80",
+            "4.50",
+            "284.0"
+           ]
+          },
+          {
+           "cells": [
+            "+ REPA*",
+            "800",
+            "**1.42**",
+            "4.70",
+            "305.7"
+           ],
+           "focus": true
+          }
+         ]
+        }
+       ],
+       "provenance": "verbatim: Table 4"
+      },
+      {
+       "type": "caption",
+       "text": "**Table 4** ImageNet 256×256, CFG. * 추가 CFG 스케줄(REPA*는 guidance interval). 800 epochs = 4M step (batch 256)"
+      }
+     ],
+     "right": [
+      {
+       "type": "deltas",
+       "items": [
+        {
+         "value": "−0.38",
+         "label": "FID",
+         "small": "1.80 → 1.42",
+         "pair": [
+          "+ REPA",
+          "+ REPA*"
+         ]
+        },
+        {
+         "value": "+0.20",
+         "label": "sFID",
+         "small": "4.50 → 4.70",
+         "pair": [
+          "+ REPA",
+          "+ REPA*"
+         ]
+        }
+       ],
+       "provenance": "derived: Table 4, 800 epochs 두 행"
+      },
+      {
+       "type": "caption",
+       "text": "같은 checkpoint의 sampling 설정 차이 (Table 9·10)"
+      }
+     ]
+    }
+   ],
+   "provenance": {
+    "수치": "verbatim: Table 4, Table 10",
+    "epoch–step": "derived: Table 4, 7, 9, 10"
+   },
+   "notes": [
+    "표는 CFG를 쓴 시스템 비교이고, 별표는 추가 guidance 스케줄을 뜻합니다.",
+    "Vanilla SiT-XL/2는 1,400 epochs에 FID 2.06이고, REPA는 200 epochs에 1.96입니다. 800 epochs, batch 256 기준 4M step의 REPA는 일반 CFG에서 1.80, guidance interval을 쓰면 1.42입니다.",
+    "같은 checkpoint인데 FID는 0.38 내려가고 sFID는 0.20 올라갑니다. 두 지표의 순위가 갈린다는 점은 토론에서 다시 다루겠습니다."
+   ]
+  },
+  {
+   "id": "encoder",
+   "section": "analysis",
+   "tone": "wash",
+   "title": "Target 인코더의 종류와 크기",
+   "message": "SiT를 정렬한 뒤 분류 정확도가 높게 나온 target일수록 FID가 낮다. DINOv2 크기에 따른 FID 차이는 0.3 이내다.",
+   "cite": [
+    "Fig. 5",
+    "Table 2",
+    "Table 6",
+    "Sec. 4.2",
+    "App. C"
+   ],
+   "time": 60,
+   "body": [
+    {
+     "type": "split",
+     "cols": [
+      52,
+      48
+     ],
+     "left": [
+      {
+       "type": "figure",
+       "src": "assets/fig/fig5a.png",
+       "alt": "Fig. 5(a). 가로축 정렬된 SiT의 validation 정확도, 세로축 FID-50K. MAE-L, MoCov3-L, DINO-B, I-JEPA-H, CLIP-L, SigLIP-L, DINOv2-L 일곱 점이 오른쪽 아래 방향으로 분포한다.",
+       "caption": "**Fig. 5(a)** SiT-L/2, 400K, layer 8, no CFG",
+       "height": 700
+      }
+     ],
+     "right": [
+      {
+       "type": "groups",
+       "groups": [
+        {
+         "heading": "DINOv2 크기 (FID)",
+         "items": [
+          "B 9.7 · L 10.0 · g 9.8",
+          "vanilla SiT-L/2는 18.8"
+         ]
+        },
+        {
+         "heading": "ImageNet 없이 학습한 인코더",
+         "items": [
+          "CLIP(WIT-400M) 11.0, SigLIP(WebLi-4B) 10.2",
+          "가장 좋은 DINOv2(LVD-142M)의 학습 데이터에 ImageNet-1K 포함"
+         ]
+        }
+       ]
+      },
+      {
+       "type": "caption",
+       "text": "**Table 2 · 6** 같은 조건. 가로축은 인코더가 아니라 정렬된 SiT의 probe 정확도"
+      }
+     ]
+    }
+   ],
+   "provenance": {
+    "그림": "verbatim: Fig. 5(a), Sec. 4.2",
+    "크기": "verbatim: Table 2",
+    "데이터": "verbatim: Table 6, App. C"
+   },
+   "notes": [
+    "가로축은 인코더 자체의 정확도가 아니라, 정렬한 뒤 SiT의 linear probe 정확도입니다. 정확도가 높은 target일수록 FID가 낮아지는 경향입니다.",
+    "DINOv2만 놓고 크기를 B, L, g로 바꾸면 FID는 9.7에서 10.0 사이로 차이가 작습니다. 저자들은 세 모델이 모두 DINOv2-g에서 증류되었기 때문이라고 봅니다.",
+    "ImageNet을 쓰지 않은 CLIP과 SigLIP도 vanilla보다 FID가 크게 낮습니다. 다만 가장 좋은 DINOv2의 학습 데이터에는 ImageNet이 들어 있습니다."
+   ]
+  },
+  {
+   "id": "depth",
+   "section": "analysis",
+   "tone": "wash",
+   "title": "정렬 층",
+   "message": "SiT-L/2에서 FID는 8층에 정렬을 적용했을 때 가장 낮다. 정렬한 층의 linear probe 정확도는 16층에 정렬을 적용했을 때 가장 높다.",
+   "cite": [
+    "Table 2",
+    "Sec. 4.2",
+    "App. M"
+   ],
+   "time": 55,
+   "body": [
+    {
+     "type": "split",
+     "cols": [
+      56,
+      44
+     ],
+     "left": [
+      {
+       "type": "table",
+       "columns": [
+        {
+         "label": "정렬 층"
+        },
+        {
+         "label": "FID",
+         "dir": "↓"
+        },
+        {
+         "label": "Acc. (%)",
+         "dir": "↑"
+        }
+       ],
+       "groups": [
+        {
+         "rows": [
+          {
+           "cells": [
+            "6",
+            "10.3",
+            "66.2"
+           ]
+          },
+          {
+           "cells": [
+            "8",
+            "**10.0**",
+            "68.1"
+           ],
+           "focus": true
+          },
+          {
+           "cells": [
+            "10",
+            "10.5",
+            "68.6"
+           ]
+          },
+          {
+           "cells": [
+            "12",
+            "11.2",
+            "69.4"
+           ]
+          },
+          {
+           "cells": [
+            "14",
+            "11.6",
+            "70.0"
+           ]
+          },
+          {
+           "cells": [
+            "16",
+            "12.1",
+            "**71.1**"
+           ]
+          }
+         ]
+        }
+       ],
+       "provenance": "verbatim: Table 2"
+      },
+      {
+       "type": "caption",
+       "text": "**Table 2** SiT-L/2, 400K, DINOv2-L, NT-Xent, $\\lambda$ = 0.5, no CFG. 행마다 따로 학습"
+      }
+     ],
+     "right": [
+      {
+       "type": "deltas",
+       "items": [
+        {
+         "value": "+2.1",
+         "label": "FID",
+         "small": "8층 → 16층에서 FID 악화",
+         "pair": [
+          "8",
+          "16"
+         ]
+        },
+        {
+         "value": "+3.0 pp",
+         "label": "Acc.",
+         "small": "8층 → 16층",
+         "pair": [
+          "8",
+          "16"
+         ]
+        }
+       ],
+       "provenance": "derived: Table 2"
+      },
+      {
+       "type": "bullets",
+       "size": "sm",
+       "items": [
+        "저자의 가설: 나머지 층이 고주파 세부에 집중한다"
+       ]
+      }
+     ]
+    }
+   ],
+   "provenance": {
+    "수치": "verbatim: Table 2",
+    "Δ": "derived",
+    "가설": "verbatim: Sec. 4.2 (저자 가설)"
+   },
+   "notes": [
+    "표의 각 행은 서로 다른 층에 정렬 loss를 적용해 따로 학습한 모델에 해당합니다.",
+    "정렬 층을 8층에서 16층으로 바꾸면 분류 정확도는 3.0 퍼센트포인트 오르지만 FID도 2.1 올라갑니다. 분류 성능이 가장 좋은 정렬 층과 생성 성능이 가장 좋은 정렬 층이 다릅니다.",
+    "저자들은 앞쪽만 정렬하면 나머지 층이 고주파 세부에 집중할 수 있기 때문이라고 가설을 세웁니다."
+   ],
+   "valign": "center"
+  },
+  {
+   "id": "objective",
+   "section": "analysis",
+   "tone": "wash",
+   "title": "정렬 목적 함수와 λ",
+   "message": "400K step에서 cosine과 NT-Xent의 FID 차이는 0.1이고, λ를 0.5보다 키울 때 FID는 최대 0.1 더 낮아진다.",
+   "cite": [
+    "Table 2",
+    "Table 5",
+    "Sec. 4.2",
+    "Sec. 4.4",
+    "Table 8"
+   ],
+   "time": 50,
+   "body": [
+    {
+     "type": "split",
+     "cols": [
+      55,
+      45
+     ],
+     "left": [
+      {
+       "type": "table",
+       "columns": [
+        {
+         "label": "목적"
+        },
+        {
+         "label": "FID",
+         "dir": "↓"
+        },
+        {
+         "label": "sFID",
+         "dir": "↓"
+        },
+        {
+         "label": "IS",
+         "dir": "↑"
+        }
+       ],
+       "groups": [
+        {
+         "rows": [
+          {
+           "cells": [
+            "NT-Xent",
+            "10.0",
+            "**5.09**",
+            "106.6"
+           ]
+          },
+          {
+           "cells": [
+            "cosine",
+            "**9.9**",
+            "5.34",
+            "**111.9**"
+           ]
+          }
+         ]
+        }
+       ],
+       "provenance": "verbatim: Table 2"
+      },
+      {
+       "type": "caption",
+       "text": "**Table 2** SiT-L/2, 400K, DINOv2-L, 8층, no CFG. 50–100K에서는 NT-Xent가 유리하며 이후 실험에서는 cosine 사용 (Sec. 4.2)"
+      }
+     ],
+     "right": [
+      {
+       "type": "table",
+       "columns": [
+        {
+         "label": "λ"
+        },
+        {
+         "label": "FID",
+         "dir": "↓"
+        },
+        {
+         "label": "IS",
+         "dir": "↑"
+        }
+       ],
+       "groups": [
+        {
+         "rows": [
+          {
+           "cells": [
+            "0.25",
+            "8.6",
+            "118.6"
+           ]
+          },
+          {
+           "cells": [
+            "0.5",
+            "7.9",
+            "122.6"
+           ],
+           "focus": true
+          },
+          {
+           "cells": [
+            "0.75",
+            "**7.8**",
+            "124.4"
+           ]
+          },
+          {
+           "cells": [
+            "1.0",
+            "**7.8**",
+            "**124.8**"
+           ]
+          }
+         ]
+        }
+       ],
+       "provenance": "verbatim: Table 5"
+      },
+      {
+       "type": "caption",
+       "text": "**Table 5** SiT-XL/2, 400K, no CFG (Table 8과 같은 조건)"
+      }
+     ]
+    }
+   ],
+   "provenance": {
+    "수치": "verbatim: Table 2, Table 5, Table 8",
+    "NT-Xent 초기 우세": "verbatim: Sec. 4.2"
+   },
+   "notes": [
+    "왼쪽은 SiT-L/2에서 유사도 함수만 바꾼 결과입니다. 400K에서 cosine의 FID가 0.1 낮고, sFID는 NT-Xent가 낮습니다. 저자들은 50K에서 100K 사이에는 NT-Xent가 유리했다고 적고, 이후 실험에는 cosine을 씁니다.",
+    "오른쪽은 SiT-XL/2의 별도 실험입니다. λ를 0.25에서 0.5로 올리면 FID가 0.7 내려가고, 그 뒤로는 0.1만 더 내려갑니다."
+   ],
+   "valign": "center"
+  },
+  {
+   "id": "scale",
+   "section": "analysis",
+   "tone": "wash",
+   "title": "SiT 크기별 수렴",
+   "message": "같은 DINOv2-B target에서 SiT가 클수록 REPA 모델이 더 이른 step에 더 낮은 FID에 도달한다.",
+   "cite": [
+    "Fig. 5",
+    "Table 8",
+    "Table 3",
+    "Sec. 4.2"
+   ],
+   "time": 50,
+   "body": [
+    {
+     "type": "split",
+     "cols": [
+      1,
+      1
+     ],
+     "left": [
+      {
+       "type": "figure",
+       "src": "assets/fig/fig5b.png",
+       "alt": "Fig. 5(b). 학습 step에 따른 FID-50K. SiT-B/2, L/2, XL/2 + REPA 세 곡선과 각 vanilla의 400K FID 수평선. 큰 모델일수록 vanilla 수평선에 더 일찍 닿는다.",
+       "caption": "**Fig. 5(b)** REPA 곡선. 수평선은 vanilla 400K FID",
+       "height": 690
+      }
+     ],
+     "right": [
+      {
+       "type": "figure",
+       "src": "assets/fig/fig5c.png",
+       "alt": "Fig. 5(c). 가로축 validation 정확도, 세로축 FID. 세 모델의 50K–400K 궤적이 오른쪽 아래로 내려가며 큰 모델의 기울기가 가파르다.",
+       "caption": "**Fig. 5(c)** 200K FID: B/2 33.2 · L/2 14.0 · XL/2 11.1 (Table 8)",
+       "height": 690
+      }
+     ]
+    }
+   ],
+   "provenance": {
+    "그림": "verbatim: Fig. 5(b)(c), Sec. 4.2 (곡선 근거)",
+    "200K 수치": "verbatim: Table 8",
+    "vanilla 400K": "verbatim: Table 3"
+   },
+   "notes": [
+    "왼쪽의 수평선은 vanilla 모델별 400K FID이고, 곡선은 REPA 모델 세 개입니다. 큰 모델일수록 vanilla의 400K 수준에 더 일찍 닿습니다.",
+    "오른쪽에는 같은 checkpoint의 분류 정확도와 FID를 함께 그렸습니다. 모델이 클수록 분류 정확도가 더 빨리 높아지고 FID는 더 빨리 낮아집니다.",
+    "200K에서 FID는 B/2가 33.2, L/2가 14.0, XL/2가 11.1입니다."
+   ]
+  },
+  {
+   "id": "noise",
+   "section": "analysis",
+   "tone": "wash",
+   "title": "noise 수준별 표현 격차",
+   "message": "시험한 세 timestep 모두에서 REPA를 쓴 SiT-XL/2의 linear probe 정확도와 최대 CKNNA가 vanilla보다 높다.",
+   "cite": [
+    "Fig. 7",
+    "Fig. 8",
+    "Sec. 4.4"
+   ],
+   "time": 45,
+   "body": [
+    {
+     "type": "figure",
+     "src": "assets/fig/fig7.png",
+     "alt": "Fig. 7. t=0, 0.25, 0.5에서 vanilla SiT-XL/2(파랑)와 REPA(빨강)의 linear probe 정확도와 최대 CKNNA 막대. 모든 timestep에서 빨강이 높다.",
+     "caption": "**Fig. 7** SiT-XL/2. (a) linear probe (b) DINOv2-g와의 최대 CKNNA. 막대·곡선에서 읽은 서술, 비교 checkpoint의 step은 적혀 있지 않다",
+     "height": 570
+    },
+    {
+     "type": "bullets",
+     "items": [
+      "$t$ = 0, 0.25, 0.5 모두 REPA가 높다",
+      "Fig. 8: MoCov3-L·MAE-L을 target으로 써도 8층 부근 CKNNA가 높다. 후반 층으로 갈수록 낮아져 MoCov3-L은 vanilla 기준선 아래"
+     ],
+     "size": "sm"
+    }
+   ],
+   "provenance": {
+    "Fig. 7": "verbatim: Sec. 4.4, Fig. 7 (막대 근거)",
+    "Fig. 8": "verbatim: Fig. 8 (곡선 근거)"
+   },
+   "notes": [
+    "입력 noise 수준을 세 가지로 바꿔 표현을 평가했습니다. 세 timestep 모두에서 REPA 모델의 분류 정확도와 최대 CKNNA가 높습니다.",
+    "Fig. 8에서 다른 인코더를 target으로 써도 정렬 층 부근의 CKNNA는 높아지고, 뒤쪽 층으로 갈수록 낮아집니다. MoCov3-L은 vanilla 기준선 아래로 내려가고 MAE-L은 마지막 층에서 기준선 부근에 닿습니다. Fig. 8의 정렬 모델은 SiT-L/2이고 vanilla 기준은 SiT-XL/2입니다."
+   ]
+  },
+  {
+   "id": "scope",
+   "section": "analysis",
+   "title": "해상도와 text-to-image 확장",
+   "message": "부록에서 REPA는 ImageNet 512×512와 MS-COCO text-to-image에서도 FID를 낮추지만, 512×512의 일부 지표는 나아지지 않는다.",
+   "cite": [
+    "Table 11",
+    "Table 12",
+    "App. J",
+    "App. K",
+    "App. M"
+   ],
+   "time": 40,
+   "body": [
+    {
+     "type": "cards",
+     "items": [
+      {
+       "title": "ImageNet 512×512",
+       "text": "SiT-XL/2, CFG $w$ = 1.35. FID 2.62(vanilla 600 ep) → 2.32(REPA 100 ep) → 2.08(200 ep). 200 ep의 sFID 4.19·Pre. 0.83은 vanilla 4.18·0.84보다 나쁘다"
+      },
+      {
+       "title": "MS-COCO text-to-image",
+       "text": "MMDiT, 둘 다 150K step, SDE NFE 250, CFG $w$ = 2.0. FID 5.30 → 4.14"
+      }
+     ]
+    },
+    {
+     "type": "caption",
+     "text": "**Table 11 · 12** pixel-space diffusion, video, 대규모 text-to-image는 후속 과제로 남김 (App. M)"
+    }
+   ],
+   "provenance": {
+    "512": "verbatim: Table 11",
+    "COCO": "verbatim: Table 12",
+    "후속 과제": "verbatim: App. M"
+   },
+   "notes": [
+    "ImageNet 512×512에서는 REPA 100 epochs의 FID가 2.32로, vanilla 600 epochs의 2.62보다 낮습니다.",
+    "부록 본문은 네 지표가 모두 좋아졌다고 쓰지만, 200 epochs에서 sFID와 precision은 vanilla보다 조금 나쁩니다.",
+    "MS-COCO에서는 같은 150K step을 학습한 MMDiT끼리 비교해 FID가 5.30에서 4.14로 내려갑니다."
+   ],
+   "valign": "center"
+  },
+  {
+   "id": "discussion",
+   "layout": "statement",
+   "section": "discussion",
+   "title": "정리와 토론",
+   "message": "REPA는 학습 step을 기준으로 비교했을 때 FID를 크게 낮췄다. 정렬 대상, 정렬 층, 정렬을 유지할 기간, 평가와 비용의 근거는 더 따져 볼 수 있다.",
+   "cite": [
+    "Table 2",
+    "Table 3",
+    "Table 4",
+    "Table 7",
+    "Table 10",
+    "Fig. 3",
+    "Fig. 8",
+    "App. D",
+    "App. E"
+   ],
+   "time": 120,
+   "body": [
+    {
+     "type": "groups",
+     "columns": 2,
+     "divider": true,
+     "size": "sm",
+     "groups": [
+      {
+       "heading": "정리",
+       "items": [
+        "Vanilla SiT 표현은 DINOv2보다 약하다",
+        "clean 인코더 표현을 8층에 patch마다 정렬",
+        "ImageNet 256×256, no CFG. 400K step에서 vanilla 7M step 수준의 FID"
+       ]
+      },
+      {
+       "heading": "토론",
+       "numbered": true,
+       "items": [
+        "**깊이**: 8층→16층에서 Acc.는 오르고 FID는 나빠진다. 무엇을 정렬해야 하나?",
+        "**평가**: 1.42는 Table 10에서 FID가 가장 낮은 설정. 고르는 데이터와 보고하는 데이터가 같아도 되나?",
+        "**기록**: Table 3의 SiT-L/2 400K 수치는 어느 target 설정인가?",
+        {
+         "text": "**비용**: 인코더 forward 비용과 후반 정체. 정렬은 언제까지 유지해야 하나?",
+         "note": true
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "provenance": {
+    "정리": "verbatim",
+    "토론 1": "전제 verbatim (Table 2) + external R3 (iREPA)",
+    "토론 2": "verbatim: Table 4, 9, 10, App. E + 질문 interpretation",
+    "토론 3": "verbatim: Table 2, 3, 7",
+    "토론 4": "interpretation + verbatim App. D, Fig. 3(b), Fig. 8 + external R2 (HASTE)"
+   },
+   "notes": [
+    "저자들은 vanilla SiT의 표현이 약하다는 진단을 바탕으로 clean 인코더 표현을 SiT의 중간 층에 정렬했습니다. ImageNet 256×256에서 같은 FID까지 필요한 학습 step은 훨씬 적었습니다.",
+    "토론 주제는 네 가지입니다. 첫째, 정렬 층을 비교한 실험에서 분류 정확도는 좋아지고 FID는 나빠졌습니다. 작년 12월에 나온 iREPA 논문은 target의 전역 성능보다 공간 구조가 생성 성능을 좌우한다고 보고했습니다. 그렇다면 무엇을 정렬하는 게 가장 중요할까요?",
+    "둘째, Table 10은 guidance interval과 w의 조합마다 FID를 보고하고, Table 4에는 그중 가장 낮은 1.42를 실었습니다. 이때 sFID는 4.50에서 4.70으로 나빠집니다. 셋째, Table 3의 SiT-L/2 400K 수치 9.7은 Table 2의 DINOv2-B 행과 같고, Table 7은 DINOv2-L로 적습니다. 어느 설정으로 얻은 수치인지 확인해야 합니다.",
+    "넷째는 제 해석입니다. 논문에서 학습 중 인코더 forward 비용과 관련해 보고한 수치는 처리량 하나뿐입니다. 뒤쪽 층의 정렬은 떨어지고, HASTE는 학습 후반에 REPA가 정체한다고 보고했습니다. 학습 시간을 같게 두고 비교할 때 정렬을 언제까지 유지할지 의견을 듣고 싶습니다."
+   ]
+  },
+  {
+   "id": "ending",
+   "layout": "ending",
+   "title": "감사합니다",
+   "subtitle": "Q&A",
+   "links": [
+    "REPA · arXiv:2410.06940 · sihyun.me/REPA",
+    "코드 · github.com/sihyun-yu/REPA (MIT)"
+   ],
+   "cite": [
+    "p. 1"
+   ],
+   "time": 15,
+   "provenance": {
+    "링크": "verbatim p. 1 + external R1"
+   },
+   "notes": [
+    "들어 주셔서 감사합니다. 논문과 코드 링크를 화면에 두었습니다. 질문과 의견을 받겠습니다."
+   ]
+  }
+ ]
+}

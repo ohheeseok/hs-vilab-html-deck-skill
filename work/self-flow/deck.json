@@ -8,6 +8,7 @@
     "paper": {
       "title": "Self-Supervised Flow Matching for Scalable Multi-Modal Synthesis",
       "authors": "Hila Chefer*, Patrick Esser*, Dominik Lorenz, Dustin Podell, Vikash Raja, Vinh Tong, Antonio Torralba, Robin Rombach",
+      "authorNote": "* 공동 1저자",
       "affiliations": "Black Forest Labs, MIT",
       "venue": "Preprint, 2026-03-04",
       "url": "https://bfl.ai/research/self-flow"

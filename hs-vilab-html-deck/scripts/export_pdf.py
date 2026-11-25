@@ -5,7 +5,7 @@ Usage:
 
 A toggle with "print": "expand" gets one page per state (pages 6a, 6b, ...), so every state a
 conclusion depends on is in the handout; "print": "default" prints only its start state.
-A stepper prints fully revealed. Chromium prints through the deck's own @media print rules;
+A stepper with "print": "expand" gets one page per step; with "default" it prints fully revealed. Chromium prints through the deck's own @media print rules;
 this script shows one slide at a time and merges the pages with PyMuPDF.
 
 Needs: playwright (+ chromium), pymupdf.
@@ -101,18 +101,27 @@ def main() -> int:
             info = page.evaluate(f"""() => {{
               const s = document.querySelectorAll('.slide')[{i}];
               const t = s.querySelector('[data-toggle]');
+              const p = s.querySelector('[data-stepper]');
               return {{steps: +(s.getAttribute('data-steps') || 0),
                        expand: t ? t.getAttribute('data-print') === 'expand' : false,
+                       stepExpand: p ? p.getAttribute('data-print') === 'expand' : false,
                        start: t ? t.getAttribute('data-start') : null}};
             }}""")
             states = page.evaluate(f"window.__deck.states({i})") or [None]
             if not info["expand"]:
                 states = [info["start"]] if info["start"] else [None]
+            # one page per view: a toggle state, or a stepper step. A stepper with print "expand"
+            # gets every step — its last step need not show everything (REPA run: the last step
+            # greys out the training path to show inference, and the fully revealed page did too)
+            views = [("state", st) for st in states]
             if info["steps"]:
-                page.evaluate(f"location.hash = '#/{i + 1}/{info['steps']}'")
-            for k, st in enumerate(states):
-                if st:
-                    page.evaluate(f"window.__deck.setState({i}, {json.dumps(st)})")
+                ks = range(info["steps"] + 1) if info["stepExpand"] else [info["steps"]]
+                views = [("step", k) for k in ks]
+            for k, (kind, v) in enumerate(views):
+                if kind == "step":
+                    page.evaluate(f"location.hash = '#/{i + 1}/{v}'")
+                elif v:
+                    page.evaluate(f"window.__deck.setState({i}, {json.dumps(v)})")
                 page.wait_for_timeout(150)
                 page.evaluate(FREEZE, i)
                 f = Path(tmp) / f"{i:03d}-{k}.pdf"
@@ -120,7 +129,7 @@ def main() -> int:
                          margin={"top": "0", "right": "0", "bottom": "0", "left": "0"})
                 with pymupdf.open(f) as one:
                     merged.insert_pdf(one, from_page=0, to_page=0)
-                labels.append(f"{i + 1}{chr(97 + k) if len(states) > 1 else ''}")
+                labels.append(f"{i + 1}{chr(97 + k) if len(views) > 1 else ''}")
         b.close()
     merged.set_metadata({"title": page_title(index), "creator": "hs-vilab-html-deck"})
     merged.save(out)

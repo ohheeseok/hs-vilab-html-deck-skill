@@ -45,19 +45,41 @@ python $S/scripts/extract_figures.py $W/source/paper.pdf list > $W/source/figlis
 `paper.txt` breaks table rows: check every number against the rendered page.
 `source/` and `brief*.md` hold the paper's text and stay out of version control.
 
-## [0] Ask once, at most four questions
+## [0] Ask first, then do not interrupt again
 
-Read the abstract, contributions and figure list first. Then ask, in one message:
+Read the abstract, contributions and figure list first: the questions come from the paper, not
+from a form. Ask once, in one go (one `AskUserQuestion` call), at most four questions; after that
+the pipeline runs to completion without checking in. (Same four as hs-vilab-deck.)
 
-1. **발표 시간** — slides = minutes × 1.0–1.5 (nearer 1.0 for equation-heavy papers). Sets
-   `meta.target_minutes`, `meta.target_slides`.
-2. **자리와 기대** — lab seminar (discuss, critique), class, conference, committee. Sets
-   `meta.occasion` and the ending. Offer the leading thread when the paper has several claims.
-3. **언어** — body `ko+en` or `en`, titles `ko` or `en`.
-4. **발표자** — name and affiliation for the cover (`meta.presenter`), event and date.
+**Q0. 발표 시간이 몇 분입니까?** Derive the slide count; do not ask for it.
+`slides = minutes × 1.0–1.5` — nearer 1.0 when the paper is equation- or algorithm-heavy, nearer
+1.5 for concept- and result-driven work. Sets `meta.target_minutes` (the script is timed against
+it) and `meta.target_slides` (a build gate).
 
-Nobody to ask, or the user says go: a 20-minute lab seminar, `ko+en` body, `ko` titles — said in
-one line. Who does which pass is not asked; it is fixed below.
+**Q-자리. 어디서, 누구에게, 발표 후 무엇을 기대하는 발표입니까?** Lab seminar (discuss and
+critique), class (understand), conference (remember one result), committee (judge). This decides
+the ending — a seminar closes on discussion points grounded in the paper. When the paper makes
+several claims of similar weight, name them from the paper and offer the leading thread inside
+this question. Sets `meta.occasion`.
+
+**Q2. 언어 — 본문과 제목을 각각 어떻게 할까요?** Body `en` or `ko+en` (`meta.lang`), titles `ko`
+or `en` (`meta.titleLang`). Korean titles keep technical terms in English. Default `ko+en`, `ko`.
+
+**Q-작업. 작업 방식 (복수 선택)** — four boxes, each one setting:
+
+| box | checked | unchecked |
+|---|---|---|
+| 개요 초안을 codex에 | codex writes `outline.md` and its revision | an author subagent writes them |
+| 자료조사를 agy에 | the researcher runs (step [1].2–3) | no research; the deck says only what the paper says |
+| 시각 검수를 agy에 | agy reviews the captures ([3]) | you review the captures yourself |
+| 2차 검수 | a second visual round after the fixes ([4]) | one round of [3]–[4] |
+
+Critic and verifier always run, blind to each other (agy, or subagents when agy is missing).
+Which AI fills which role is fixed (table below), not asked. The presenter (`meta.presenter`) is
+not a question: reuse the last deck's, and ask only if there is none.
+
+Nobody to ask, or the user says go: 20-minute lab seminar, `ko+en` body, `ko` titles, all four
+boxes — stated in one line.
 
 ## [0.5] Preflight
 
@@ -120,6 +142,13 @@ you draw go in `$W/figures/*.svg` (token colours via CSS variables, `role="img"`
 through `<foreignObject>` with `$…$`). An illustration re-drawn from a paper figure says so in its
 caption. Equations are TeX in `deck.json`; the build renders them (`make_equations.py`, cached in
 `deck/assets/math`).
+
+A diagram's `viewBox` width is about the width it is shown at (a 3:2 stepper: 1000), so its 24px
+labels stay at or above the floor; QA reports a label that runs past its `<foreignObject>`. An image
+never grows past its own pixel width: a figure shown wider than about 1000 stage px (a chart across
+the slide, one class of a sample grid as image tabs) is cut at 800 dpi, or it sits small in a white
+mat. When you re-assemble part of a figure, keep the paper's row and column labels, give the
+parts of one toggle the same aspect, and say so in the caption.
 
 **The build refuses while any gate fails** (`references/qa-checklist.md` §1). The fix is upstream —
 cut a line, change the block, split the slide. Never shrink type, never raise a threshold.

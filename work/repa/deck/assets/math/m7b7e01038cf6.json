@@ -1,0 +1,1 @@
+{"tex": "\\mathcal{L}_{\\mathrm{REPA}}(\\theta,\\phi) = -\\,\\mathbb{E}_{x_*,\\epsilon,t}\\Big[\\frac{1}{N}\\sum_{n=1}^{N}\\mathrm{sim}\\big(y_*^{[n]},\\,h_\\phi(h_t^{[n]})\\big)\\Big]", "w": 23.915677, "h": 1.8900649999999999, "d": 1.271268}

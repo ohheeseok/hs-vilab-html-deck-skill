@@ -226,8 +226,8 @@ def cmd_crop(a):
     if ar < 1.3:
         print(f"  ! aspect {ar:.2f}:1 is tall. In a wide body region this will "
               f"be\n    height-limited, and every label inside it shrinks by "
-              f"that factor.\n    Prefer figureSide or figureNumbered for a "
-              f"figure this shape.")
+              f"that factor.\n    Put a figure this shape in one column of a "
+              f"`split` (text beside it), or use figureNumbered.")
     doc.close()
     return 0
 

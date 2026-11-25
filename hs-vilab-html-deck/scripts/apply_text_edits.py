@@ -60,7 +60,11 @@ def main():
     ap.add_argument("deck"); ap.add_argument("table")
     ap.add_argument("--write", action="store_true")
     a = ap.parse_args()
-    deck = json.loads(Path(a.deck).read_text(encoding="utf-8"))
+    src = Path(a.deck).read_text(encoding="utf-8")
+    deck = json.loads(src)
+    # write back with the file's own indent, so the diff shows only the edited strings
+    m = re.search(r"\n( +)\S", src)
+    indent = len(m.group(1)) if m else 2
     done = skipped = 0
     for loc, orig, edit in rows(Path(a.table).read_text(encoding="utf-8")):
         try:
@@ -76,7 +80,7 @@ def main():
         done += 1
     print(f"{done} edit(s) applicable, {skipped} skipped")
     if a.write and done:
-        Path(a.deck).write_text(json.dumps(deck, ensure_ascii=False, indent=2) + chr(10), encoding="utf-8")
+        Path(a.deck).write_text(json.dumps(deck, ensure_ascii=False, indent=indent) + chr(10), encoding="utf-8", newline=chr(10))
         print(f"wrote {a.deck}")
     return 0
 

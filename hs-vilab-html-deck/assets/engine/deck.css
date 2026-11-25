@@ -83,6 +83,7 @@ body{overflow:hidden;background:var(--letterbox)}
 /* ---------- layout ---------- */
 .split{display:grid;gap:var(--gap-col);flex:1 1 auto;min-height:0;align-items:start}
 .split > *{min-width:0;display:flex;flex-direction:column;gap:32px}
+.split .split{gap:40px}
 .split--stretch{align-items:stretch}
 .col-push{margin-top:auto}
 
@@ -153,8 +154,9 @@ i.m{font-style:italic}
 sub{font-size:max(24px,.75em);line-height:0}
 
 /* ---------- delta / metric tiles ---------- */
-.deltas{display:flex;flex-direction:column;gap:36px}
-.delta{display:grid;grid-template-columns:auto 1fr;column-gap:28px;align-items:baseline}
+/* one grid for all tiles: every value and every label starts on the same line (REPA run, slide 15) */
+.deltas{display:grid;grid-template-columns:auto 1fr;column-gap:28px;row-gap:36px}
+.delta{grid-column:1/-1;display:grid;grid-template-columns:subgrid;align-items:baseline}
 .delta-value{
   font-size:var(--t-title);
   line-height:1.1;
@@ -168,6 +170,7 @@ sub{font-size:max(24px,.75em);line-height:0}
 
 /* ---------- figure ---------- */
 .figure{margin:0;display:flex;flex-direction:column;gap:16px;min-height:0}
+.figure--fixed{flex:none}
 .figure-mat{
   background:var(--color-media-mat);
   border-radius:var(--radius-media);
@@ -254,6 +257,10 @@ sub{font-size:max(24px,.75em);line-height:0}
 .readout-text{font-size:var(--t-body);line-height:1.55}
 .readout [data-state-panel]{display:flex;flex-direction:column;gap:20px}
 .readout [data-state-panel][hidden]{display:none}
+/* without a panel the states still share one cell, so what sits under them never jumps */
+.readout-states{display:grid}
+.readout-states > [data-state-panel]{grid-area:1/1}
+.readout-states > [data-state-panel][hidden]{display:flex;visibility:hidden}
 /* in a panel the states stack in one grid cell: the panel keeps the taller state's height,
    so the caption under it does not jump when the toggle flips */
 .readout .panel{display:grid}
@@ -392,7 +399,7 @@ sub{font-size:max(24px,.75em);line-height:0}
   min-width:0;
 }
 .panel--sm{padding:24px 28px}
-.panel .deltas{gap:32px}
+.panel .deltas{display:flex;flex-direction:column;gap:32px}
 .panel .delta{grid-template-columns:1fr;row-gap:6px}
 .slide--wash .panel{border-color:var(--hs-grey-15)}
 .groups--divided > .group{position:relative}
@@ -541,6 +548,8 @@ sub{font-size:max(24px,.75em);line-height:0}
 .toggle .media-caption{margin-top:0}
 /* sparse slides (Q&A, a short list) may sit on the optical centre instead of the top */
 .slide--center .slide-body{justify-content:center;padding-bottom:72px}
+/* a split stretches to fill the body; on a centred slide it must not, or nothing gets centred */
+.slide--center .split{flex:0 1 auto}
 
 /* the toggle's buttons sit on their own row across both columns, so the visual and the readout
    can take any ratio without the buttons running into the readout */

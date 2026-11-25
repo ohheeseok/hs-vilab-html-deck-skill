@@ -6,10 +6,11 @@ Usage:
 Opens deck/index.html?motion=0 over file:// with every non-file request blocked, so each
 capture is the finished slide. Captures go to qa/ at 1920x1080 and qa/<W>x<H>/ otherwise.
 For each slide and each toggle state:
-  * screenshot -> qa/s<NN>[-<state>].png
+  * screenshot -> qa/s<NN>[-<state>].png, and qa/s<NN>-step<k>.png for each later stepper step
   * overflow: any element whose box leaves the slide, or a text box that clips;
   * collide: two visible text line boxes (or text and an image) overlapping anywhere on the slide;
-  * spill: content leaving its band (a direct child of the slide), or two bands overlapping;
+  * spill: content leaving its band (a direct child of the slide), two bands overlapping, or a
+    split / toggle / stepper whose content runs into the block below it;
   * type floor: any rendered glyph run under 24 stage px;
   * title wrap: a slide title taller than one line;
   * glyph faces: CDP CSS.getPlatformFontsForNode on every text-bearing element —
@@ -78,6 +79,15 @@ MEASURE = r"""
       if (px < 23.5) out.small.push({el: path(el), px: Math.round(px * 10) / 10, text: el.textContent.trim().slice(0, 40)});
     }
   }
+  // text in a diagram's foreignObject is clipped by the object's box, not by CSS overflow
+  for (const fo of slide.querySelectorAll('foreignObject')) {
+    const d = fo.firstElementChild;
+    if (!d || !visible(d)) continue;
+    const rg = document.createRange(); rg.selectNodeContents(d);
+    const fr = fo.getBoundingClientRect(), ir = rg.getBoundingClientRect();
+    if (ir.left < fr.left - 2 || ir.right > fr.right + 2 || ir.top < fr.top - 2 || ir.bottom > fr.bottom + 2)
+      out.clipped.push(path(d) + ' (diagram label: ' + d.textContent.trim().slice(0, 24) + ')');
+  }
   // bands: the slide's direct children stack top to bottom; content must stay inside its band
   // and bands must not overlap (a figure growing up over the cover rule, a body running into the footer).
   out.spill = [];
@@ -99,6 +109,25 @@ MEASURE = r"""
       }
     }
   });
+  // boxes inside the body: a split (or a toggle, stepper) keeps its content inside it. A split
+  // shrinks to leave room for the block below it while its figures do not, so a caption ends up
+  // under the next block (slide 17, REPA run) — the band check cannot see that.
+  for (const cell of slide.querySelectorAll('.slide-body > *, .split > * > *, .split, .toggle-grid, .stepper')) {
+    if (!visible(cell)) continue;
+    let next = cell.nextElementSibling;
+    while (next && !visible(next)) next = next.nextElementSibling;
+    if (!next) continue;              // nothing below it: the band check covers the body's edge
+    const nr = next.getBoundingClientRect();
+    for (const d of cell.querySelectorAll('*')) {
+      if (!visible(d) || d.closest('svg') && !(d instanceof SVGSVGElement)) continue;
+      const r = d.getBoundingClientRect();
+      if (!r.width || !r.height) continue;
+      if (r.bottom > nr.top + 2) {
+        out.spill.push({el: path(d), into: path(next), px: Math.round((r.bottom - nr.top) / k)});
+        break;
+      }
+    }
+  }
   // collide: two visible pieces of text (line boxes) — or text and an image — that overlap anywhere
   // on the slide. The band check only sees a slide's direct children; this catches a caption that
   // a shrinking flex item lets run over its neighbour inside one column.
@@ -200,6 +229,17 @@ def main() -> int:
                     page.evaluate(f"window.__deck.setState({i}, {json.dumps(st)})")
                 page.wait_for_timeout(350)
                 name = f"s{i + 1:02d}" + (f"-{st}" if st else "")
+                page.screenshot(path=str(qa / f"{name}.png"))
+                m = page.evaluate(MEASURE, i)
+                m["name"] = name
+                m["faces"] = faces(cdp, page, i)
+                report["slides"].append(m)
+            # a stepper: every later step is a slide the room sees — capture and measure each
+            steps = page.evaluate(f"+(document.querySelectorAll('.slide')[{i}].getAttribute('data-steps') || 0)")
+            for k in range(1, steps + 1):
+                page.evaluate(f"location.hash = '#/{i + 1}/{k}'")
+                page.wait_for_timeout(350)
+                name = f"s{i + 1:02d}-step{k}"
                 page.screenshot(path=str(qa / f"{name}.png"))
                 m = page.evaluate(MEASURE, i)
                 m["name"] = name

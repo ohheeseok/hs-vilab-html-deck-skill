@@ -20,7 +20,7 @@ that does not fit is to cut, split or re-layout, never to shrink.
 | `message` | required except cover | the one key sentence; spoken, not printed on the slide |
 | `cite` | required except cover | paper locations: `"Fig. 3"`, `"Table 1"`, `"Sec. 4.1"`, `"App. B"` |
 | `tone` | `wash` | grey ground for slides whose evidence is a chart or table drawn by the build |
-| `valign` | `center` | a sparse slide (Q&A, a short list) sits on the optical centre instead of the top |
+| `valign` | `center` | a sparse slide (a short table, an equation, two cards) sits on the optical centre instead of the top; a `split` keeps its content height |
 | `time` | seconds | summed against `meta.target_minutes` (build gate ±10%) |
 | `notes` | list of strings | the spoken script, 합쇼체; `[1]` `[2]` mark toggle-state cues |
 | `provenance` | object | claim → `verbatim` / `derived` / `interpretation` / `external` + where |
@@ -30,7 +30,8 @@ Ending (the last slide, required by the build): `layout: "ending"`, `title` (def
 `meta.presenter` (an optional `contact` line); no footer, no section, no message.
 
 Cover: `title`, `subtitle`, `figure` (`src`, `alt`, `caption`). The presenter block comes from
-`meta.presenter`, the small paper credit from `meta.paper` (omit it, or set `meta.coverCredit:
+`meta.presenter`, the small paper credit from `meta.paper` — `authors`, `affiliations`, `venue`, and
+`authorNote` saying what an asterisk marks (`* 공동 1저자`, `* 공동 지도`; the build refuses `*` without it) (omit it, or set `meta.coverCredit:
 false`, for your own work).
 
 ## Blocks
@@ -48,7 +49,7 @@ false`, for your own work).
 | `deltas` | change against ONE named baseline | `items[{value, label, small, pair}]`, `provenance` | one big number per metric; `pair` names two rows drawn on the slide → hover/focus marks them (gate checks they exist) |
 | `bars` | one metric across ≥ 4 models | `title`, `metric`, `better`, `items[{label, sub, value, focus}]`, `provenance` | SVG drawn by the build, sorted best first, `focus` = the paper's model |
 | `table` | several metrics | `columns[{label, dir, align}]`, `groups[{label, rows[{cells, focus}]}]`, `provenance` | `**x**` = best; number columns align right, word columns left (auto); `focus` row tinted |
-| `figure` | a paper figure | `src`, `alt`, `caption`, `height` | crop the REGION (axes, legend) at 400 dpi with `extract_figures.py`; caption written by the slide |
+| `figure` | a paper figure | `src`, `alt`, `caption`, `height` | crop the REGION (axes, legend) at 400 dpi with `extract_figures.py`; caption written by the slide. With `height` the figure keeps that size (it does not shrink) |
 | `figureNumbered` | a complex figure needing pointers | `src`, `marks[{x, y}]` (0–1), `items` | one item per mark |
 | `diagram` | a figure we redraw as SVG | `svg` (path under the work dir), `caption` | token colours, `role="img"` + `<title>`; math in `<foreignObject>` via `$…$` |
 | `equation` | an equation carries the slide | `lines` (TeX), `tags`, `symbols[[sym, meaning]]` | TeX → dvisvgm → inline SVG, Arev Sans |
@@ -63,7 +64,8 @@ false`, for your own work).
 `**bold**`, `$TeX$` (inline math, rendered at build time), `_{sub}`; hyphenated names
 (`Self-Flow`, `SiT-XL/2`) never break, a Korean particle stays on the math before it
 (`$\ell_1$에서`), and a count stays with its unit (`1M step`, `50 ODE steps`). Use U+00A0 to keep a short phrase on one line
-(`DINOv2 feature`) and U+2007 (figure space) to align a decimal in a table column.
+(`DINOv2 feature`) and U+2007 (figure space) to align a decimal in a table column. The build also keeps
+`Fig. 3`, `Table 4`, `FID 5.30`, `= 9.6` and `$k$ = 10개로` on one line.
 
 ## Choosing, with the Self-Flow deck as the example
 

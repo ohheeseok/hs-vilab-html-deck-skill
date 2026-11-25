@@ -64,6 +64,9 @@ Self-Flow run the first verifier said a linear probe reversed in late layers and
 it reversed at two layers; the figure, enlarged, showed Self-Flow above at every layer. The slide
 had already been written from the first claim. When two reviewers disagree, or a claim says a
 result "reverses", crop the figure and look before you write.
+It happened again on REPA: the outline said "all layers 4–24" and "layers 20–24 match vanilla"; the
+zoomed Fig. 3 has points from layer 6, and at layer 24 REPA is above vanilla again. Any claim taken
+from a curve is written with its range and marked "곡선 근거" until you have looked.
 
 **Korean editor** — see `korean-style.md`.
 
