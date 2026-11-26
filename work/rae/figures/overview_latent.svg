@@ -1,0 +1,114 @@
+<svg class="diagram" viewBox="0 0 1696 470" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ol-title ol-desc">
+  <title id="ol-title">SD-VAE latent과 RAE latent (Fig. 2를 바탕으로 다시 그림)</title>
+  <desc id="ol-desc">256×256 이미지 한 장을 두 autoencoder가 DiT 입력으로 바꾸는 과정. SD-VAE의 U-Net 인코더(135 GFLOPs)는 32×32×4로 압축하고, DiT가 2×2 패치로 묶어 16차원 토큰 256개를 받는다. RAE는 고정한 DINOv2-B 인코더(22 GFLOPs)의 768차원 패치 토큰 256개를 그대로 쓰고, DiT는 patch 1로 받는다. 디코더는 SD-VAE 310 GFLOPs, ViT 디코더 106 GFLOPs. 두 질문: 이 토큰으로 이미지를 복원할 수 있는가(①), DiT가 이 차원에서 확산을 학습하는가(②).</desc>
+  <!-- the file draws the finished picture (beat 3): RAE, both questions. overview_latent.anim.js
+       starts it from SD-VAE. Elements the script moves carry data-anim. -->
+<g transform="translate(24,0)">
+
+  <!-- question ① : a bracket over the autoencoder (encoder … decoder) -->
+  <g data-anim="q1">
+    <path d="M200 100V82H1400V100" fill="none" stroke="var(--color-warm)" stroke-width="4"/>
+    <foreignObject x="450" y="24" width="700" height="44"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-h">① 이 토큰에서 이미지를 복원할 수 있나</div></foreignObject>
+  </g>
+
+  <!-- input image -->
+  <g>
+    <rect x="0" y="130" width="140" height="140" rx="10" fill="var(--color-surface-brand)" stroke="var(--color-text-heading)" stroke-width="3"/>
+    <circle cx="100" cy="168" r="16" fill="var(--color-warm)"/>
+    <path d="M10 258L52 196L82 236L104 212L132 258Z" fill="var(--color-text-heading)"/>
+    <foreignObject x="-20" y="316" width="180" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c">256×256 이미지</div></foreignObject>
+  </g>
+
+  <!-- arrows (static) -->
+  <g stroke="var(--color-text-muted)" stroke-width="3" fill="none">
+    <path d="M148 200H188"/><path d="M182 193L190 200L182 207"/>
+    <path d="M408 200H448"/><path d="M442 193L450 200L442 207"/>
+    <path d="M888 200H928"/><path d="M922 193L930 200L922 207"/>
+    <path d="M1148 200H1188"/><path d="M1182 193L1190 200L1182 207"/>
+    <path d="M1408 200H1448"/><path d="M1442 193L1450 200L1442 207"/>
+  </g>
+
+  <!-- encoder: SD-VAE funnel / frozen ViT -->
+  <polygon data-anim="vae-enc" points="200,96 400,160 400,240 200,304" fill="var(--color-surface-sunken)" stroke="var(--color-border-control)" stroke-width="3" opacity="0" visibility="hidden"/>
+  <rect data-anim="rae-enc" x="200" y="120" width="200" height="160" rx="12" fill="var(--color-surface-brand)" stroke="var(--color-accent)" stroke-width="3"/>
+  <g data-anim="vae-enc-label" opacity="0" visibility="hidden">
+    <foreignObject x="200" y="120" width="200" height="160"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box" style="font-size:24px">SD-VAE 인코더</div></foreignObject>
+    <foreignObject x="130" y="316" width="340" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-muted">U-Net · 135 GFLOPs</div></foreignObject>
+  </g>
+  <g data-anim="rae-enc-label">
+    <foreignObject x="200" y="120" width="200" height="160"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box" style="font-size:24px">DINOv2-B (고정)</div></foreignObject>
+    <foreignObject x="130" y="316" width="340" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-muted">ViT · 22 GFLOPs</div></foreignObject>
+  </g>
+
+  <!-- SD-VAE latent: 32×32×4 drawn as four stacked 4×4 grids -->
+  <g data-anim="grid" opacity="0" visibility="hidden">
+    <g fill="var(--color-surface-sunken)" stroke="var(--color-border-control)" stroke-width="2.5">
+      <rect x="494" y="122" width="112" height="112"/>
+      <rect x="486" y="130" width="112" height="112"/>
+      <rect x="478" y="138" width="112" height="112"/>
+      <rect x="470" y="146" width="112" height="112"/>
+    </g>
+    <path d="M498 146V258M526 146V258M554 146V258M470 174H582M470 202H582M470 230H582" stroke="var(--color-border-control)" stroke-width="2.5"/>
+    <foreignObject x="420" y="316" width="210" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-h">32×32×4</div></foreignObject>
+  </g>
+  <!-- beat 0: the grid feeds the DiT; beat 1: through the tokens (gone once the tokens stretch) -->
+  <g data-anim="wire-ab" stroke="var(--color-text-muted)" stroke-width="3" fill="none" opacity="0" visibility="hidden">
+    <path d="M614 200H744"/>
+    <path data-anim="wire" d="M744 200H778" opacity="0" visibility="hidden"/>
+    <path data-anim="wire-tip" d="M738 193L746 200L738 207" opacity="0" visibility="hidden"/>
+    <path d="M778 200H888"/>
+  </g>
+  <!-- the 2×2 patch that becomes one DiT token -->
+  <rect data-anim="patch" x="470" y="146" width="56" height="56" fill="none" stroke="var(--color-warm)" stroke-width="4" opacity="0" visibility="hidden"/>
+
+  <!-- the DiT tokens: 8 bars stand for 256; bar length = token dimension (0.5 px per channel) -->
+  <g data-anim="toks" fill="var(--color-accent)">
+    <rect x="477" y="115" width="384" height="8"/>
+    <rect x="477" y="137" width="384" height="8"/>
+    <rect x="477" y="159" width="384" height="8"/>
+    <rect x="477" y="181" width="384" height="8"/>
+    <rect x="477" y="203" width="384" height="8"/>
+    <rect x="477" y="225" width="384" height="8"/>
+    <rect x="477" y="247" width="384" height="8"/>
+    <rect x="477" y="269" width="384" height="8"/>
+  </g>
+  <g data-anim="vae-tok-label" opacity="0" visibility="hidden">
+    <foreignObject x="614" y="316" width="300" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-h">토큰 256개 × 16차원</div></foreignObject>
+  </g>
+  <g data-anim="rae-tok-label">
+    <foreignObject x="454" y="316" width="430" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-h">토큰 256개 × 768차원</div></foreignObject>
+  </g>
+
+  <!-- DiT -->
+  <rect x="940" y="120" width="200" height="160" rx="12" fill="var(--color-text-heading)"/>
+  <foreignObject x="940" y="120" width="200" height="160"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box" style="color:#fff;font-size:36px">DiT</div></foreignObject>
+  <foreignObject data-anim="vae-dit-label" x="900" y="316" width="280" height="40" opacity="0" visibility="hidden"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-muted">patch 2</div></foreignObject>
+  <foreignObject data-anim="rae-dit-label" x="900" y="316" width="280" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-muted">patch 1</div></foreignObject>
+
+  <!-- question ② : under DiT -->
+  <g data-anim="q2">
+    <path d="M940 382H1140" stroke="var(--color-warm)" stroke-width="4"/>
+    <foreignObject x="740" y="396" width="600" height="44"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-h">② 이 차원에서 확산을 학습할 수 있나</div></foreignObject>
+  </g>
+
+  <!-- decoder: SD-VAE funnel / ViT -->
+  <polygon data-anim="vae-dec" points="1200,160 1400,96 1400,304 1200,240" fill="var(--color-surface-sunken)" stroke="var(--color-border-control)" stroke-width="3" opacity="0" visibility="hidden"/>
+  <rect data-anim="rae-dec" x="1200" y="120" width="200" height="160" rx="12" fill="var(--color-surface-brand)" stroke="var(--color-accent)" stroke-width="3"/>
+  <g data-anim="vae-dec-label" opacity="0" visibility="hidden">
+    <foreignObject x="1200" y="120" width="200" height="160"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box" style="font-size:24px">SD-VAE 디코더</div></foreignObject>
+    <foreignObject x="1150" y="316" width="300" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-muted">U-Net · 310 GFLOPs</div></foreignObject>
+  </g>
+  <g data-anim="rae-dec-label">
+    <foreignObject x="1200" y="120" width="200" height="160"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box" style="font-size:24px">ViT 디코더</div></foreignObject>
+    <foreignObject x="1150" y="316" width="300" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-muted">ViT · 106 GFLOPs</div></foreignObject>
+  </g>
+
+  <!-- output image -->
+  <g>
+    <rect x="1460" y="130" width="140" height="140" rx="10" fill="var(--color-surface-brand)" stroke="var(--color-text-heading)" stroke-width="3"/>
+    <circle cx="1560" cy="168" r="16" fill="var(--color-warm)"/>
+    <path d="M1470 258L1512 196L1542 236L1564 212L1592 258Z" fill="var(--color-text-heading)"/>
+    <foreignObject x="1440" y="316" width="180" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c">이미지</div></foreignObject>
+  </g>
+</g>
+</svg>

@@ -1,0 +1,93 @@
+<svg class="diagram" viewBox="0 0 1696 510" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="os-title os-desc">
+  <title id="os-title">Self-Flow가 정렬 목표를 얻는 방식 (Sec. 3.3–3.4와 Fig. 3을 바탕으로 그림)</title>
+  <desc id="os-desc">아래: student flow 모델이 noise latent에서 velocity를 예측한다. REPA는 고정된 외부 encoder가 깨끗한 입력에서 만든 표현에 중간층 feature를 맞춘다. Self-Flow는 이 외부 encoder 자리에 모델 자신의 EMA 사본(teacher)을 두고, student 중간층 feature를 teacher 깊은 층 feature에 맞추는 loss를 더한다(l = 0.3D, k = 0.7D). student 입력의 토큰에는 두 noise 수준이 섞이고, teacher 입력의 모든 토큰은 둘 중 낮은 수준이다. 두 질문: 무엇이 이득을 만드나(①), 모달리티와 모델 크기가 바뀌어도 남나(②).</desc>
+  <!-- the file draws the finished picture (beat 3); overview_selfflow.anim.js starts it from REPA-style
+       alignment to a frozen external encoder. Elements the script moves carry data-anim.
+       Bars: depth D = 1180 px; l = 0.3D at x 554, k = 0.7D at x 1026. -->
+<g transform="translate(44,0)">
+
+  <!-- question ①: over the teacher row -->
+  <g data-anim="q1">
+    <path d="M200 74V58H1380V74" fill="none" stroke="var(--color-warm)" stroke-width="4"/>
+    <foreignObject x="200.0" y="6" width="1180.0" height="44"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-h">① 무엇이 이득을 만드나</div></foreignObject>
+  </g>
+
+  <!-- top row labels, in turn: clean input (REPA) → noise latent → lower noise only -->
+  <foreignObject data-anim="lt0" opacity="0" visibility="hidden" x="-40.0" y="28" width="200.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c">깨끗한 입력</div></foreignObject>
+  <foreignObject data-anim="lt1" opacity="0" visibility="hidden" x="-40.0" y="28" width="200.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c">noise latent</div></foreignObject>
+  <foreignObject data-anim="lt2" x="-40.0" y="28" width="200.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c">낮은 noise만</div></foreignObject>
+
+  <!-- the teacher's input tile: clean on beat 0, then every token at the lower noise level -->
+  <rect x="4" y="84" width="112" height="112" fill="var(--color-surface)"/>
+  <g data-anim="tc" fill="var(--color-border-control)"><rect x="6" y="86" width="24" height="24"/><rect x="34" y="86" width="24" height="24"/><rect x="62" y="86" width="24" height="24"/><rect x="90" y="86" width="24" height="24"/><rect x="6" y="114" width="24" height="24"/><rect x="34" y="114" width="24" height="24"/><rect x="62" y="114" width="24" height="24"/><rect x="90" y="114" width="24" height="24"/><rect x="6" y="142" width="24" height="24"/><rect x="34" y="142" width="24" height="24"/><rect x="62" y="142" width="24" height="24"/><rect x="90" y="142" width="24" height="24"/><rect x="6" y="170" width="24" height="24"/><rect x="34" y="170" width="24" height="24"/><rect x="62" y="170" width="24" height="24"/><rect x="90" y="170" width="24" height="24"/></g>
+  <rect x="4" y="84" width="112" height="112" fill="none" stroke="var(--color-text-heading)" stroke-width="3"/>
+  <g stroke="var(--color-text-muted)" stroke-width="3" fill="none"><path d="M124.0 140H188.0"/><path d="M182.0 133L190.0 140L182.0 147"/></g>
+
+  <!-- REPA (beat 0 only): frozen external encoder → representation target -->
+  <g data-anim="ext" opacity="0" visibility="hidden">
+    <rect x="200" y="90" width="230" height="100" rx="10" fill="var(--color-surface)" stroke="var(--color-border-control)" stroke-width="3"/>
+    <foreignObject x="200.0" y="96" width="230.0" height="52"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box">외부 encoder</div></foreignObject>
+    <foreignObject x="200.0" y="140" width="230.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-muted">고정</div></foreignObject>
+    <g stroke="var(--color-text-muted)" stroke-width="3" fill="none"><path d="M438.0 140H484.0"/><path d="M478.0 133L486.0 140L478.0 147"/></g>
+    <g fill="var(--color-text-muted)"><rect x="494.0" y="84" width="120" height="12"/><rect x="494.0" y="104" width="120" height="12"/><rect x="494.0" y="124" width="120" height="12"/><rect x="494.0" y="144" width="120" height="12"/><rect x="494.0" y="164" width="120" height="12"/><rect x="494.0" y="184" width="120" height="12"/></g>
+    <foreignObject x="630.0" y="120" width="220.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-h">표현 목표</div></foreignObject>
+  </g>
+
+  <!-- the EMA teacher: same depth as the student; only its output after layer k is used -->
+  <g data-anim="teacher">
+    <rect x="200" y="90" width="798.0" height="100" rx="10" fill="var(--color-surface-brand)" stroke="var(--color-accent)" stroke-width="3"/>
+    <rect x="1054.0" y="90" width="326.0" height="100" rx="10" fill="var(--color-text-heading)" stroke="var(--color-text-heading)" stroke-width="3"/>
+    <foreignObject x="200.0" y="90" width="798.0" height="100"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box">깊은 층</div></foreignObject>
+    <foreignObject x="1054.0" y="90" width="326.0" height="100"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box" style="color:#fff">EMA teacher</div></foreignObject>
+    <foreignObject data-anim="k-tick" x="1046.0" y="218" width="200.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-muted">0.7D · 목표</div></foreignObject>
+    <g stroke="var(--color-text-muted)" stroke-width="3" fill="none"><path d="M1000.0 140H1051.0"/><path d="M1045.0 133L1053.0 140L1045.0 147"/></g>
+    <circle cx="1026.0" cy="140" r="6" fill="var(--color-accent)"/>
+  </g>
+
+  <!-- the student row: noise latent → flow model → velocity -->
+  <foreignObject data-anim="lb0" opacity="0" visibility="hidden" x="-40.0" y="428" width="200.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c">noise latent</div></foreignObject>
+  <foreignObject data-anim="lb2" x="-40.0" y="428" width="200.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c">두 noise 수준</div></foreignObject>
+  <rect x="4" y="304" width="112" height="112" fill="var(--color-surface)"/>
+  <g fill="var(--color-border-control)"><rect x="6" y="306" width="24" height="24"/><rect x="62" y="306" width="24" height="24"/><rect x="90" y="306" width="24" height="24"/><rect x="6" y="334" width="24" height="24"/><rect x="34" y="334" width="24" height="24"/><rect x="62" y="334" width="24" height="24"/><rect x="34" y="362" width="24" height="24"/><rect x="62" y="362" width="24" height="24"/><rect x="90" y="362" width="24" height="24"/><rect x="6" y="390" width="24" height="24"/><rect x="34" y="390" width="24" height="24"/><rect x="90" y="390" width="24" height="24"/></g>
+  <g data-anim="sc-hi" fill="var(--color-text)"><rect x="34" y="306" width="24" height="24"/><rect x="90" y="334" width="24" height="24"/><rect x="6" y="362" width="24" height="24"/><rect x="62" y="390" width="24" height="24"/></g>
+  <rect x="4" y="304" width="112" height="112" fill="none" stroke="var(--color-text-heading)" stroke-width="3"/>
+  <g data-anim="sc-ring" fill="none" stroke="var(--color-warm)" stroke-width="4"><rect x="36" y="308" width="20" height="20"/><rect x="92" y="336" width="20" height="20"/><rect x="8" y="364" width="20" height="20"/><rect x="64" y="392" width="20" height="20"/></g>
+  <g stroke="var(--color-text-muted)" stroke-width="3" fill="none"><path d="M124.0 360H188.0"/><path d="M182.0 353L190.0 360L182.0 367"/></g>
+  <rect data-anim="sfront" x="200" y="310" width="326.0" height="100" rx="10" fill="var(--color-surface-brand)" stroke="var(--color-accent)" stroke-width="3"/>
+  <rect x="582.0" y="310" width="798.0" height="100" rx="10" fill="var(--color-text-heading)" stroke="var(--color-text-heading)" stroke-width="3"/>
+  <foreignObject x="200.0" y="310" width="326.0" height="100"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box">중간층</div></foreignObject>
+  <foreignObject data-anim="sn0" opacity="0" visibility="hidden" x="582.0" y="310" width="798.0" height="100"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box" style="color:#fff">flow 모델</div></foreignObject>
+  <foreignObject data-anim="sn1" x="582.0" y="310" width="798.0" height="100"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box" style="color:#fff">student</div></foreignObject>
+  <g stroke="var(--color-text-muted)" stroke-width="3" fill="none"><path d="M528.0 360H579.0"/><path d="M573.0 353L581.0 360L573.0 367"/></g>
+  <g stroke="var(--color-text-muted)" stroke-width="3" fill="none"><path d="M1388.0 360H1428.0"/><path d="M1422.0 353L1430.0 360L1422.0 367"/></g>
+  <rect x="1440" y="310" width="184" height="100" rx="10" fill="var(--color-surface)" stroke="var(--color-border-control)" stroke-width="3"/>
+  <foreignObject x="1440.0" y="318" width="184.0" height="52"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box">velocity</div></foreignObject>
+  <foreignObject x="1440.0" y="362" width="184.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-muted">예측</div></foreignObject>
+
+  <!-- EMA: the teacher's weights follow the student's -->
+  <g data-anim="ema" stroke="var(--color-text-muted)" stroke-width="3" fill="none">
+    <path d="M1290 306V200" stroke-dasharray="8 7"/><path d="M1283 206L1290 197L1297 206"/>
+  </g>
+  <foreignObject data-anim="ema-label" x="1302.0" y="232" width="120.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-muted">EMA</div></foreignObject>
+
+  <!-- the two inputs differ in noise level (Sec. 3.3–3.4) -->
+  <g data-anim="gap">
+    <path d="M60 212V288" stroke="var(--color-warm)" stroke-width="4"/>
+    <path d="M52 222L60 210L68 222M52 278L60 290L68 278" fill="none" stroke="var(--color-warm)" stroke-width="4"/>
+    <foreignObject x="80.0" y="230" width="300.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo" style="font-weight:700;color:var(--color-text-heading)">noise 수준이 다름</div></foreignObject>
+  </g>
+
+  <!-- alignment: student after layer l → teacher after layer k (training only) -->
+  <path data-anim="stem" d="M554.0 355V262" stroke="var(--color-accent)" stroke-width="5" stroke-linecap="round" fill="none"/>
+  <path data-anim="run" d="M554.0 262H1026.0V145" stroke="var(--color-accent)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <circle data-anim="sdot" cx="554.0" cy="360" r="6" fill="var(--color-accent)"/>
+  <foreignObject data-anim="l-tick" x="420.0" y="262" width="106.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-r fo-muted">0.3D</div></foreignObject>
+  <foreignObject data-anim="align-label" x="584.0" y="206" width="412.0" height="44"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c" style="font-weight:700;color:var(--color-text-heading)">feature 정렬 loss</div></foreignObject>
+
+  <!-- question ②: under the whole student and its output -->
+  <g data-anim="q2">
+    <path d="M200 426V442H1624V426" fill="none" stroke="var(--color-warm)" stroke-width="4"/>
+    <foreignObject x="200.0" y="454" width="1424.0" height="44"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-h">② 모달리티와 모델 크기가 바뀌어도 남나</div></foreignObject>
+  </g>
+</g>
+</svg>

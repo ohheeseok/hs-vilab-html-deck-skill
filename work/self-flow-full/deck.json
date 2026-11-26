@@ -6,7 +6,7 @@
     "titleLang": "ko",
     "occasion": "연구실 논문 세미나, 발표 후 토론",
     "target_minutes": 20,
-    "target_slides": 21,
+    "target_slides": 22,
     "statementTheme": "dark",
     "paper": {
       "title": "Self-Supervised Flow Matching for Scalable Multi-Modal Synthesis",
@@ -68,11 +68,11 @@
       },
       {
         "ref": "Fig. 3",
-        "use": 8
+        "use": 9
       },
       {
         "ref": "Fig. 4",
-        "use": 16
+        "use": 17
       },
       {
         "ref": "Fig. 5",
@@ -80,7 +80,7 @@
       },
       {
         "ref": "Fig. 6",
-        "use": 15
+        "use": 16
       },
       {
         "ref": "Fig. 7",
@@ -88,47 +88,47 @@
       },
       {
         "ref": "Fig. 8",
-        "use": 13
+        "use": 14
       },
       {
         "ref": "Fig. 9",
-        "use": 14
+        "use": 15
       },
       {
         "ref": "Fig. 10",
-        "use": 14
+        "use": 15
       },
       {
         "ref": "Fig. 11",
-        "use": 17
+        "use": 18
       },
       {
         "ref": "Table 1",
-        "use": 9
-      },
-      {
-        "ref": "Table 2",
         "use": 10
       },
       {
+        "ref": "Table 2",
+        "use": 11
+      },
+      {
         "ref": "Table 3",
-        "use": 11
-      },
-      {
-        "ref": "Table 4",
-        "use": 11
-      },
-      {
-        "ref": "Table 5",
-        "use": 11
-      },
-      {
-        "ref": "Table 6",
         "use": 12
       },
       {
+        "ref": "Table 4",
+        "use": 12
+      },
+      {
+        "ref": "Table 5",
+        "use": 12
+      },
+      {
+        "ref": "Table 6",
+        "use": 13
+      },
+      {
         "ref": "Fig. 21",
-        "cut": "층 선택 곡선. 8번의 기본 층 번호만 App. H에서 인용"
+        "cut": "층 선택 곡선. 9번의 기본 층 번호만 App. H에서 인용"
       }
     ]
   },
@@ -163,7 +163,7 @@
         "Sec. 3.4",
         "Sec. 4"
       ],
-      "time": 45,
+      "time": 40,
       "body": [
         {
           "type": "lead",
@@ -192,7 +192,7 @@
         "전체": "verbatim: Abstract, Sec. 3.3–3.4, Sec. 4"
       },
       "notes": [
-        "같은 이미지를 두 번 입력할 때 noise 수준을 달리하고, 두 입력의 feature를 맞추는 방법입니다.",
+        "같은 샘플을 두 번 입력할 때 noise 수준을 달리하고, 두 입력의 feature를 맞추는 방법입니다.",
         "기여는 세 가지입니다. 토큰마다 두 timestep 중 하나를 배정하는 Dual-Timestep Scheduling, noise가 더 적은 입력에서 얻은 EMA teacher의 feature에 맞추는 self-distillation, 그리고 이미지·비디오·오디오 실험입니다."
       ]
     },
@@ -207,7 +207,7 @@
         "Sec. 3.4",
         "App. A.5"
       ],
-      "time": 60,
+      "time": 50,
       "body": [
         {
           "type": "table",
@@ -262,7 +262,7 @@
                   "cells": [
                     "Self-Flow",
                     "중간층, 두 timestep 입력",
-                    "깊은 층, $\\tau_{\\min}$ 입력",
+                    "깊은 층, 낮은 timestep 입력",
                     "EMA teacher",
                     "없음"
                   ],
@@ -280,7 +280,7 @@
         {
           "type": "lead",
           "size": "sm",
-          "text": "질문: Self-Flow는 왜 작동하고, 그 설명은 어디까지 실험으로 뒷받침되는가?"
+          "text": "질문: 외부 encoder를 더 강한 모델로 바꾸면 생성도 좋아지는가?"
         }
       ],
       "provenance": {
@@ -289,7 +289,7 @@
       },
       "notes": [
         "생성 모델에 표현 학습을 추가하는 방법은 크게 두 갈래입니다. REPA는 DINOv2 같은 외부 encoder의 feature에 맞추고, SRA와 LayerSync는 외부 모델 없이 같은 모델의 다른 층에서 얻은 feature에 맞춥니다.",
-        "Self-Flow도 외부 모델을 쓰지 않습니다. SRA와 다른 점은 student 입력에 두 timestep을 토큰별로 섞고, teacher에는 둘 중 더 낮은 timestep을 모든 토큰에 준다는 점입니다. Self-Flow가 왜 작동하는지, 그 설명을 실험이 어디까지 뒷받침하는지 살펴보겠습니다."
+        "Self-Flow도 외부 모델을 쓰지 않고, 정렬 목표를 EMA teacher에서 얻습니다. 그 전에 외부 encoder를 쓰는 방법에서 encoder를 더 강한 것으로 바꾸면 무엇이 달라지는지부터 보겠습니다."
       ]
     },
     {
@@ -301,7 +301,7 @@
         "Fig. 2",
         "Sec. 3.2"
       ],
-      "time": 50,
+      "time": 45,
       "body": [
         {
           "type": "split",
@@ -339,7 +339,69 @@
       },
       "notes": [
         "논문의 출발점이 된 실험입니다. REPA에서 정렬에 쓰는 encoder를 DINOv2-B에서 DINOv3-H+까지 더 강한 모델로 차례로 바꿨더니, FID는 오히려 나빠졌습니다.",
-        "저자들은 고정된 외부 표현이 생성 목표와 맞지 않아 병목이 된다고 설명합니다. 이 설명 자체는 실험으로 확인한 것이 아니라 해석이라는 점을 짚어 두겠습니다."
+        "저자들은 고정된 외부 표현이 생성 목표와 맞지 않아 병목이 된다고 설명합니다. 이 설명 자체는 실험으로 확인한 것이 아니라 해석이라는 점을 짚어 두겠습니다. 그러면 외부 encoder를 빼고 정렬 목표를 어디서 얻는지, 다음 그림으로 보겠습니다."
+      ]
+    },
+    {
+      "id": "overview-selfflow",
+      "section": "background",
+      "title": "Self-Flow가 정렬 목표를 얻는 방식",
+      "message": "Self-Flow는 REPA의 외부 encoder 자리에 모델 자신의 EMA teacher를 두고, student 중간층 feature를 noise가 더 적은 입력을 받은 teacher의 깊은 층 feature에 맞춘다.",
+      "cite": [
+        "Fig. 3",
+        "Sec. 3.1",
+        "Sec. 3.3",
+        "Sec. 3.4",
+        "App. A.3"
+      ],
+      "time": 55,
+      "body": [
+        {
+          "type": "animation",
+          "name": "overview-selfflow",
+          "svg": "figures/overview_selfflow.svg",
+          "script": "figures/overview_selfflow.anim.js",
+          "side": "below",
+          "print": "expand",
+          "reveals": "외부 encoder가 빠진 자리에 같은 모델의 EMA 사본이 들어오고 두 입력의 noise 수준이 갈라지는 것을 따라가면, Self-Flow가 정렬 목표를 모델 안에서 만든다는 것이 보인다.",
+          "beats": [
+            {
+              "title": "REPA의 정렬",
+              "text": "고정 외부 encoder가 깨끗한 입력에서 만든 표현에 중간층을 맞춘다"
+            },
+            {
+              "title": "EMA teacher로 교체",
+              "text": "목표를 모델 자신의 EMA 사본, 그 깊은 층 feature에서 얻는다"
+            },
+            {
+              "title": "두 noise 수준",
+              "text": "student 입력은 두 수준, teacher 입력은 낮은 쪽만"
+            },
+            {
+              "title": "두 질문",
+              "text": "① 무엇이 이득을 만드나 ② 모달리티·모델 크기가 바뀌어도 남나"
+            }
+          ],
+          "caption": "Sec. 3.3–3.4와 **Fig. 3**을 바탕으로 그림. 막대 길이는 깊이 $D$에 비례. 16칸 중 4칸이 더 높은 noise",
+          "provenance": {
+            "REPA 정렬(기준)": "verbatim: Sec. 1, Sec. 3.1 Eq. 3(teacher r_φ), Sec. 3.2(REPA 설정, DINOv2)",
+            "EMA teacher": "verbatim: Sec. 3.4(EMA teacher f_θ′), Eq. 6, App. A.3(EMA 사본을 teacher와 평가에 사용)",
+            "중간층 → 깊은 층": "verbatim: Sec. 3.4(l < k), App. A.3(l = 0.3D, k = 0.7D)",
+            "두 noise 수준, teacher는 낮은 쪽": "verbatim: Sec. 3.3 Eq. 4–5, Sec. 3.4(τ_min = min(t, s)), Fig. 3 캡션",
+            "16칸 중 4칸": "derived: 이미지의 R_M = 0.25(App. A.3)를 4×4 격자로 그림",
+            "두 질문": "interpretation: Sec. 4의 실험 축(ablation, 모달리티, 모델 크기)을 발표의 질문으로 정리"
+          }
+        }
+      ],
+      "provenance": {
+        "그림": "derived: Fig. 3, Sec. 3.1, 3.3, 3.4",
+        "두 질문": "interpretation (발표의 질문)"
+      },
+      "notes": [
+        "앞 장의 REPA 구조부터 다시 보겠습니다. flow 모델은 noise latent에서 velocity를 예측하고, 고정된 외부 encoder가 깨끗한 입력에서 만든 표현에 중간층 feature를 맞춥니다.",
+        "[1] Self-Flow는 이 외부 encoder 자리에 모델 자신의 EMA 사본을 teacher로 둡니다. student의 중간층 feature를 teacher의 깊은 층 feature에 맞추는 loss를 더합니다.",
+        "[2] 두 입력은 noise 수준이 다릅니다. student 입력에서는 일부 토큰에 다른 timestep이 배정되어 두 수준이 섞이고, teacher 입력은 모든 토큰이 둘 중 낮은 수준입니다.",
+        "[3] 이 발표에서 볼 질문은 두 가지입니다. 무엇이 이득을 만드는지, 그리고 모달리티와 모델 크기가 바뀌어도 이득이 남는지입니다. 먼저 기본 rectified flow부터 보겠습니다."
       ]
     },
     {
@@ -474,7 +536,7 @@
         "Sec. 3.3",
         "Fig. 2"
       ],
-      "time": 80,
+      "time": 70,
       "body": [
         {
           "type": "toggle",
@@ -538,7 +600,7 @@
         }
       ],
       "notes": [
-        "같은 이미지에 noise를 넣는 방식을 네 가지로 바꿔 보겠습니다. [1] 먼저 vanilla입니다. 모든 토큰에 같은 t를 줍니다.",
+        "앞 그림의 student 입력처럼 토큰마다 noise 수준을 다르게 주는 방법은 여러 가지입니다. 네 가지를 비교하겠습니다. [1] 먼저 vanilla입니다. 모든 토큰에 같은 t를 줍니다.",
         "오른쪽 그래프에서 [2] 일부 토큰을 완전히 가리는 full masking과 [3] 토큰마다 timestep을 따로 뽑는 diffusion forcing은 모두 vanilla보다 FID가 높습니다. 저자들은 추론할 때 모든 토큰의 noise 수준이 같은데 학습할 때만 다르게 주면 그 차이가 문제가 된다고 설명합니다.",
         "[4] Dual-Timestep은 timestep을 두 개만 뽑아 토큰마다 둘 중 하나를 배정합니다. representation loss 없이도 이 방식만으로 FID가 조금 좋아졌습니다."
       ]
@@ -648,7 +710,7 @@
         "App. A.3",
         "App. H"
       ],
-      "time": 75,
+      "time": 60,
       "body": [
         {
           "type": "figure",
@@ -694,8 +756,8 @@
         "설정값": "verbatim: App. A.3, App. H"
       },
       "notes": [
-        "두 입력의 noise 수준 차이를 학습에 씁니다. student는 두 timestep이 섞인 입력을 받고, EMA teacher는 모든 토큰에 더 낮은 timestep을 적용해 noise를 줄인 입력을 받습니다.",
-        "student 중간층의 feature를 projection한 결과가 cosine 기준으로 teacher의 깊은 층 feature에 가까워지도록 학습합니다. 이 loss에 γ 0.8을 곱해 생성 loss에 더합니다. student는 noise가 적은 토큰을 단서로 noise가 많은 토큰의 feature를 추론해야 합니다."
+        "앞 그림의 구조를 논문 Fig. 3으로 보면 이렇습니다. teacher는 student 가중치의 EMA이고, 모든 토큰에 τ_min을 적용한 입력을 받습니다. 층은 전체 깊이의 0.3과 0.7 지점, SiT-XL에서는 8층과 20층입니다.",
+        "식 6은 projection한 student feature와 teacher feature의 cosine을 비교하고, 식 7은 이 항에 γ 0.8을 곱해 생성 loss에 더합니다. 저자들은 이렇게 하면 student가 noise가 적은 토큰을 단서로 noise가 많은 토큰의 feature를 추론하게 된다고 설명합니다. 이 설명이 맞는지는 뒤의 probe와 토론에서 다시 보겠습니다."
       ]
     },
     {
@@ -1685,7 +1747,7 @@
         "Fig. 14",
         "App. A.1"
       ],
-      "time": 105,
+      "time": 95,
       "body": [
         {
           "type": "groups",
@@ -1727,7 +1789,7 @@
         "토론 4": "interpretation"
       },
       "notes": [
-        "Self-Flow는 두 timestep 중 하나를 토큰마다 배정해 한 입력에 noise 수준이 다른 토큰을 섞고, noise가 더 적은 입력에서 얻은 EMA teacher의 feature를 정렬 목표로 씁니다. 여러 모달리티에서 생성 지표가 좋아졌습니다.",
+        "정리하면, Self-Flow는 토큰마다 두 noise 수준 중 하나를 주고, noise가 더 적은 입력을 받은 EMA teacher의 feature에 맞춥니다. 여러 모달리티에서 생성 지표가 좋아졌습니다.",
         "토론 주제는 네 가지입니다. 첫째, 부록 A.3은 noise 분포를 학습 전에 정해 모든 대조군에 똑같이 쓴다고 설명합니다. 그런데 오디오에서는 방법마다 shift를 탐색했고, 대조군은 0.75, Self-Flow는 1.0이 골라졌습니다. 둘째, 오디오 설정을 고를 때 쓴 지표로 최종 결과도 보고했습니다.",
         "셋째, 외부 연구에서 SRA 저자들은 올해 7월에 noise가 다른 토큰 사이의 attention을 막아도 성능이 유지된다고 보고했습니다. 그러면 이득이 정말 noise가 적은 토큰의 정보에서 오는지 다시 물어볼 수 있습니다. 넷째는 제 해석에서 나온 질문입니다. 학습 시간이 같을 때 이득이 얼마나 남는지 비교해 볼 수 있습니다."
       ]

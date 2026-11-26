@@ -1,5 +1,76 @@
 # Changelog
 
+## 0.5.0 — 2026-11-26
+
+**Overview animations.** A diagram drawn as a function of time — `render(t)` sets every moving
+attribute from t alone, adapted from a handover that analysed a paper project page's SVG explainers —
+paced by the clicker: the slide opens still on beat 0, each next key plays one beat (≤ 2.0 s) and
+stops, a key during a beat finishes it, previous jumps back, **M** turns motion off on the spot.
+Designed with codex (engine and storyboard) and agy (critique), blind to each other
+(`work/rae/review/anim/`); codex then reviewed the code (13 findings, 12 taken, 1 rejected).
+
+RAE (`work/rae`, now 22 slides, 1200 s): the text-only "two beliefs" slide became two animations —
+SD-VAE's latent becoming RAE's (Fig. 2 redrawn: the 2×2 patch becomes a token, the 256 tokens
+stretch 16 → 768 channels, the two questions drop onto the pipeline), then reconstruction and
+generation on RAE with the width, schedule shift, decoder noise augmentation and DDT head placed
+where they act. Fig. 2 moved there from the RAE slide. No gFID in the overview (the ladder keeps it).
+
+REPA (`work/repa`, now 22 slides, 1200 s): one overview added before the diagnosis slides, from a
+second codex/agy round (`work/repa/review/anim/log.md`) — vanilla SiT as one bar of 28 blocks; the
+same image, clean, through a frozen DINOv2-B and the input mismatch marked; the bar splits after
+block 8 and an alignment line rises from it (training only); two questions. The authors' "later
+layers learn details" stays a hypothesis for the discussion slide, not a fact in the picture. The
+method stepper now opens on both paths (5 → 4 steps), its later blocks sit on one line with the
+first and its inference veil is .62, not .88; two agy visual rounds (`visual_anim_triage_r*.md`). The
+user's call: adding 1–2 slides for an overview is fine (`animation.md`, SKILL.md step 6).
+
+Self-Flow (`work/self-flow-full`, now 22 slides, 1200 s): one overview after the encoder-scaling
+slide, from a third codex/agy round (`work/self-flow-full/review/anim/log.md`) — REPA-style alignment
+first, then the external encoder swapped for the model's EMA teacher with the alignment line
+re-routed from the student's middle layer to the teacher's deep one, then the two inputs' noise
+levels part; two questions. No "training only" label: App. A.3 evaluates the EMA copy. The related
+work slide now asks what Fig. 2(a) answers; the teacher slide's notes attribute the "infer the
+noisy tokens" explanation to the authors. Two agy visual rounds (`visual_anim_triage_r*.md`).
+`animation.md` gains two rules: place the overview after the slide whose subject it takes apart,
+and mark "training only" only where the paper says so.
+
+Engine
+- `animation` block: `figures/<name>.svg` (the finished picture: no script, PDF, overview grid) +
+  `figures/<name>.anim.js` (`DeckAnim.define(name, (svg, lib) => ({beats, render}))`); beats share the
+  stepper's `data-steps`, so the hash `#/n/k`, QA captures and PDF `expand` work unchanged. `side:
+  "below"` puts one column per beat under a diagram that spans the slide.
+- `lib`: `ramp`, `smooth`, `lerp`, `css`, `mix`, `along`, `set`, `node`, `fade` (opacity, and hidden at
+  0 — the PDF check found a swapped-out label still in the text layer).
+- A script that is missing, never defines, returns bad beats or throws in `render` gives the slide
+  back as a static one (the SVG as drawn, every beat's text) instead of stalling the clicker.
+- The overview grid keeps animations finished; a step past the end is clamped; M flips what is in
+  effect (OS reduced motion included) and ignores key repeat; a number key moves a toggle's focus
+  with its choice.
+- Ids in an inlined animation SVG get a per-slide prefix (real `id` attributes and references to
+  them only).
+
+Gates and QA
+- Build: ≤ 3 animations; one interaction per slide; 3–5 beats with titles; `reveals`, `print`,
+  `provenance`; the script calls `DeckAnim.define(name)` and keeps no clock, reads no OS setting,
+  listens for no input, writes no text, reaches no network (comments excluded); every `node("key")`
+  is drawn in the SVG; one name, one pair of files.
+- `qa_render.py`: every stop and the middle of every beat captured and measured
+  (`sNN-beat<k>-mid.png`); a beat over 2.0 s fails; each stop and mid-beat time drawn after playing
+  from 0 and after a jump must match (attributes compared in name order); an animation that did not
+  bind fails.
+
+Visual review (agy, two rounds on the captures, mid-beat frames included): 14 findings, then 3 new
+ones from the fixes. Two of round 1's partial rejections were wrong and round 2 said why: the token
+bars read as a dotted line because of their **height**, not their length (8 px high now; the 8 : 384
+length ratio is the point and stays), and block names can swap in place **inside** the blocks as
+well as under them. Lessons in `animation.md`: stagger a stack that grows and it reads as a funnel;
+an arrowhead fading in with its line arrives before the line; a line that a later piece crosses is
+cut into pieces so only the crossed piece fades (no seam).
+
+Docs: `references/animation.md` (when, how it plays, files, writing one, techniques, QA);
+`interaction-rules.md` (animation in the budget; "animation that plays by itself" stays out);
+`block-vocabulary.md`, `qa-checklist.md`, SKILL.md; starter files in `assets/templates/`.
+
 ## 0.4.0 — 2026-11-25
 
 Third paper: RAE (Diffusion Transformers with Representation Autoencoders, arXiv 2510.11690), a

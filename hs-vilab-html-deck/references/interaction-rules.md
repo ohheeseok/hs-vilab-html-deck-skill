@@ -2,12 +2,14 @@
 
 The deck is presented with a clicker. An interaction is worth its slide only when operating it
 **reveals something about the paper** that a static slide shows worse: the same figure under two
-or more conditions, or an ordered procedure whose steps matter.
+or more conditions, an ordered procedure whose steps matter, or a diagram whose change of shape is
+the paper's mechanism (`animation`).
 
 ## Budget (build gates)
 
-- Interactive slides ≤ ⌊slides × 0.2⌋. At most **one** `signature: true` (the deck's representative
-  interaction). Zero is allowed.
+- Interactive slides ≤ ⌊slides × 0.2⌋ — toggles, steppers and animations together; one interaction
+  per slide. At most **one** `signature: true` (the deck's representative interaction). Zero is
+  allowed. At most 3 animations.
 - Every interactive block has `reveals` (one sentence: what operating it shows about the paper),
   `start` (the state the slide opens in), `print` (`expand` = every state gets a PDF page, `default`
   = only the start state), and `provenance` per state.
@@ -48,7 +50,38 @@ step a PDF page (6a–6e); `"default"` prints the last step. A step may also tak
 the last step greys out the training path to show what inference keeps) — then print `expand`, or
 the handout shows only that last view. QA captures every step (`sNN-step<k>.png`).
 
+## animation
+
+A diagram drawn as a function of time (`render(t)`), one beat per next key: the slide opens still
+on beat 0, each key plays one beat (≤ 2.0 s) and stops, a key during a beat finishes it, previous
+jumps back, **M** turns motion off on the spot. For an overview before the research sections (1–3
+slides) or a mechanism whose change of shape is the point. Everything else — writing one, the
+library, the design rules, QA — is in `animation.md`.
+
+RAE run: two overview animations replaced the text-only "two beliefs" slide — SD-VAE's latent
+becoming RAE's (Fig. 2 redrawn; the tokens stretch 48×, their count stays 256), then the
+reconstruction and generation paths on RAE with the four changes placed where they act. Rejected in
+the same discussion: a "map" of which slides cover what (a table of contents — the progress bar
+does it) and putting gFID numbers in the overview (they belong to the ladder slide).
+
+REPA run: one overview, added before the diagnosis slides (22 slides, 4 interactions =
+⌊22×0.2⌋) — vanilla SiT as one bar of 28 blocks, the clean image's DINOv2 path and the input
+mismatch, the bar splitting after block 8 with the alignment line rising from it, two questions. One
+slide, because the method adds one regularization term: a second animation would have pushed the
+interactions to 5 or cost a working figure toggle. Left out: the authors' hypothesis that the later
+layers learn details (Sec. 4.2 "we hypothesize"; the discussion slide questions it) and the
+stepper's MLP, patch matching and inference. The method stepper after it now opens on both paths
+instead of rebuilding them.
+
+Self-Flow run: one overview, added after the encoder-scaling slide (22 slides, 4 interactions) —
+REPA-style alignment to a frozen external encoder, the encoder swapped for the model's own EMA
+teacher (same depth; the line re-routes from 0.3D to the teacher's 0.7D), the student's tokens
+taking two noise levels while the teacher's keep the lower one, two questions. Rejected: a token
+grid (the noise-placement toggle and the next two slides already use one) and a map of the three
+modalities (a table of contents that would also hide their different autoencoders and mask ratios).
+Left out: the authors' "local correlations" explanation, which the probe and discussion slides weigh.
+
 ## Not used
 
-Sliders, hover-only content (a projector has no hover), auto-advancing animation, video autoplay,
-anything that needs the network.
+Sliders, hover-only content (a projector has no hover), animation that plays by itself (on entering
+the slide, in a loop, advancing to the next slide), video autoplay, anything that needs the network.

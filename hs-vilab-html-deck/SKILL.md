@@ -125,7 +125,11 @@ do not draft, and nobody reviews their own work.**
 6. **Synthesise `deck.json`** — blocks (`references/block-vocabulary.md`), copy, `notes` (spoken
    script, 합쇼체, `[n]` toggle cues), `provenance` for every claim (`verbatim`, `derived`,
    `interpretation`, `external`), the figure ledger in `meta.figures`. Interactions per
-   `references/interaction-rules.md`.
+   `references/interaction-rules.md`. Before the first research section, 1–3 **overview
+   animations** (`references/animation.md`): the paper's machinery as one diagram that changes
+   shape, one beat per clicker press — what a PDF cannot show. Adding 1–2 slides for them is fine
+   (keep the total time); replace a slide only when the animation says what it said. They count in
+   the interaction budget.
 7. **Korean editor** (`references/korean-style.md`), applied with `apply_text_edits.py`.
 8. **Verifier again on `deck.json`** — answer it in `review/log.md`, fix `deck.json`.
 
@@ -151,6 +155,11 @@ the slide, one class of a sample grid as image tabs) is cut at 800 dpi, or it si
 mat. When you re-assemble part of a figure, keep the paper's row and column labels, give the
 parts of one toggle the same aspect, and say so in the caption.
 
+An animation is two files beside it: `figures/<name>.svg` draws the finished picture (the last
+beat — what prints and what stays without script) and `figures/<name>.anim.js` moves its
+`data-anim` elements from t alone (`references/animation.md`). Write the storyboard at the top of
+the script before any coordinates.
+
 **The build refuses while any gate fails** (`references/qa-checklist.md` §1). The fix is upstream —
 cut a line, change the block, split the slide. Never shrink type, never raise a threshold.
 
@@ -161,8 +170,9 @@ python $S/scripts/qa_render.py $W                       # -> $W/qa/s<NN>[-state]
 python $S/scripts/qa_render.py $W --viewport 1024x768   # projector
 ```
 
-Both must print `QA: no mechanical defects`. Then look at every capture yourself, and send the
-captures of both viewports with the rules to agy:
+Both must print `QA: no mechanical defects`. Then look at every capture yourself — for an
+animation also the mid-beat captures (`sNN-beat<k>-mid.png`): QA does not compare SVG labels with
+each other — and send the captures of both viewports with the rules to agy:
 
 ```bash
 python $S/scripts/delegate.py vision --prompt-file $W/review/visual_brief.md --dir <bundle> --out $W/review/visual_r1.md
@@ -208,7 +218,7 @@ figures and pushed their captions over the footer on five pages while the screen
 `export_pdf.py` now freezes every figure at its screen size before printing and checks each page
 for overlapping lines and text crossing the progress bar.
 
-Keys: PageDown/→/Space, PageUp/←, Home/End, 1–9 toggle state, G overview, F fullscreen,
+Keys: PageDown/→/Space, PageUp/←, Home/End, 1–9 toggle state, G overview, F fullscreen, M motion off/on,
 `?notes=1` rehearsal notes, `?motion=0` no motion (motion is on by default — `meta.motion`). Report only:
 
 1. the file — `<slug>.html` (and `<slug>-script.html`); the PDF only if asked for
@@ -227,7 +237,8 @@ Keys: PageDown/→/Space, PageUp/←, Home/End, 1–9 toggle state, G overview, 
 | `references/handoff-narrative.md` | building `brief.md` for codex |
 | `references/korean-style.md` | the Korean editor pass |
 | `references/block-vocabulary.md` | writing `deck.json` |
-| `references/interaction-rules.md` | before adding a toggle or stepper |
+| `references/interaction-rules.md` | before adding a toggle, stepper or animation |
+| `references/animation.md` | writing an animation: storyboard, `render(t)`, the library, design rules, QA |
 | `references/design-system-deck.md` | the design authority on the stage |
 | `references/qa-checklist.md` | before [3] — every gate and who owns it |
 | `assets/engine/deck.css`, `deck.js` | the stage engine — change it when a defect is general |

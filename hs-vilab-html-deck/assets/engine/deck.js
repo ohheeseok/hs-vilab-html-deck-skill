@@ -1,6 +1,7 @@
 /* hs-vilab-html-deck — stage engine. Vanilla JS, no dependencies, works from file://.
    Keys (clicker-safe):
-     PageDown · → · Space   next (a stepper spends its steps first)
+     PageDown · → · Space   next (a stepper spends its steps first, an animation plays its beats)
+     M                      motion off / on (a slow PC: every beat becomes a jump)
      PageUp · ←             previous
      Home / End             first / last slide
      1–9                    choose a state of the current slide's toggle
@@ -55,11 +56,147 @@
   /* ---------- steps (stepper blocks) ---------- */
   function stepCount(sl) { return parseInt(sl.getAttribute("data-steps") || "0", 10); }
   function getStep(sl) { return parseInt(sl.getAttribute("data-step") || "0", 10); }
-  function setStep(sl, k) {
+  function setStep(sl, k, keepPicture) {
     sl.setAttribute("data-step", String(k));
     sl.querySelectorAll("[data-from-step]").forEach(function (el) {
-      el.classList.toggle("is-off", parseInt(el.getAttribute("data-from-step"), 10) > k);
+      var from = parseInt(el.getAttribute("data-from-step"), 10);
+      el.classList.toggle("is-off", from > k);
+      el.classList.toggle("is-now", from === k);
     });
+    if (!keepPicture) paint(sl, k);
+  }
+
+  /* ---------- animation: a diagram drawn as a function of time, paced by the clicker ----------
+     figures/<name>.anim.js calls DeckAnim.define(name, function (svg, lib) { … return {beats, render} }).
+     beats are the stop times in seconds (beats[0] = the picture the slide opens on, the last = the
+     finished diagram, which is also what the SVG file draws without script). render(t) sets every
+     changing attribute from t alone, so a jump and a played beat end on the same picture. The
+     engine owns playback: the slide opens still on beat 0; each next key plays one beat; a key
+     pressed while a beat plays finishes it at once; previous jumps back without playing. With
+     motion off (?motion=0, meta.motion "off", the M key) every beat is a jump. */
+  var animDefs = {}, play = null;
+  var lib = {
+    clamp: function (v) { return v < 0 ? 0 : v > 1 ? 1 : v; },
+    smooth: function (v) { v = lib.clamp(v); return v * v * (3 - 2 * v); },
+    /* eased progress 0→1 of a move that starts at `from` and lasts `dur` seconds */
+    ramp: function (t, from, dur) { return lib.smooth((t - from) / dur); },
+    lerp: function (a, b, u) { return a + (b - a) * u; },
+    /* a colour token as [r, g, b] (SVG fills use var(--color-…), which cannot be interpolated) */
+    css: function (name) {
+      var v = getComputedStyle(doc).getPropertyValue(name).trim(), m;
+      if ((m = /^#([0-9a-f]{6})$/i.exec(v))) return [0, 2, 4].map(function (i) { return parseInt(m[1].slice(i, i + 2), 16); });
+      if ((m = /^#([0-9a-f]{3})$/i.exec(v))) return [0, 1, 2].map(function (i) { return parseInt(m[1][i] + m[1][i], 16); });
+      m = v.match(/[\d.]+/g);
+      return m ? m.slice(0, 3).map(Number) : [0, 0, 0];
+    },
+    mix: function (a, b, u) {
+      return "rgb(" + a.map(function (v, i) { return Math.round(v + (b[i] - v) * u); }).join(",") + ")";
+    },
+    /* a polyline walked at constant speed: along(points)(u) → [x, y, angle°] for u in 0..1 */
+    along: function (pts) {
+      var len = [0];
+      for (var i = 1; i < pts.length; i++) len.push(len[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+      return function (u) {
+        var d = lib.clamp(u) * len[len.length - 1], j = 1;
+        while (j < pts.length - 1 && len[j] < d) j++;
+        var a = pts[j - 1], b = pts[j], s = (d - len[j - 1]) / ((len[j] - len[j - 1]) || 1);
+        return [a[0] + (b[0] - a[0]) * s, a[1] + (b[1] - a[1]) * s, Math.atan2(b[1] - a[1], b[0] - a[0]) * 180 / Math.PI];
+      };
+    },
+    set: function (el, attrs) { for (var k in attrs) el.setAttribute(k, attrs[k]); },
+    /* opacity, and visibility hidden at 0: an invisible label must not stay in the PDF's text
+       layer (RAE run: the swapped-out "SD-VAE 디코더" printed under "ViT 디코더") */
+    fade: function (el, v) {
+      v = lib.clamp(v);
+      el.setAttribute("opacity", v.toFixed(3));
+      if (v < 0.001) el.setAttribute("visibility", "hidden"); else el.removeAttribute("visibility");
+    }
+  };
+  function animOf(sl) { var a = sl.querySelector("[data-anim-name]"); return a && a.__anim ? a : null; }
+  /* an animation that cannot run (no script, a bad script, render throws) gives the slide back as a
+     static one: the SVG as drawn (the finished picture), every beat's text, no beats to spend */
+  function disable(root, err) {
+    if (err) console.error(err);
+    if (play && play.a === root) { cancelAnimationFrame(play.raf); play = null; }
+    if (root.__pristine) { root.querySelector("svg").replaceWith(root.__pristine); root.__pristine = null; }
+    root.__anim = null;
+    root.__dead = true;
+    var sl = root.closest(".slide");
+    sl.removeAttribute("data-steps");
+    sl.removeAttribute("data-step");
+    sl.querySelectorAll("[data-from-step]").forEach(function (el) { el.classList.remove("is-off", "is-now"); });
+  }
+  function draw(a, t) {
+    try { a.__anim.render(t); return true; } catch (err) { disable(a, err); return false; }
+  }
+  function paint(sl, k) {
+    var a = animOf(sl);
+    if (a) draw(a, a.__anim.beats[Math.max(0, Math.min(k, a.__anim.beats.length - 1))]);
+  }
+  function bindAnim(root) {
+    var name = root.getAttribute("data-anim-name"), f = animDefs[name];
+    if (!f || root.__anim || root.__dead) return;
+    var svg = root.querySelector("svg");
+    root.__pristine = svg.cloneNode(true);
+    try {
+      var api = Object.create(lib);
+      api.node = function (key) {
+        var el = svg.querySelector('[data-anim="' + key + '"]');
+        if (!el) throw new Error("animation " + name + ": no element data-anim=\"" + key + "\" in the SVG");
+        return el;
+      };
+      var inst = f(svg, api), want = parseInt(root.getAttribute("data-beats"), 10);
+      var b = inst && inst.beats;
+      if (!inst || typeof inst.render !== "function") throw new Error("animation " + name + ": the factory returns no render(t)");
+      if (!b || b.length !== want) throw new Error("animation " + name + ": " + (b ? b.length : 0) + " beats in the script, " + want + " in deck.json");
+      for (var i = 0; i < b.length; i++) {
+        if (typeof b[i] !== "number" || !isFinite(b[i])) throw new Error("animation " + name + ": beats are numbers (seconds)");
+        if (i && !(b[i] > b[i - 1])) throw new Error("animation " + name + ": beats must increase");
+      }
+      root.__anim = inst;
+    } catch (err) {
+      disable(root, err);
+      return;
+    }
+    var sl = root.closest(".slide");
+    paint(sl, overview ? stepCount(sl) : getStep(sl));
+  }
+  /* a script that never called DeckAnim.define (missing, failed to load): static once the page is in */
+  window.addEventListener("load", function () {
+    document.querySelectorAll("[data-anim-name]").forEach(function (root) {
+      if (!root.__anim && !root.__dead) disable(root, new Error("animation " + root.getAttribute("data-anim-name") + ": its script never called DeckAnim.define"));
+    });
+  });
+  window.DeckAnim = {
+    define: function (name, factory) {
+      animDefs[name] = factory;
+      document.querySelectorAll('[data-anim-name="' + name + '"]').forEach(bindAnim);
+    }
+  };
+  function stopPlay(finish) {
+    if (!play) return;
+    var p = play;
+    play = null;
+    cancelAnimationFrame(p.raf);
+    if (finish) draw(p.a, p.end);
+  }
+  function tick(now) {
+    var p = play;
+    if (!p) return;
+    /* a long frame (a slow laptop, a 30 Hz projector link) advances at most 50 ms: no jump */
+    if (p.last !== null) p.t = Math.min(p.end, p.t + Math.min(0.05, (now - p.last) / 1000));
+    p.last = now;
+    if (!draw(p.a, p.t)) return;
+    if (p.t >= p.end) { play = null; return; }
+    p.raf = requestAnimationFrame(tick);
+  }
+  function playBeat(sl, from, to) {
+    var a = animOf(sl);
+    if (!a) return;
+    var b = a.__anim.beats;
+    play = {a: a, from: from, to: to, t: b[from], end: b[to], last: null, raf: 0};
+    if (!draw(a, b[from])) return;   /* before the next paint: the finished picture never flashes */
+    play.raf = requestAnimationFrame(tick);
   }
 
   /* ---------- motion: one step forward cross-fades; the next key finishes it at once ---------- */
@@ -74,6 +211,7 @@
     i = Math.max(0, Math.min(slides.length - 1, i));
     var changed = i !== cur, from = cur;
     settle();
+    stopPlay(false);
     cur = i;
     slides.forEach(function (s, j) {
       var on = j === i;
@@ -88,18 +226,28 @@
       sl.classList.add("is-entering", "is-arriving");
       motionTimer = setTimeout(settle, 420);
     }
-    if (stepCount(sl)) setStep(sl, step == null ? 0 : step);
+    if (stepCount(sl)) {   /* a step past the end is clamped; the overview keeps animations finished */
+      var k = step == null ? 0 : Math.max(0, Math.min(step, stepCount(sl)));
+      setStep(sl, overview && animOf(sl) ? stepCount(sl) : k);
+    }
     var h = "#/" + (i + 1) + (stepCount(sl) && getStep(sl) ? "/" + getStep(sl) : "");
     if (!fromHash && location.hash !== h) history.replaceState(null, "", h);
     if (changed && live) live.textContent = (i + 1) + " / " + slides.length + " " + (sl.getAttribute("aria-label") || "");
     updateNotes();
   }
   function next() {
+    if (play) { stopPlay(true); return; }   /* a key during a beat finishes it; it does not skip */
     var sl = slides[cur], n = stepCount(sl);
-    if (n && getStep(sl) < n) { setStep(sl, getStep(sl) + 1); go(cur, getStep(sl)); return; }
+    if (n && getStep(sl) < n) {
+      var k = getStep(sl);
+      go(cur, k + 1);
+      if (animOf(sl) && !still()) playBeat(sl, k, k + 1);
+      return;
+    }
     go(cur + 1, null, false, true);
   }
   function prev() {
+    if (play) { var back = play.from; stopPlay(false); go(cur, back); return; }
     var sl = slides[cur], n = stepCount(sl);
     if (n && getStep(sl) > 0) { setStep(sl, getStep(sl) - 1); go(cur, getStep(sl)); return; }
     var j = cur - 1;
@@ -185,7 +333,10 @@
   /* ---------- overview ---------- */
   function setOverview(on) {
     settle();
+    stopPlay(true);
     overview = on;
+    /* thumbnails show every animation finished; closing the grid re-enters the slide at its start */
+    if (on) slides.forEach(function (s) { if (animOf(s)) setStep(s, stepCount(s)); });
     deck.classList.toggle("is-overview", on);
     slides.forEach(function (s, j) {
       if (on) { s.removeAttribute("inert"); s.tabIndex = 0; }
@@ -232,6 +383,15 @@
       case "Home": e.preventDefault(); go(0); return;
       case "End": e.preventDefault(); go(slides.length - 1); return;
       case "g": case "G": e.preventDefault(); setOverview(true); return;
+      case "m": case "M":   /* motion off/on on the spot (a slow presenter PC): flips what is in effect */
+        e.preventDefault();
+        if (e.repeat) return;
+        stopPlay(true);
+        var off = !still();
+        doc.classList.toggle("no-motion", off);
+        doc.classList.toggle("force-motion", !off);
+        if (live) live.textContent = off ? "모션 끔" : "모션 켬";
+        return;
       case "f": case "F":
         e.preventDefault();
         if (!document.fullscreenElement) doc.requestFullscreen && doc.requestFullscreen();
@@ -243,7 +403,12 @@
       if (!t) return;
       var ids = t.getAttribute("data-states").split(" ");
       var idx = parseInt(k, 10) - 1;
-      if (idx < ids.length) { e.preventDefault(); setState(t, ids[idx], true); }
+      if (idx < ids.length) {
+        e.preventDefault();
+        setState(t, ids[idx], true);
+        /* focus inside the group follows the chosen button, so ← → count from it */
+        if (t.contains(a)) { var bt = t.querySelector('[data-set-state="' + ids[idx] + '"]'); if (bt) bt.focus(); }
+      }
     }
   });
 
@@ -264,6 +429,19 @@
     setState: function (i, id) {
       var t = slides[i].querySelector("[data-toggle]");
       if (t) setState(t, id, false);
-    }
+    },
+    /* animations: the stop times, a still picture at any time t (the side text of the beat being
+       played), whether a beat is playing (the clicker-burst check) */
+    beats: function (i) { var a = animOf(slides[i]); return a ? a.__anim.beats.slice() : []; },
+    seekTime: function (i, t) {
+      var a = animOf(slides[i]);
+      if (!a) return;
+      stopPlay(false);
+      var b = a.__anim.beats, k = 0;
+      while (k < b.length - 1 && t > b[k]) k++;
+      setStep(slides[i], k, true);
+      a.__anim.render(t);
+    },
+    playing: function () { return !!play; }
   };
 })();

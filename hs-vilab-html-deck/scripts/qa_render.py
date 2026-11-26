@@ -6,7 +6,9 @@ Usage:
 Opens deck/index.html?motion=0 over file:// with every non-file request blocked, so each
 capture is the finished slide. Captures go to qa/ at 1920x1080 and qa/<W>x<H>/ otherwise.
 For each slide and each toggle state:
-  * screenshot -> qa/s<NN>[-<state>].png, and qa/s<NN>-step<k>.png for each later stepper step
+  * screenshot -> qa/s<NN>[-<state>].png, and qa/s<NN>-step<k>.png for each later stepper step or
+    animation beat; an animation also gets qa/s<NN>-beat<k>-mid.png (half way through beat k),
+    each beat at most 2.0 s, and the same picture at a stop reached by playing or by jumping;
   * overflow: any element whose box leaves the slide, or a text box that clips;
   * collide: two visible text line boxes (or text and an image) overlapping anywhere on the slide;
   * spill: content leaving its band (a direct child of the slide), two bands overlapping, or a
@@ -28,6 +30,37 @@ import sys
 from pathlib import Path
 
 from playwright.sync_api import sync_playwright
+
+DETERMINISM = r"""
+(i) => {
+  // the picture at a time must not depend on what was drawn before: every stop and every mid-beat
+  // time, drawn while playing forward at 30 fps, is drawn again after a jump from the far end
+  const b = window.__deck.beats(i);
+  const svg = document.querySelectorAll('.slide')[i].querySelector('[data-anim-name] svg');
+  // attributes in name order: the same picture serialises the same whatever order they were set in
+  const snap = () => [...svg.querySelectorAll('*')].map(e =>
+    e.tagName + [...e.attributes].map(a => a.name + '=' + a.value).sort().join(' ')).join('\n');
+  const probes = [];
+  for (let k = 0; k < b.length; k++) {
+    if (k) probes.push(['mid ' + k, (b[k - 1] + b[k]) / 2]);
+    probes.push(['stop ' + k, b[k]]);
+  }
+  const fwd = {};
+  let t = 0;
+  for (const [name, at] of probes) {
+    for (; t < at; t += 1 / 30) window.__deck.seekTime(i, t);
+    window.__deck.seekTime(i, at);
+    fwd[name] = snap();
+  }
+  const bad = [];
+  for (const [name, at] of probes.slice().reverse()) {
+    window.__deck.seekTime(i, b[b.length - 1]);
+    window.__deck.seekTime(i, at);
+    if (snap() !== fwd[name]) bad.push(name);
+  }
+  return bad;
+}
+"""
 
 MEASURE = r"""
 (idx) => {
@@ -120,7 +153,7 @@ MEASURE = r"""
   // boxes inside the body: a split (or a toggle, stepper) keeps its content inside it. A split
   // shrinks to leave room for the block below it while its figures do not, so a caption ends up
   // under the next block (slide 17, REPA run) — the band check cannot see that.
-  for (const cell of slide.querySelectorAll('.slide-body > *, .split > * > *, .split, .toggle-grid, .stepper')) {
+  for (const cell of slide.querySelectorAll('.slide-body > *, .split > * > *, .split, .toggle-grid, .stepper, .anim')) {
     if (!visible(cell)) continue;
     let next = cell.nextElementSibling;
     while (next && !visible(next)) next = next.nextElementSibling;
@@ -212,7 +245,7 @@ def main() -> int:
     if "--html" in sys.argv:
         qa = qa / "bundle"
     qa.mkdir(parents=True, exist_ok=True)
-    report = {"viewport": vp, "slides": [], "console": [], "external": [], "failed": []}
+    report = {"viewport": vp, "slides": [], "console": [], "external": [], "failed": [], "anim": []}
     with sync_playwright() as p:
         b = p.chromium.launch()
         ctx = b.new_context(viewport={"width": vp[0], "height": vp[1]}, device_scale_factor=1)
@@ -258,6 +291,33 @@ def main() -> int:
                 m["name"] = name
                 m["faces"] = faces(cdp, page, i)
                 report["slides"].append(m)
+            # an animation: the room also sees every picture between two stops — measure the middle
+            # of each beat, check each beat's length, and that a stop draws the same picture whether
+            # it was reached by playing from the start or by jumping back to it
+            beats = page.evaluate(f"window.__deck.beats({i})")
+            # an animation block whose script did not bind (missing, no define, a bad factory) plays
+            # nothing — the engine shows it static, QA says so
+            want = page.evaluate(f"+(document.querySelectorAll('.slide')[{i}].querySelector('[data-anim-name]') || {{getAttribute: () => 0}}).getAttribute('data-beats') || 0")
+            if want and len(beats) != want:
+                report["anim"].append(f"s{i + 1:02d}: the animation did not bind ({len(beats)} beats running, {want} in deck.json) — see console")
+            for k in range(len(beats) - 1):
+                d = beats[k + 1] - beats[k]
+                if d > 2.0 + 1e-6:
+                    report["anim"].append(f"s{i + 1:02d}: beat {k + 1} plays {d:.2f} s; at most 2.0 s (the presenter waits)")
+                page.evaluate(f"window.__deck.seekTime({i}, {(beats[k] + beats[k + 1]) / 2})")
+                page.wait_for_timeout(120)
+                name = f"s{i + 1:02d}-beat{k + 1}-mid"
+                page.screenshot(path=str(qa / f"{name}.png"))
+                m = page.evaluate(MEASURE, i)
+                m["name"] = name
+                m["faces"] = faces(cdp, page, i)
+                report["slides"].append(m)
+            if beats:
+                drift = page.evaluate(DETERMINISM, i)
+                if drift:
+                    report["anim"].append(f"s{i + 1:02d}: render(t) depends on what was drawn before — beats {drift} differ "
+                                          "after playing from 0 and after a jump")
+                page.evaluate(f"window.__deck.go({i})")
 
         # clicker burst with motion on
         page.goto(index.as_uri() + "#/1")
@@ -287,6 +347,7 @@ def main() -> int:
     bu = report.get("burst", {})
     if len(bu.get("shown", [])) != 1 or bu.get("busy") or any(o < 1 for o in bu.get("opacity", [])):
         bad.append(f"clicker burst did not settle: {bu}")
+    bad += report["anim"]
     for key in ("console", "external", "failed"):
         if report[key]:
             bad.append(f"{key}: {report[key][:5]}")

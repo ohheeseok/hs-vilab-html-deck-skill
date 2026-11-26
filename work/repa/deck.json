@@ -6,7 +6,7 @@
   "titleLang": "ko",
   "occasion": "연구실 논문 세미나, 발표 후 토론",
   "target_minutes": 20,
-  "target_slides": 21,
+  "target_slides": 22,
   "statementTheme": "dark",
   "paper": {
    "title": "Representation Alignment for Generation: Training Diffusion Transformers Is Easier Than You Think",
@@ -34,11 +34,11 @@
   "sections": [
    {
     "id": "summary",
-    "label": "요약"
+    "label": "요약·배경"
    },
    {
     "id": "background",
-    "label": "배경"
+    "label": "진단"
    },
    {
     "id": "method",
@@ -60,23 +60,23 @@
   "figures": [
    {
     "ref": "Fig. 1",
-    "use": 10
+    "use": 11
    },
    {
     "ref": "Fig. 2",
-    "use": 4
+    "use": 5
    },
    {
     "ref": "Fig. 3",
-    "use": 9
+    "use": 10
    },
    {
     "ref": "Fig. 4",
-    "use": 12
+    "use": 13
    },
    {
     "ref": "Fig. 5",
-    "use": 14
+    "use": 15
    },
    {
     "ref": "Fig. 6",
@@ -84,55 +84,55 @@
    },
    {
     "ref": "Fig. 7",
-    "use": 18
+    "use": 19
    },
    {
     "ref": "Fig. 8",
-    "use": 18
+    "use": 19
    },
    {
     "ref": "Table 1",
-    "use": 8
+    "use": 9
    },
    {
     "ref": "Table 2",
-    "use": 15
-   },
-   {
-    "ref": "Table 3",
-    "use": 11
-   },
-   {
-    "ref": "Table 4",
-    "use": 13
-   },
-   {
-    "ref": "Table 5",
     "use": 16
    },
    {
-    "ref": "Table 6",
+    "ref": "Table 3",
+    "use": 12
+   },
+   {
+    "ref": "Table 4",
     "use": 14
    },
    {
-    "ref": "Table 7",
-    "use": 8
-   },
-   {
-    "ref": "Table 8",
+    "ref": "Table 5",
     "use": 17
    },
    {
+    "ref": "Table 6",
+    "use": 15
+   },
+   {
+    "ref": "Table 7",
+    "use": 9
+   },
+   {
+    "ref": "Table 8",
+    "use": 18
+   },
+   {
     "ref": "Table 10",
-    "use": 13
+    "use": 14
    },
    {
     "ref": "Table 11",
-    "use": 19
+    "use": 20
    },
    {
     "ref": "Table 12",
-    "use": 19
+    "use": 20
    }
   ]
  },
@@ -172,7 +172,7 @@
     "Eq. 9",
     "Table 3"
    ],
-   "time": 55,
+   "time": 45,
    "body": [
     {
      "type": "lead",
@@ -202,20 +202,20 @@
    },
    "notes": [
     "REPA는 noisy latent를 받는 SiT의 중간 층을 학습할 때 같은 이미지의 clean patch 표현을 학습 신호로 씁니다.",
-    "저자들은 먼저 vanilla SiT와 DINOv2의 표현을 평가해 vanilla SiT의 표현이 더 약하다는 점을 확인합니다. 그 격차를 줄이기 위해 기존 loss에 정렬 loss를 더합니다. 인코더와 projector는 학습 때만 씁니다.",
+    "저자들은 먼저 vanilla SiT의 표현이 DINOv2보다 약하다는 점을 확인하고, 그 격차를 줄이려고 기존 loss에 정렬 loss를 더합니다.",
     "대표 결과를 보면, ImageNet 256×256에서 CFG 없이 평가했을 때 REPA를 쓴 SiT-XL/2의 400K step FID가 vanilla의 7M step FID보다 낮았습니다."
    ]
   },
   {
    "id": "background",
-   "section": "background",
+   "section": "summary",
    "title": "REPA의 연구 배경",
    "message": "REPA와 관련된 연구 주제는 세 가지다. denoising transformer, 확산 모델이 배운 표현을 다른 과제에 쓰는 방법, 외부 표현을 써서 생성하는 방법이다.",
    "cite": [
     "Sec. 5",
     "App. I"
    ],
-   "time": 55,
+   "time": 45,
    "body": [
     {
      "type": "groups",
@@ -247,7 +247,7 @@
     },
     {
      "type": "callout",
-     "text": "외부 표현에 정렬하면 수렴 속도와 생성 품질이 얼마나, 어떤 조건에서 바뀌는가?"
+     "text": "외부 인코더를 생성 모델에 직접 붙이지 않고, 학습 신호로만 쓸 수 있는가?"
     }
    ],
    "provenance": {
@@ -257,9 +257,73 @@
    "notes": [
     "U-ViT, DiT, SiT는 transformer를 denoising backbone으로 쓰는 모델입니다.",
     "RepFusion과 DreamTeacher는 확산 모델에서 배운 표현을 다른 과제에 씁니다. Würstchen과 RCG는 의미 표현을 먼저 만든 뒤 생성에 씁니다.",
-    "REPA는 외부 표현을 생성 모델의 학습 신호로 씁니다. 외부 표현에 정렬하면 수렴 속도와 생성 품질이 얼마나 달라집니까? 어떤 조건에서 달라집니까?"
+    "REPA는 외부 표현을 생성 모델에 붙이지 않고 학습 신호로만 씁니다. 그 신호가 SiT의 어디에 더해지는지 다음 장에서 보겠습니다."
    ],
    "valign": "center"
+  },
+  {
+   "id": "overview-repa",
+   "section": "summary",
+   "title": "REPA가 SiT 학습에 더하는 것",
+   "message": "REPA는 SiT를 앞 8개 block과 뒤 20개 block으로 보고, 8번째 block의 출력을 같은 이미지의 깨끗한 DINOv2 패치 표현에 맞춘다. 이 정렬은 학습 때만 쓴다.",
+   "cite": [
+    "Fig. 1",
+    "Sec. 1",
+    "Sec. 3.1",
+    "Sec. 3.3",
+    "Table 7",
+    "App. B"
+   ],
+   "time": 55,
+   "body": [
+    {
+     "type": "animation",
+     "name": "overview-repa",
+     "svg": "figures/overview_repa.svg",
+     "script": "figures/overview_repa.anim.js",
+     "side": "below",
+     "print": "expand",
+     "reveals": "한 덩어리였던 SiT가 8층에서 나뉘고 그 출력에 정렬 경로가 붙는 것을 따라가면, REPA가 모델 구조는 그대로 두고 학습 신호 하나를 더한다는 것이 보인다.",
+     "beats": [
+      {
+       "title": "Vanilla SiT",
+       "text": "잡음 섞인 latent에서 velocity를 예측하며 표현도 함께 배운다"
+      },
+      {
+       "title": "깨끗한 이미지의 표현",
+       "text": "같은 이미지를 고정 DINOv2-B에 넣은 패치 표현. 입력이 다르다"
+      },
+      {
+       "title": "8층에 정렬",
+       "text": "block 1–8 출력을 패치 표현에 맞춘다. 학습 때만 쓴다"
+      },
+      {
+       "title": "두 질문",
+       "text": "① 무엇을, 어느 층에 ② 수렴과 생성이 얼마나"
+      }
+     ],
+     "caption": "**Fig. 1** 왼쪽과 Sec. 1·3.1·3.3을 바탕으로 그림. SiT-XL/2, 막대 길이는 block 수에 비례",
+     "provenance": {
+      "기존 학습 경로": "verbatim: Sec. 3.1(z = E(x), v_θ(z_t, t)), Sec. 4.1(SD-VAE latent)",
+      "표현도 denoising으로만 배움": "verbatim: Sec. 1·3.1(\"rather than relying solely on the diffusion model to learn them\")",
+      "깨끗한 이미지 → 고정 DINOv2-B → 패치 표현": "verbatim: Sec. 3.3(y* = f(x*)), Table 7(XL/2 target DINOv2-B)",
+      "입력이 다름": "verbatim: Sec. 1(input mismatch: clean image vs noisy latent)",
+      "block 1–8 / 9–28": "verbatim: Sec. 3.1(v_θ = g_θ ∘ f_θ), Table 1(XL/2 28층), Table 7(정렬 층 8)",
+      "학습 때만": "verbatim: App. B(projector는 학습 때만)",
+      "두 질문": "interpretation: Sec. 4 첫 문단의 질문과 Table 2 항목을 발표의 질문으로 정리"
+     }
+    }
+   ],
+   "provenance": {
+    "그림": "derived: Fig. 1 왼쪽, Sec. 1, 3.1, 3.3",
+    "두 질문": "interpretation (발표의 질문)"
+   },
+   "notes": [
+    "원래 SiT의 학습입니다. 이미지를 VAE로 압축하고 잡음을 섞은 latent를 28개 block에 통과시켜 velocity를 예측합니다. 생성에 쓰는 표현도 이 denoising 학습만으로 배웁니다.",
+    "[1] REPA는 같은 이미지를 깨끗한 상태로 고정된 DINOv2-B에 넣어 패치 표현을 얻습니다. 다만 DINOv2는 깨끗한 이미지를, SiT는 잡음 섞인 latent를 받습니다. 입력이 달라서 이 인코더를 SiT에 그대로 붙이기는 어렵습니다.",
+    "[2] 그래서 저자들은 SiT를 앞부분과 뒷부분으로 나눠 봅니다. XL/2에서는 8번째 block의 출력을 이 패치 표현에 맞추는 loss를 더합니다. 이 경로는 학습 때만 쓰고, 생성할 때는 원래 SiT 그대로입니다.",
+    "[3] 이 발표에서 볼 질문은 두 가지입니다. 무엇을 어느 층에 맞추는지, 그리고 수렴과 생성 품질이 얼마나 달라지는지입니다. 먼저 정렬하기 전의 SiT 표현이 DINOv2와 얼마나 다른지 보겠습니다."
+   ]
   },
   {
    "id": "probe",
@@ -325,7 +389,7 @@
     "Sec. 3.2",
     "App. C.1"
    ],
-   "time": 60,
+   "time": 55,
    "body": [
     {
      "type": "split",
@@ -381,7 +445,7 @@
    "notes": [
     "CKNNA는 두 표현 공간의 공통 최근접 이웃을 세어 정렬을 측정합니다. 기준은 clean 이미지에서 얻은 DINOv2-g 표현입니다.",
     "왼쪽 그림에서 SiT 일부 층의 CKNNA는 MAE-L보다 높지만 DINO-B와 MoCov3-B보다 낮습니다. 오른쪽 그림에서는 모델이 크고 학습 step이 많을수록 정렬이 높아집니다. 그래도 7M step의 XL/2는 DINO-B보다 낮습니다.",
-    "논문은 두 가지 어려움을 짚습니다. 그중 하나는 입력 차이입니다. 인코더는 clean 이미지를 받고 확산 모델은 noisy latent를 받습니다. 그래서 인코더를 직접 결합하는 대신 정규화로 SiT의 표현을 인코더 표현에 정렬합니다."
+    "7M step을 학습해도 정렬은 이 수준에 머뭅니다. 앞에서 본 입력 차이 때문에 저자들은 인코더를 직접 붙이지 않고 정규화로 정렬합니다. 다음 장에서 그 학습 경로를 자세히 보겠습니다."
    ],
    "valign": "center"
   },
@@ -399,7 +463,7 @@
     "App. D",
     "Table 7"
    ],
-   "time": 85,
+   "time": 70,
    "body": [
     {
      "type": "stepper",
@@ -413,12 +477,8 @@
      "reveals": "정렬 loss를 적용하는 층. 학습에만 쓰는 경로(인코더·MLP·REPA loss)와 추론 경로의 차이",
      "steps": [
       {
-       "title": "Clean target",
-       "text": "clean 이미지 → 고정된 DINOv2-B → $y_*$"
-      },
-      {
-       "title": "Noisy 입력",
-       "text": "VAE latent + noise → block 1–8 → $h_t$"
+       "title": "두 경로",
+       "text": "위는 DINOv2-B의 $y_*$, 아래는 noisy latent가 block 1–8을 지난 $h_t$"
       },
       {
        "title": "8층 정렬",
@@ -426,7 +486,7 @@
       },
       {
        "title": "나머지 층과 loss",
-       "text": "block 9–28에서 velocity를 예측하고 두 loss를 함께 줄임"
+       "text": "block 9–28에서 velocity를 예측하고 두 loss를 함께 줄임"
       },
       {
        "title": "추론",
@@ -442,10 +502,9 @@
     }
    ],
    "notes": [
-    "[1] 위쪽 경로에서는 clean 이미지를 고정된 DINOv2-B에 넣어 patch token을 만듭니다. 이 token이 정렬 목표입니다.",
-    "[2] 아래쪽은 원래의 확산 학습입니다. 같은 이미지의 VAE latent에 noise를 섞어 SiT에 넣고, 첫 여덟 block을 지나 8층의 hidden state를 얻습니다. 256×256 이미지에서 token은 256개입니다.",
-    "[3] 8층의 token을 3층 MLP로 인코더 차원에 투영하고, 같은 위치의 patch끼리 유사도를 높입니다. [4] 나머지 block에서 기존 방식대로 velocity를 예측하고, 학습할 때는 두 loss를 함께 줄입니다.",
-    "[5] 생성할 때는 인코더와 MLP를 호출하지 않습니다. 추론 비용은 vanilla SiT와 같습니다."
+    "[1] 앞 장에서 본 두 경로입니다. 위쪽은 clean 이미지를 고정된 DINOv2-B에 넣어 얻은 patch token으로, 정렬 목표입니다. 아래쪽은 같은 이미지의 VAE latent에 noise를 섞어 첫 여덟 block을 지난 8층 hidden state입니다. 256×256 이미지에서 token은 256개입니다.",
+    "[2] 8층의 token을 3층 MLP로 인코더 차원에 투영하고, 같은 위치의 patch끼리 유사도를 높입니다. [3] 나머지 block에서 기존 방식대로 velocity를 예측하고, 학습할 때는 두 loss를 함께 줄입니다.",
+    "[4] 생성할 때는 인코더와 MLP를 호출하지 않습니다. 추론 비용은 vanilla SiT와 같습니다."
    ]
   },
   {
@@ -642,7 +701,7 @@
     "Sec. 1",
     "Table 7"
    ],
-   "time": 80,
+   "time": 75,
    "body": [
     {
      "type": "toggle",
@@ -1605,7 +1664,7 @@
     "App. D",
     "App. E"
    ],
-   "time": 120,
+   "time": 110,
    "body": [
     {
      "type": "groups",

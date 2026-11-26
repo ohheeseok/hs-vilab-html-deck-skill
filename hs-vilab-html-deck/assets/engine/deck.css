@@ -530,6 +530,17 @@ sup{vertical-align:.4em}
 .stepper .is-off{opacity:0}
 .figure--diagram .is-off{opacity:0}
 
+/* ---------- animation: a diagram drawn from time t, one beat per next key ----------
+   right: the stepper's layout (diagram | beat list). below: the diagram across the slide and one
+   column per beat under it. The beat being played marks its number. The SVG itself is never
+   faded by CSS: render(t) owns every attribute that moves. */
+.anim--below{display:flex;flex-direction:column;gap:40px;flex:1 1 auto;min-height:0}
+.anim--below .steps{display:grid;grid-template-columns:repeat(var(--beats),minmax(0,1fr));column-gap:40px;align-items:start}
+.anim--below .steps > li{grid-template-columns:40px 1fr;column-gap:14px}
+.anim--below .steps .step-num{width:40px;height:40px}
+.anim .steps .step-num{transition:background-color var(--duration-base) var(--ease-standard)}
+.anim .steps > li.is-now .step-num{background:var(--color-primary)}
+
 /* ---------- toggle over paper figures (image tabs) ---------- */
 .toggle-grid{grid-template-rows:minmax(0,1fr)}
 .toggle-media{display:grid;grid-template-rows:minmax(0,1fr);min-height:0;flex:1 1 auto}

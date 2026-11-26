@@ -1,0 +1,9 @@
+<svg class="diagram" viewBox="0 0 1696 460" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="TODO-title TODO-desc">
+  <title id="TODO-title">TODO: what the finished diagram shows (and "Fig. n를 바탕으로 다시 그림" if redrawn)</title>
+  <desc id="TODO-desc">TODO: the finished picture in one or two sentences, for a screen reader and the PDF.</desc>
+  <!-- This file draws the FINISHED picture (the last beat). Pieces that only exist earlier are drawn
+       with opacity="0"; everything the script moves carries data-anim="key". Text goes in
+       <foreignObject> with the .fo classes (24 px floor), never rotated. Keep x ≥ 0 and ≤ 1696. -->
+  <rect data-anim="box" x="200" y="160" width="240" height="140" rx="12" fill="var(--color-surface-brand)" stroke="var(--color-accent)" stroke-width="3"/>
+  <foreignObject data-anim="label" x="200" y="316" width="240" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-h">TODO</div></foreignObject>
+</svg>

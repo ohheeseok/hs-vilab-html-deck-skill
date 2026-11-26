@@ -10,7 +10,11 @@ A clean build is not a correct render. Three gates, in this order.
 - `provenance` on every `bars`, `table`, `deltas`, toggle state and stepper
 - a delta's `pair` names rows or bars drawn on the same slide
 - panels ≤ 2 per slide, none nested, none on dark slides, ≥ 40% of slides panel-free
-- interactive slides ≤ ⌊N × 0.2⌋, at most one `signature`; each has `reveals`, `start`, `print`
+- interactive slides ≤ ⌊N × 0.2⌋ (toggles, steppers, animations), one per slide, at most one
+  `signature`; each has `reveals`, `start`, `print`
+- animations ≤ 3; each has 3–5 `beats` with titles, `provenance`, an SVG and a script that calls
+  `DeckAnim.define(name)`; the script keeps no clock of its own, reads no OS setting, listens for no
+  input, writes no text, reaches no network; every `node("key")` it asks for is drawn in the SVG
 - `note` blocks ≤ max(2, ⌈content slides / 4⌉)
 - the last slide is an `ending`
 - slide count = `meta.target_slides`; `time` sum within ±10% of `meta.target_minutes`
@@ -20,7 +24,8 @@ A clean build is not a correct render. Three gates, in this order.
 
 ## 2. Mechanical gate (`qa_render.py`, run at 1920×1080 and 1024×768)
 
-Per slide, per toggle state and per stepper step, in Chromium over `file://` with every non-file request blocked:
+Per slide, per toggle state, per stepper step and animation stop — and the middle of every
+animation beat — in Chromium over `file://` with every non-file request blocked:
 
 | key | fails when |
 |---|---|
@@ -34,6 +39,7 @@ Per slide, per toggle state and per stepper step, in Chromium over `file://` wit
 | faces | a glyph drawn in a fallback font (only Geomini / Gmarket Sans pass) |
 | console, external, failed | a script error, a network request, a missing file |
 | burst | six PageDowns 60ms apart do not land on one finished slide |
+| anim | a beat plays over 2.0 s; a stop draws a different picture after playing from 0 than after a jump to it (`render(t)` kept state) |
 
 Run it on `deck/` while iterating and on the bundled `<slug>.html` (copied alone) before delivery.
 Fix upstream (deck.json or the engine), never by raising a threshold.

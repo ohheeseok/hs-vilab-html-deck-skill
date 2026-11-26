@@ -7,33 +7,37 @@
 - 디자인: hs-vilab-frontend-design의 토큰·글꼴·규칙(HSU 색, Geomini + Gmarket Sans, 글자 크기 사다리 80/56/48/40/36/32/28/24px, 24px 하한)
 - 제작 흐름과 내용 규칙: hs-vilab-deck(PPT판)을 HTML로 옮긴 것
 
-> **상태: 0.4.0.** 논문 세 편을 각각 21장 덱으로 끝까지 만들었습니다([work/self-flow-full](work/self-flow-full), [work/repa](work/repa), [work/rae](work/rae)). 세 번째 실행에서 찾은 엔진·QA 결함을 고쳤습니다.
+> **상태: 0.5.0.** 논문 세 편을 덱으로 끝까지 만들었습니다([work/self-flow-full](work/self-flow-full), [work/repa](work/repa), [work/rae](work/rae)). 0.5.0에서 연구 내용 앞의 **overview 애니메이션**(클리커를 누를 때마다 한 구간씩 움직이는 도식)을 넣었습니다.
 > 스킬 본문은 [hs-vilab-html-deck/SKILL.md](hs-vilab-html-deck/SKILL.md), 변경 내역은 [CHANGELOG.md](hs-vilab-html-deck/CHANGELOG.md)에 있습니다.
 > 읽기용 handout(세로 흐름 문서)과 `deck.json` 스키마 파일은 아직 없습니다.
 
 ## 샘플
 
-- [work/self-flow-full](work/self-flow-full) — *Self-Supervised Flow Matching for Scalable Multi-Modal Synthesis*(Chefer et al., 2026) 20분 세미나 21장. 이 스킬의 첫 전체 실행입니다.
+- [work/self-flow-full](work/self-flow-full) — *Self-Supervised Flow Matching for Scalable Multi-Modal Synthesis*(Chefer et al., 2026) 20분 세미나 22장. 이 스킬의 첫 전체 실행입니다.
   - codex가 개요를 쓰고, agy가 비평·검증·자료조사·시각 검수를 맡았습니다. Claude는 조율했습니다.
   - 지적과 처리 기록은 `review/log.md`, `review/visual_triage_r1.md`·`visual_triage_r2.md`에 있습니다.
+  - **5번은 overview 애니메이션**입니다. REPA식 외부 encoder 정렬에서 시작해 그 자리에 모델 자신의 EMA teacher가 들어오고, student와 teacher 입력의 noise 수준이 갈라집니다(`figures/overview_selfflow.*`, 논의는 `review/anim/log.md`, 시각 검수는 `review/visual_anim_triage_r1.md`·`r2.md`).
   - **최종본은 [self-flow-full.html](work/self-flow-full/self-flow-full.html) 한 파일**입니다. 글꼴·그림이 모두 들어 있어 이 파일만 옮겨도 열립니다. 대본은 `self-flow-full-script.html`입니다.
   - PDF는 배포용 렌더링 확인에만 씁니다(`export_pdf.py`).
-- [work/repa](work/repa) — *Representation Alignment for Generation*(REPA, Yu et al., ICLR 2025) 20분 세미나 21장. 두 번째 전체 실행입니다.
-  - 진단(확산 transformer의 표현 격차) → 처방(외부 인코더 정렬) 줄기. 6번은 학습 경로를 한 단계씩 보이는 stepper, 9·12번은 그림 탭입니다.
+- [work/repa](work/repa) — *Representation Alignment for Generation*(REPA, Yu et al., ICLR 2025) 20분 세미나 22장. 두 번째 전체 실행입니다.
+  - 진단(확산 transformer의 표현 격차) → 처방(외부 인코더 정렬) 줄기. 7번은 학습 경로를 한 단계씩 보이는 stepper, 10·13번은 그림 탭입니다.
+  - **4번은 overview 애니메이션**입니다. 28개 block의 SiT 하나에 깨끗한 이미지의 DINOv2 경로가 더해지고, SiT가 8층에서 나뉘어 그 출력이 패치 표현에 정렬됩니다(`figures/overview_repa.*`, 논의는 `review/anim/log.md`, 시각 검수는 `review/visual_anim_triage_r1.md`·`r2.md`).
   - 처리 기록은 `review/log.md`, `verify2_triage.md`, `visual_triage_r1.md`·`visual_triage_r2.md`에 있습니다.
   - **최종본은 [repa.html](work/repa/repa.html)**, 대본은 `repa-script.html`입니다.
-- [work/rae](work/rae) — *Diffusion Transformers with Representation Autoencoders*(RAE, Zheng et al., 2025) 20분 세미나 21장. 세 번째 전체 실행입니다.
-  - 논문이 겨냥한 두 통념(① 의미 인코더는 복원을 못 한다, ② 확산은 고차원 latent에서 안 된다)을 하나씩 따라가는 줄기. 13번은 설계 변경을 하나씩 더할 때의 gFID 막대 stepper, 15번은 그림 탭입니다.
-  - 처리 기록은 `review/log.md`, `verify2_triage.md`, `visual_triage_r1.md`·`visual_triage_r2.md`에 있습니다.
+- [work/rae](work/rae) — *Diffusion Transformers with Representation Autoencoders*(RAE, Zheng et al., 2025) 20분 세미나 22장. 세 번째 전체 실행입니다.
+  - 논문이 겨냥한 두 통념(① 의미 인코더는 복원을 못 한다, ② 확산은 고차원 latent에서 안 된다)을 하나씩 따라가는 줄기. 14번은 설계 변경을 하나씩 더할 때의 gFID 막대 stepper, 16번은 그림 탭입니다.
+  - **4·5번은 overview 애니메이션**입니다. 4번은 SD-VAE latent가 RAE latent로 바뀌는 과정(Fig. 2를 다시 그림), 5번은 RAE 위의 복원·생성 경로와 네 가지 변경이 붙는 곳입니다. 도식은 `figures/overview_*.svg`, 움직임은 `figures/overview_*.anim.js`에 있습니다.
+  - 처리 기록은 `review/log.md`, `verify2_triage.md`, `visual_triage_r1.md`·`visual_triage_r2.md`, 애니메이션 논의는 `review/anim/log.md`에 있습니다.
   - **최종본은 [rae.html](work/rae/rae.html)**, 대본은 `rae-script.html`입니다.
 
 | 키 | 동작 |
 |---|---|
-| PageDown · → · Space | 다음 (토글이 있으면 상태부터) |
+| PageDown · → · Space | 다음 (stepper는 단계부터, 애니메이션은 한 구간씩 재생. 재생 중에 누르면 그 구간을 바로 끝냄) |
 | PageUp · ← | 이전 |
 | Home / End | 처음 / 끝 |
 | 1–9 | 현재 슬라이드 토글 상태 선택 |
 | G | 전체 보기 |
+| M | 모션 끄기/켜기 (느린 PC에서는 애니메이션이 구간마다 바로 넘어감) |
 | F | 전체 화면 |
 | Esc | 돌아가기 |
 
@@ -71,7 +75,7 @@ work/self-flow-full/   전체 실행
   outline*.md review/  개요와 codex·agy 검토·처리 기록
   self-flow-full.html  최종본(단일 파일) · self-flow-full-script.html 대본
 work/repa/             두 번째 전체 실행(같은 구성, figures/에 새로 그린 도식)
-work/rae/              세 번째 전체 실행(같은 구성)
+work/rae/              세 번째 전체 실행(같은 구성, figures/에 overview 애니메이션 두 개)
 ```
 
 `deck/assets/math/`는 수식 SVG 캐시입니다. 저장소에 두면 TeX 없이도 같은 최종본이 다시 빌드됩니다. `deck/`의 나머지(엔진·글꼴·로고 사본, `index.html`)는 빌드할 때마다 다시 생기므로 저장소에 넣지 않습니다.

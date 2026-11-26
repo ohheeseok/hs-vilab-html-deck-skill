@@ -38,3 +38,7 @@ work/*/deck/assets/*
 !work/*/deck/assets/fig/
 !work/*/deck/assets/math/
 work/*/review/crops/
+work/*/review/*/ref*/
+work/*/review/*/*.log
+work/*/review/*/*.err
+work/*/review/*/deck_before_*.json

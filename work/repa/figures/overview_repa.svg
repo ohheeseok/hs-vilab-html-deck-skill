@@ -1,0 +1,77 @@
+<svg class="diagram" viewBox="0 0 1696 490" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="or-title or-desc">
+  <title id="or-title">REPA가 SiT 학습에 더하는 것 (Fig. 1 왼쪽과 Sec. 1·3.1·3.3을 바탕으로 그림)</title>
+  <desc id="or-desc">아래: 잡음 섞인 VAE latent가 SiT-XL/2의 28개 block을 지나 velocity를 예측한다. 원래 SiT는 표현도 이 denoising 학습만으로 배운다. 위: 같은 이미지를 깨끗한 상태로 고정된 DINOv2-B에 넣어 패치 표현을 얻는다. 두 모델은 입력이 다르다(깨끗한 이미지와 잡음 섞인 latent). REPA는 SiT를 앞 8개 block과 뒤 20개 block으로 나누어 보고, 8번째 block의 출력을 이 패치 표현에 맞춘다. 이 정렬은 학습 때만 쓴다. 두 질문: 무엇을 어느 층에 맞추나(①), 수렴과 생성 품질이 얼마나 바뀌나(②).</desc>
+  <!-- the file draws the finished picture (beat 3); overview_repa.anim.js starts it from vanilla SiT
+       alone, the SiT row raised to the middle. Elements the script moves carry data-anim.
+       Block width = 1180/28 px; block 8 ends at 537.1. -->
+<g transform="translate(44,0)">
+
+  <!-- question ①: a bracket over the encoder path -->
+  <g data-anim="q1">
+    <path d="M200 74V58H627.1V74" fill="none" stroke="var(--color-warm)" stroke-width="4"/>
+    <foreignObject x="165.0" y="6" width="500.0" height="44"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-h">① 무엇을, 어느 층에 맞추나</div></foreignObject>
+  </g>
+
+  <!-- the encoder path: the same image, clean, through a frozen DINOv2-B -->
+  <g data-anim="top-img">
+    <foreignObject x="-30.0" y="28" width="180.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c">깨끗한 이미지</div></foreignObject>
+    <image href="assets/fig/cat_clean.png" x="0" y="80" width="120" height="120"/>
+    <rect x="0" y="80" width="120" height="120" fill="none" stroke="var(--color-text-heading)" stroke-width="3"/>
+  </g>
+  <g data-anim="top-a1" stroke="var(--color-text-muted)" stroke-width="3" fill="none"><path d="M128 140H188"/><path d="M182 133L190 140L182 147"/></g>
+  <g data-anim="enc">
+    <rect x="200" y="80" width="200" height="120" rx="12" fill="var(--color-surface-brand)" stroke="var(--color-accent)" stroke-width="3"/>
+    <foreignObject x="200.0" y="88" width="200.0" height="64"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box">DINOv2-B</div></foreignObject>
+    <foreignObject x="200.0" y="146" width="200.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-muted">고정</div></foreignObject>
+  </g>
+  <g data-anim="top-a2" stroke="var(--color-text-muted)" stroke-width="3" fill="none"><path d="M408 140H439.1"/><path d="M433.1 133L441.1 140L433.1 147"/></g>
+  <g data-anim="tgt">
+    <g fill="var(--color-accent)"><rect x="447.1" y="84" width="180" height="12"/><rect x="447.1" y="104" width="180" height="12"/><rect x="447.1" y="124" width="180" height="12"/><rect x="447.1" y="144" width="180" height="12"/><rect x="447.1" y="164" width="180" height="12"/><rect x="447.1" y="184" width="180" height="12"/></g>
+    <foreignObject x="641.1" y="120" width="220.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-h">패치 표현</div></foreignObject>
+  </g>
+
+  <!-- the two inputs differ: clean image vs noisy latent (Sec. 1) -->
+  <g data-anim="gap">
+    <path d="M60 212V288" stroke="var(--color-warm)" stroke-width="4"/>
+    <path d="M52 222L60 210L68 222M52 278L60 290L68 278" fill="none" stroke="var(--color-warm)" stroke-width="4"/>
+    <foreignObject x="80.0" y="230" width="240.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo" style="font-weight:700;color:var(--color-text-heading)">입력이 다름</div></foreignObject>
+  </g>
+
+  <!-- vanilla SiT: noisy latent → 28 blocks → velocity (raised to the middle on beat 0) -->
+  <g data-anim="sit-row">
+    <image href="assets/fig/cat_noisy.png" x="0" y="300" width="120" height="120"/>
+    <rect x="0" y="300" width="120" height="120" fill="none" stroke="var(--color-border-control)" stroke-width="3"/>
+    <foreignObject x="-40.0" y="428" width="200.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c">잡음 섞인 latent</div></foreignObject>
+    <g stroke="var(--color-text-muted)" stroke-width="3" fill="none"><path d="M128 360H188"/><path d="M182 353L190 360L182 367"/></g>
+    <g data-anim="whole" opacity="0" visibility="hidden">
+      <rect x="200" y="310" width="1180" height="100" rx="10" fill="var(--color-surface-sunken)" stroke="var(--color-border-control)" stroke-width="3"/>
+      <path d="M242.1 313V325M242.1 395V407M284.3 313V325M284.3 395V407M326.4 313V325M326.4 395V407M368.6 313V325M368.6 395V407M410.7 313V325M410.7 395V407M452.9 313V325M452.9 395V407M495.0 313V325M495.0 395V407M537.1 313V325M537.1 395V407M579.3 313V325M579.3 395V407M621.4 313V325M621.4 395V407M663.6 313V325M663.6 395V407M705.7 313V325M705.7 395V407M747.9 313V325M747.9 395V407M790.0 313V325M790.0 395V407M832.1 313V325M832.1 395V407M874.3 313V325M874.3 395V407M916.4 313V325M916.4 395V407M958.6 313V325M958.6 395V407M1000.7 313V325M1000.7 395V407M1042.9 313V325M1042.9 395V407M1085.0 313V325M1085.0 395V407M1127.1 313V325M1127.1 395V407M1169.3 313V325M1169.3 395V407M1211.4 313V325M1211.4 395V407M1253.6 313V325M1253.6 395V407M1295.7 313V325M1295.7 395V407M1337.9 313V325M1337.9 395V407" stroke="var(--color-border-control)" stroke-width="3"/>
+      <foreignObject x="400.0" y="310" width="780.0" height="100"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box">SiT-XL/2 · 28개 block</div></foreignObject>
+    </g>
+    <rect data-anim="front" x="200" y="310" width="317.1" height="100" rx="10" fill="var(--color-surface-brand)" stroke="var(--color-accent)" stroke-width="3"/>
+    <rect data-anim="back" x="557.1" y="310" width="822.9" height="100" rx="10" fill="var(--color-text-heading)" stroke="var(--color-text-heading)" stroke-width="3"/>
+    <path data-anim="front-ticks" d="M242.1 313V325M242.1 395V407M284.3 313V325M284.3 395V407M326.4 313V325M326.4 395V407M368.6 313V325M368.6 395V407M410.7 313V325M410.7 395V407M452.9 313V325M452.9 395V407M495.0 313V325M495.0 395V407" stroke="var(--color-accent)" stroke-width="3" opacity=".55"/>
+    <path data-anim="back-ticks" d="M579.3 313V325M579.3 395V407M621.4 313V325M621.4 395V407M663.6 313V325M663.6 395V407M705.7 313V325M705.7 395V407M747.9 313V325M747.9 395V407M790.0 313V325M790.0 395V407M832.1 313V325M832.1 395V407M874.3 313V325M874.3 395V407M916.4 313V325M916.4 395V407M958.6 313V325M958.6 395V407M1000.7 313V325M1000.7 395V407M1042.9 313V325M1042.9 395V407M1085.0 313V325M1085.0 395V407M1127.1 313V325M1127.1 395V407M1169.3 313V325M1169.3 395V407M1211.4 313V325M1211.4 395V407M1253.6 313V325M1253.6 395V407M1295.7 313V325M1295.7 395V407M1337.9 313V325M1337.9 395V407" stroke="#fff" stroke-width="3" opacity=".45"/>
+    <foreignObject data-anim="front-label" x="200.0" y="310" width="317.1" height="100"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box">block 1–8</div></foreignObject>
+    <foreignObject data-anim="back-label" x="557.1" y="310" width="822.9" height="100"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box" style="color:#fff">block 9–28</div></foreignObject>
+    <foreignObject data-anim="sit-name" x="200.0" y="428" width="317.1" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-muted">SiT-XL/2 · 28개 block</div></foreignObject>
+    <g data-anim="link" stroke="var(--color-text-muted)" stroke-width="3" fill="none"><path d="M519.1 360H554.1"/><path d="M548.1 353L556.1 360L548.1 367"/></g>
+    <g stroke="var(--color-text-muted)" stroke-width="3" fill="none"><path d="M1388 360H1428"/><path d="M1422 353L1430 360L1422 367"/></g>
+    <rect x="1440" y="310" width="184" height="100" rx="10" fill="var(--color-surface)" stroke="var(--color-border-control)" stroke-width="3"/>
+    <foreignObject x="1440.0" y="318" width="184.0" height="52"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box">velocity</div></foreignObject>
+    <foreignObject x="1440.0" y="362" width="184.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-muted">예측</div></foreignObject>
+    <foreignObject data-anim="vanilla-note" opacity="0" visibility="hidden" x="560.0" y="246" width="620.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-muted">표현도 denoising 학습으로만 배운다</div></foreignObject>
+  </g>
+
+  <!-- REPA: block 8's output is aligned to the patch representation (training only) -->
+  <path data-anim="align" d="M537.1 355V196" stroke="var(--color-accent)" stroke-width="5" fill="none"/>
+  <circle data-anim="align-dot" cx="537.1" cy="360" r="6" fill="var(--color-accent)"/>
+  <foreignObject data-anim="align-label" x="559.1" y="234" width="560.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo" style="font-weight:700;color:var(--color-text-heading)">8층 출력을 패치 표현에 맞춤 · 학습 때만</div></foreignObject>
+
+  <!-- question ②: under the later blocks and the output -->
+  <g data-anim="q2">
+    <path d="M557.1 418V428H1624V418" fill="none" stroke="var(--color-warm)" stroke-width="4"/>
+    <foreignObject x="557.1" y="440" width="1066.9" height="44"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-h">② 수렴과 생성 품질이 얼마나 바뀌나</div></foreignObject>
+  </g>
+</g>
+</svg>

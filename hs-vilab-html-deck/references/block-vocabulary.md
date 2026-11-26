@@ -58,6 +58,7 @@ false`, for your own work).
 | `panel` | a bounded region | `body`, `heading`, `size: "sm"` | ≤ 2 per slide, none on dark slides, ≥ 40% of slides panel-free (gates) |
 | `toggle` | compare states of one figure (see `interaction-rules.md`) | `states`, `start`, `print`, `reveals`, `svg` or per-state `src`, `side`, `mediaCaption`, `caption`, `panel`, `cols`, `signature` | `mediaCaption` sits under the visual, `caption` at the foot of the readout column |
 | `stepper` | an ordered reveal of one diagram | `svg`, `steps[{title, text}]`, `print`, `reveals`, `provenance` | elements carry `data-from-step="k"` |
+| `animation` | a diagram that changes shape, one beat per key (see `animation.md`) | `name`, `svg` (the finished picture), `script` (`figures/<name>.anim.js`), `beats[{title, text}]` (3–5, beat 0 first), `side: "below" \| "right"`, `cols`, `caption`, `print`, `reveals`, `provenance` | elements that move carry `data-anim="key"`; `below` puts one column per beat under a diagram that spans the slide |
 
 ## Inline syntax (any text field)
 

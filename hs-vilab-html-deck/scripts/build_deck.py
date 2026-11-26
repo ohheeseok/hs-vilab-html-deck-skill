@@ -110,7 +110,7 @@ def check(deck: dict, work: Path, gate: Gate) -> None:
     meta, slides = deck["meta"], deck["slides"]
     sec_ids = {s["id"] for s in meta.get("sections", [])}
     n = len(slides)
-    interactive, signature, paneled = [], [], []
+    interactive, signature, paneled, animations = [], [], [], []
     gate(meta.get("motion", "on") in ("on", "auto", "off"), f"meta.motion is {meta.get('motion')!r}; use on | auto | off")
     pr = meta.get("presenter") or {}
     gate(bool(pr.get("name")), "meta.presenter.name is missing (the cover names who presents)")
@@ -126,7 +126,16 @@ def check(deck: dict, work: Path, gate: Gate) -> None:
             gate(bool(sl.get("message")), f"{where}: no message (one key sentence per slide)")
             gate(sl.get("section") in sec_ids, f"{where}: section {sl.get('section')!r} is not in meta.sections")
             gate(bool(sl.get("cite")), f"{where}: no cite")
+        kinds = [b["type"] for b in walk(sl.get("body", [])) if b["type"] in ("toggle", "stepper", "animation")]
+        gate(len(kinds) <= 1, f"{where}: {' + '.join(kinds)} on one slide; one interaction per slide")
         for b in walk(sl.get("body", [])):
+            if b["type"] == "animation":
+                interactive.append(i)
+                animations.append(i)
+                if b.get("signature"):
+                    signature.append(i)
+                check_animation(b, work, where, gate)
+                continue
             if b["type"] in ("toggle", "stepper"):
                 interactive.append(i)
                 if b.get("signature"):
@@ -179,6 +188,16 @@ def check(deck: dict, work: Path, gate: Gate) -> None:
                     for k in it.get("pair", []):
                         gate(k in keys, f"{where}: delta {it['value']} pairs {k!r}, which no chart or table on the slide draws")
     gate(len(signature) <= 1, f"more than one signature interaction (slides {signature})")
+    gate(len(animations) <= 3, f"{len(animations)} animation slides (slides {animations}); at most 3 per deck")
+    # one name, one pair of files: the build copies one script per name, so two scripts under one name
+    # would leave the first slide playing the second one's animation
+    named: dict = {}
+    for sl in slides:
+        for b in walk(sl.get("body", [])):
+            if b["type"] == "animation":
+                named.setdefault(b.get("name"), set()).add((b.get("script"), b.get("svg")))
+    for nm, files in named.items():
+        gate(len(files) == 1, f"animation name {nm!r} is used for different files {sorted(files)}; give each its own name")
     content = [sl for sl in slides if sl.get("layout") not in ("cover", "ending")]
     gate(slides[-1].get("layout") == "ending", "the last slide is not an ending (layout: \"ending\" — 감사합니다 / Q&A)")
     notes = sum(1 for sl in slides for b in walk(sl.get("body", [])) if b["type"] == "note")
@@ -211,10 +230,51 @@ def check(deck: dict, work: Path, gate: Gate) -> None:
                     "write it another way (a word, ○/×, bold) or put it in math")
 
 
+# an animation script draws; the engine plays. Anything that keeps its own clock, reads the OS,
+# listens for input, writes text or reaches the network breaks "the picture is a function of t"
+ANIM_FORBIDDEN = ["requestAnimationFrame", "setTimeout", "setInterval", "Date.now", "performance.now",
+                  "Math.random", "matchMedia", "addEventListener", "textContent", "innerHTML", "innerText",
+                  "fetch(", "XMLHttpRequest", "http:", "https:", "document.write", "createElementNS",
+                  "IntersectionObserver"]
+
+
+def check_animation(b, work: Path, where: str, gate) -> None:
+    name = b.get("name", "")
+    gate(bool(re.fullmatch(r"[a-z][a-z0-9-]*", name)), f"{where}: animation name {name!r} (lowercase, digits, -)")
+    svg, js = work / b.get("svg", ""), work / b.get("script", "")
+    gate(svg.is_file() and svg.suffix == ".svg", f"{where}: animation svg {b.get('svg')!r} not found")
+    gate(js.is_file() and js.suffix == ".js", f"{where}: animation script {b.get('script')!r} not found")
+    beats = b.get("beats", [])
+    gate(3 <= len(beats) <= 5, f"{where}: an animation has 3–5 beats (the opening picture and 2–4 key presses), not {len(beats)}")
+    gate(all(x.get("title") for x in beats), f"{where}: every beat needs a title")
+    gate(bool(b.get("reveals")), f"{where}: animation has no 'reveals' (what does playing it show about the paper?)")
+    gate(b.get("print") in ("default", "expand"), f"{where}: animation 'print' must be default|expand")
+    gate(bool(b.get("provenance")), f"{where}: animation has no provenance")
+    gate(b.get("side", "right") in ("right", "below"), f"{where}: animation side must be right|below")
+    if js.is_file():
+        # comments may say what the engine does ("the engine owns setTimeout"); only code is checked
+        code = re.sub(r"/\*.*?\*/", "", js.read_text(encoding="utf-8"), flags=re.S)
+        code = re.sub(r"(?m)(^|[^:\\])//.*$", r"\1", code)
+        gate(re.search(r"DeckAnim\.define\(\s*[\"']" + re.escape(name) + r"[\"']", code) is not None,
+             f"{where}: {b['script']} does not call DeckAnim.define({name!r}, …)")
+        for word in ANIM_FORBIDDEN:
+            gate(word not in code, f"{where}: {b['script']} uses {word!r} — the engine owns time, input and text; "
+                                   "render(t) only sets attributes of elements drawn in the SVG")
+    if svg.is_file():
+        s = svg.read_text(encoding="utf-8")
+        remote = (re.search(r"(?:href|src)\s*=\s*[\"']\s*(?:https?:)?//", s)
+                  or re.search(r"url\(\s*[\"']?\s*(?:https?:)?//", s))
+        gate("<script" not in s and not remote, f"{where}: {b['svg']} has a script or a remote link")
+        drawn = set(re.findall(r"data-anim\s*=\s*[\"']([^\"']+)[\"']", s))
+        for key in set(re.findall(r"node\(\s*[\"']([^\"']+)[\"']", js.read_text(encoding="utf-8") if js.is_file() else "")):
+            gate(key in drawn, f"{where}: the script asks for data-anim={key!r}, which {b['svg']} does not draw")
+
+
 # keys whose strings are never set in the stage fonts (spoken, alt text, paths, ids, TeX)
 NOT_STAGE = {"notes", "provenance", "alt", "src", "svg", "id", "cite", "message", "reveals", "start",
              "print", "type", "cols", "layout", "section", "tone", "valign", "lines", "tags", "url",
-             "slug", "team", "figures", "lang", "titleLang", "statementTheme", "motion", "occasion"}
+             "slug", "team", "figures", "lang", "titleLang", "statementTheme", "motion", "occasion",
+             "name", "script", "side"}
 
 
 def _font_cover() -> set[int] | None:
@@ -589,7 +649,63 @@ def r_stepper(b, ctx):
             f'<figure class="figure figure--diagram">{svg}{cap}</figure><div class="stepper-side">{side}</div></div>')
 
 
+IDREF_ATTRS = ("aria-labelledby", "aria-describedby", "aria-controls", "aria-owns", "aria-details",
+               "aria-flowto", "aria-activedescendant", "aria-errormessage", "for")
+
+
+def _attr(name: str) -> str:
+    """name="value" or name='value' as a whole attribute (not data-name, not xlink:name)."""
+    return r"(?<![\w:-])(" + name + r")\s*=\s*([\"'])(.*?)\2"
+
+
+def prefix_ids(svg: str, pre: str) -> str:
+    """Give every id in an inlined SVG (and each reference to it) a per-slide prefix: two SVGs on one
+    page must not share a clipPath, mask, gradient or title id. Only real id attributes are renamed
+    (not data-id), and only references to them: a local fragment in href / xlink:href, url(#…) in an
+    attribute or a style, and the tokens of ARIA id-reference lists."""
+    ids = {m.group(3) for m in re.finditer(_attr("id"), svg)}
+    if not ids:
+        return svg
+
+    def ren(m, value):
+        return f"{m.group(1)}={m.group(2)}{value}{m.group(2)}"
+
+    svg = re.sub(_attr("id"), lambda m: ren(m, pre + m.group(3)), svg)
+    svg = re.sub(_attr("(?:xlink:)?href"),
+                 lambda m: ren(m, "#" + pre + m.group(3)[1:]) if m.group(3)[:1] == "#" and m.group(3)[1:] in ids
+                 else m.group(0), svg)
+    svg = re.sub(r"url\(\s*#([^)\s]+)\s*\)", lambda m: f"url(#{pre}{m.group(1)})" if m.group(1) in ids else m.group(0), svg)
+    for a in IDREF_ATTRS:
+        svg = re.sub(_attr(re.escape(a)), lambda m: ren(m, " ".join(pre + x if x in ids else x for x in m.group(3).split())), svg)
+    return svg
+
+
+def r_animation(b, ctx):
+    """A diagram drawn as a function of time (figures/<name>.anim.js), one beat per next key. The SVG
+    file is the finished picture (no script, the PDF's default page, the overview grid); the script
+    moves its data-anim elements. The beat list reads like a stepper's: beat k from beat k on."""
+    pre = f"a{ctx['slide']}-"
+    svg = prefix_ids(inline_svg(ctx["work"] / b["svg"]), pre)
+    items = []
+    for k, s in enumerate(b["beats"]):
+        attr_ = f' data-from-step="{k}"' + (' class="is-off"' if k > 0 else ' class="is-now"')
+        items.append(f'<li{attr_}><span class="step-num" aria-hidden="true">{k + 1}</span>'
+                     f'<span class="step-title">{md(s["title"])}</span>'
+                     + (f'<span class="step-text">{md(s["text"])}</span>' if s.get("text") else "") + "</li>")
+    cap = f'<figcaption class="caption">{md(b["caption"])}</figcaption>' if b.get("caption") else ""
+    head = (f'data-stepper data-print="{b["print"]}" data-anim-name="{attr(b["name"])}" data-beats="{len(b["beats"])}"')
+    fig = f'<figure class="figure figure--diagram">{svg}{cap}</figure>'
+    steps = '<ol class="steps">' + "".join(items) + "</ol>"
+    ctx.setdefault("scripts", []).append(b)
+    if b.get("side", "right") == "below":
+        return f'<div class="anim anim--below" {head} style="--beats:{len(b["beats"])}">{fig}{steps}</div>'
+    c = b.get("cols", [3, 2])
+    return (f'<div class="anim stepper" {head} style="grid-template-columns:minmax(0,{c[0]}fr) minmax(0,{c[1]}fr)">'
+            f'{fig}<div class="stepper-side">{steps}</div></div>')
+
+
 RENDER = {
+    "animation": r_animation,
     "lead": r_lead, "groups": r_groups, "caption": r_caption, "note": r_note, "deltas": r_deltas,
     "figure": r_figure, "table": r_table, "bars": r_bars, "toggle": r_toggle, "split": r_split,
     "panel": r_panel, "bullets": r_bullets, "cards": r_cards, "callout": r_callout,
@@ -714,8 +830,10 @@ def slide_html(deck, i, ctx):
             cls.append("slide--wash")
         if sl.get("valign") == "center":
             cls.append("slide--center")
+        ctx["slide"] = i + 1
         body = "".join(render(b, ctx) for b in sl.get("body", []))
-        steppers = [b for b in walk(sl.get("body", [])) if b["type"] == "stepper"]
+        steppers = [b if b["type"] == "stepper" else {"steps": b["beats"]}
+                    for b in walk(sl.get("body", [])) if b["type"] in ("stepper", "animation")]
         inner = (f'<h2 class="slide-title">{md(sl["title"])}</h2>'
                  f'<div class="slide-body">{body}</div>{footer(deck, i, dark)}')
     notes = ""
@@ -740,7 +858,7 @@ PAGE = """<!doctype html>
 <link rel="stylesheet" href="assets/base.css">
 <link rel="stylesheet" href="assets/deck.css">
 <script src="assets/deck.js" defer></script>
-</head>
+{scripts}</head>
 <body>
 <main class="deck" aria-roledescription="slide deck" aria-label="{title}">
 <div class="stage">
@@ -804,6 +922,10 @@ def script_html(deck) -> str:
                 cues.append(f"토글: {keys}. 숫자 키로 상태를 고른다. 시작 상태 {plain(next(s['label'] for s in b['states'] if s['id'] == b['start']))}.")
             if b["type"] == "stepper":
                 cues.append(f"단계 {len(b['steps'])}개: 다음 키가 단계를 먼저 넘긴다.")
+            if b["type"] == "animation":
+                beats = " · ".join(f"[{k}] {plain(x['title'])}" for k, x in enumerate(b["beats"]) if k)
+                cues.append(f"애니메이션: 첫 그림에서 멈춘 채 열린다. 다음 키마다 한 구간 재생 — {beats}. "
+                            "재생 중 다음 키는 그 구간을 끝내고, M은 모션을 끈다.")
         cue = "".join(f'<p class="cue">{html.escape(c)}</p>' for c in cues)
         notes = "".join(f"<p>{md(x)}</p>" for x in sl.get("notes", []))
         msg = f'<p class="msg">{md(sl["message"])}</p>' if sl.get("message") else ""
@@ -852,8 +974,17 @@ def main() -> int:
     slides = "\n".join(slide_html(deck, i, ctx) for i in range(len(deck["slides"])))
     # motion plays by default: a presenter opens the file on a lab PC with OS animations off and
     # expects the deck's motion; meta.motion "auto" follows the OS, "off" never animates
+    # animation scripts run after the engine (defer keeps document order): DeckAnim.define binds them
+    anim_dir = out / "assets" / "anim"
+    if anim_dir.exists():
+        shutil.rmtree(anim_dir)
+    tags = []
+    for b in {b["name"]: b for b in ctx.get("scripts", [])}.values():
+        anim_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(work / b["script"], anim_dir / f"{b['name']}.js")
+        tags.append(f'<script src="assets/anim/{b["name"]}.js" defer></script>\n')
     page = PAGE.format(lang=deck["meta"].get("lang", "ko"), title=html.escape(deck["meta"]["title"]), slides=slides,
-                       motion=deck["meta"].get("motion", "on"))
+                       motion=deck["meta"].get("motion", "on"), scripts="".join(tags))
     (out / "index.html").write_text(page, encoding="utf-8")
     print(f"wrote {out / 'index.html'} ({len(deck['slides'])} slides)")
     if any(sl.get("notes") for sl in deck["slides"]):
