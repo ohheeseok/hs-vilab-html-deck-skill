@@ -44,6 +44,10 @@ INLINE_MAX = 20000
 RULE = ("\n\n(규칙: 아래 폴더 밖의 파일·커넥터·웹을 쓰지 마라. 파일을 만들거나 고치지 말고 결과만 출력하라. "
         "읽을 폴더: {dir})")
 RULE_WEB = "\n\n(규칙: 파일을 만들거나 고치지 마라. 답마다 출처 URL을 붙여라.)"
+# research needs the web: a folder given to it is extra reading, never a fence (RAE run: --dir made
+# the researcher refuse every web question and answer "확인 못 함" five times)
+RULE_WEB_DIR = ("\n\n(규칙: 웹을 검색하라. 아래 폴더의 파일도 읽어도 된다. 파일을 만들거나 고치지 말고 "
+                "결과만 출력하라. 답마다 출처 URL을 붙여라. 읽을 폴더: {dir})")
 
 
 def find(cmd: str) -> str | None:
@@ -90,7 +94,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("role", choices=["which", *ORDER])
     ap.add_argument("--prompt-file")
-    ap.add_argument("--dir", help="the only folder the delegate may read")
+    ap.add_argument("--dir", help="the only folder the delegate may read (research: extra reading; it still searches the web)")
     ap.add_argument("--out")
     ap.add_argument("--timeout", type=int, default=1800)
     a = ap.parse_args()
@@ -116,7 +120,10 @@ def main() -> int:
         stage = Path(tempfile.mkdtemp(prefix="hsdeck-"))
         shutil.copytree(folder, stage, dirs_exist_ok=True)
     run_dir = stage or folder
-    prompt += RULE.format(dir=run_dir) if run_dir else RULE_WEB
+    if a.role == "research":
+        prompt += RULE_WEB_DIR.format(dir=run_dir) if run_dir else RULE_WEB
+    else:
+        prompt += RULE.format(dir=run_dir) if run_dir else RULE_WEB
     try:
         rc = (run_codex if who == "codex" else run_agy)(prompt, run_dir, out, a.timeout)
     finally:

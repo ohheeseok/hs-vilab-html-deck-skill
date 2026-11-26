@@ -37,3 +37,4 @@ work/*/deck/*
 work/*/deck/assets/*
 !work/*/deck/assets/fig/
 !work/*/deck/assets/math/
+work/*/review/crops/

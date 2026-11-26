@@ -565,7 +565,8 @@ body{overflow:hidden;background:var(--letterbox)}
 .cite{font-size:var(--t-caption);color:var(--color-text-muted)}
 
 i.m{font-style:italic}
-sub{font-size:max(24px,.75em);line-height:0}
+sub,sup{font-size:max(24px,.75em);line-height:0}
+sup{vertical-align:.4em}
 
 /* ---------- delta / metric tiles ---------- */
 /* one grid for all tiles: every value and every label starts on the same line (REPA run, slide 15) */
@@ -794,7 +795,7 @@ sub{font-size:max(24px,.75em);line-height:0}
 
 
 /* statement slides: the content sits in the optical middle, not stuck to the title */
-.slide--statement .slide-body{justify-content:center;gap:64px;padding-bottom:72px}
+.slide--statement .slide-body{justify-content:safe center;gap:64px;padding-bottom:72px}
 .slide--statement .lead{max-width:34em}
 .slide--statement .group h3{font-size:var(--t-40);margin-bottom:24px}
 .slide--statement .items{gap:24px}
@@ -961,7 +962,7 @@ sub{font-size:max(24px,.75em);line-height:0}
 .toggle-side > .figure{flex:none}
 .toggle .media-caption{margin-top:0}
 /* sparse slides (Q&A, a short list) may sit on the optical centre instead of the top */
-.slide--center .slide-body{justify-content:center;padding-bottom:72px}
+.slide--center .slide-body{justify-content:safe center;padding-bottom:72px}
 /* a split stretches to fill the body; on a centred slide it must not, or nothing gets centred */
 .slide--center .split{flex:0 1 auto}
 

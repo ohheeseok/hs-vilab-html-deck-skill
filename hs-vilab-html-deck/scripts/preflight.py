@@ -62,6 +62,11 @@ def main() -> int:
     need = ["Geomini-Variable.woff2", "GmarketSans-Light.woff2", "GmarketSans-Medium.woff2", "GmarketSans-Bold.woff2"]
     miss = [f for f in need if not (fonts / f).exists()]
     line("FAIL" if miss else "ok", "bundled fonts", ", ".join(miss) if miss else "4 files")
+    try:
+        __import__("fontTools")
+        line("ok", "fontTools", "build gate: every stage glyph is in the bundled fonts")
+    except ImportError:
+        line("warn", "fontTools", "pip install fonttools — without it a missing glyph is caught only by QA")
     for cmd, role in (("codex", "draft · revision · Korean edit"), ("agy", "critique · verification · research · visual")):
         path = shutil.which(cmd) or shutil.which(cmd + ".cmd")
         line("ok" if path else "warn", cmd, f"{role}" + ("" if path else " — missing: that role runs as a subagent"))

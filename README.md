@@ -7,7 +7,7 @@
 - 디자인: hs-vilab-frontend-design의 토큰·글꼴·규칙(HSU 색, Geomini + Gmarket Sans, 글자 크기 사다리 80/56/48/40/36/32/28/24px, 24px 하한)
 - 제작 흐름과 내용 규칙: hs-vilab-deck(PPT판)을 HTML로 옮긴 것
 
-> **상태: 0.3.1.** 논문 두 편을 각각 21장 덱으로 끝까지 만들었습니다([work/self-flow-full](work/self-flow-full), [work/repa](work/repa)). 두 번째 실행에서 찾은 엔진·QA 결함을 고쳤습니다.
+> **상태: 0.4.0.** 논문 세 편을 각각 21장 덱으로 끝까지 만들었습니다([work/self-flow-full](work/self-flow-full), [work/repa](work/repa), [work/rae](work/rae)). 세 번째 실행에서 찾은 엔진·QA 결함을 고쳤습니다.
 > 스킬 본문은 [hs-vilab-html-deck/SKILL.md](hs-vilab-html-deck/SKILL.md), 변경 내역은 [CHANGELOG.md](hs-vilab-html-deck/CHANGELOG.md)에 있습니다.
 > 읽기용 handout(세로 흐름 문서)과 `deck.json` 스키마 파일은 아직 없습니다.
 
@@ -22,6 +22,10 @@
   - 진단(확산 transformer의 표현 격차) → 처방(외부 인코더 정렬) 줄기. 6번은 학습 경로를 한 단계씩 보이는 stepper, 9·12번은 그림 탭입니다.
   - 처리 기록은 `review/log.md`, `verify2_triage.md`, `visual_triage_r1.md`·`visual_triage_r2.md`에 있습니다.
   - **최종본은 [repa.html](work/repa/repa.html)**, 대본은 `repa-script.html`입니다.
+- [work/rae](work/rae) — *Diffusion Transformers with Representation Autoencoders*(RAE, Zheng et al., 2025) 20분 세미나 21장. 세 번째 전체 실행입니다.
+  - 논문이 겨냥한 두 통념(① 의미 인코더는 복원을 못 한다, ② 확산은 고차원 latent에서 안 된다)을 하나씩 따라가는 줄기. 13번은 설계 변경을 하나씩 더할 때의 gFID 막대 stepper, 15번은 그림 탭입니다.
+  - 처리 기록은 `review/log.md`, `verify2_triage.md`, `visual_triage_r1.md`·`visual_triage_r2.md`에 있습니다.
+  - **최종본은 [rae.html](work/rae/rae.html)**, 대본은 `rae-script.html`입니다.
 - [work/self-flow](work/self-flow) — 같은 논문의 디자인 샘플입니다(6장 + 마무리). 엔진과 표지를 정할 때 썼습니다. 최종본은 `self-flow.html`입니다.
 
 | 키 | 동작 |
@@ -68,6 +72,7 @@ work/self-flow-full/   전체 실행
   outline*.md review/  개요와 codex·agy 검토·처리 기록
   self-flow-full.html  최종본(단일 파일) · self-flow-full-script.html 대본
 work/repa/             두 번째 전체 실행(같은 구성, figures/에 새로 그린 도식)
+work/rae/              세 번째 전체 실행(같은 구성)
 work/self-flow/        디자인 샘플 6장 + 마무리(같은 구성)
 ```
 

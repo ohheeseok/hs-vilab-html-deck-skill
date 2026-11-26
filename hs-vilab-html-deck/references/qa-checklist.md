@@ -15,6 +15,8 @@ A clean build is not a correct render. Three gates, in this order.
 - the last slide is an `ending`
 - slide count = `meta.target_slides`; `time` sum within ±10% of `meta.target_minutes`
 - every referenced file (figure, diagram, state image) exists
+- every character on the stage (deck.json text outside math, diagram SVG labels) is in the bundled
+  fonts — needs fontTools; without it QA's `faces` check still catches it (RAE run: ✓/✗ in a table)
 
 ## 2. Mechanical gate (`qa_render.py`, run at 1920×1080 and 1024×768)
 
@@ -22,7 +24,7 @@ Per slide, per toggle state and per stepper step, in Chromium over `file://` wit
 
 | key | fails when |
 |---|---|
-| `overflow` | anything leaves the 1920×1080 stage |
+| `overflow` | anything leaves the 1920×1080 stage, or body content runs into the side margins (RAE run: a four-column table 94px into the right margin, on the stage). Inside an `<svg>` only the svg box counts — its viewport clips the children |
 | `spill` | content leaves its band (a direct child of the slide) or two bands overlap — catches a figure pushing past its column, a caption touching the footer, buttons wrapping out. Also any block whose content runs into the next block: a split shrinks to make room for a caption below it while its figures do not (REPA run, slides 17, 18 — the lines only touched, so `collide` missed it). A figure with a `height` no longer shrinks; if it does not fit, this reports it |
 | `collide` | two visible text lines (from different blocks), or text and an image, overlap anywhere — catches what `spill` cannot see inside one column (in the full run: a figure caption run over by the toggle caption because a flex item shrank) |
 | `small` | any rendered text below 24 stage px |

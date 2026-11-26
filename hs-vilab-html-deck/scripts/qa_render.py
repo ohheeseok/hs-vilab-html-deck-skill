@@ -52,12 +52,20 @@ MEASURE = r"""
       p.unshift(e.tagName.toLowerCase() + (e.classList.length ? '.' + [...e.classList].join('.') : ''));
     return p.join(' > ');
   };
+  // the body's side margins are part of the stage: content that runs into them is overflow even
+  // while it stays on the slide (RAE run: a four-column table ran 90px into the right margin)
+  const body = slide.querySelector('.slide-body');
+  const br = body ? body.getBoundingClientRect() : null;
   for (const el of slide.querySelectorAll('*')) {
     if (!visible(el)) continue;
     const r = el.getBoundingClientRect();
     if (!r.width && !r.height) continue;
     if (r.left < sr.left - 1 || r.right > sr.right + 1 || r.top < sr.top - 1 || r.bottom > sr.bottom + 1)
       out.overflow.push({el: path(el), box: [r.left - sr.left, r.top - sr.top, r.right - sr.left, r.bottom - sr.top].map(v => Math.round(v / k))});
+    // inside an <svg> the viewport clips its children, so only the svg box itself counts
+    else if (br && body.contains(el) && !(el instanceof SVGElement && el.tagName.toLowerCase() !== 'svg')
+             && (r.right > br.right + 2 * k || r.left < br.left - 2 * k))
+      out.overflow.push({el: path(el), margin: Math.round(Math.max(r.right - br.right, br.left - r.left) / k)});
     if (!(el instanceof SVGElement) && (el.scrollHeight > el.clientHeight + 2 || el.scrollWidth > el.clientWidth + 2)) {
       const cs = getComputedStyle(el);
       if (cs.overflow !== 'visible' && el.clientHeight > 0) out.clipped.push(path(el));
@@ -187,6 +195,11 @@ def faces(cdp, page, idx):
 
 
 def main() -> int:
+    for st in (sys.stdout, sys.stderr):   # Korean paths and labels on a cp949 console
+        try:
+            st.reconfigure(encoding="utf-8")
+        except Exception:  # noqa: BLE001
+            pass
     work = Path(sys.argv[1]).resolve()
     vp = (1920, 1080)
     if "--viewport" in sys.argv:

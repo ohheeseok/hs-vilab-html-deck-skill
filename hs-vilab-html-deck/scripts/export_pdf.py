@@ -56,6 +56,10 @@ def overlaps(pdf: Path) -> list[str]:
                     bc, rc, tc = lines[c]
                     if ba == bc:
                         continue
+                    # a text-shadow halo prints the same glyphs again at the same place (RAE run:
+                    # the ladder's value labels) — a copy is not an overlap
+                    if ta == tc and max(abs(ra.x0 - rc.x0), abs(ra.y0 - rc.y0)) < 1.5:
+                        continue
                     x = ra & rc
                     if x.width > 2 and x.height > 0.35 * min(ra.height, rc.height):
                         bad.append(f"page {n}: '{ta[:24]}' overlaps '{tc[:24]}'")

@@ -1,0 +1,37 @@
+{
+  "sizes": {
+    "fig1_timeline.png": [
+      4490,
+      1090
+    ],
+    "fig2_vae_rae.png": [
+      2257,
+      567
+    ],
+    "fig3_width.png": [
+      1535,
+      932
+    ],
+    "fig3_depth.png": [
+      1285,
+      932
+    ],
+    "fig4_convergence.png": [
+      1362,
+      883
+    ],
+    "fig6a_flops.png": [
+      1031,
+      1371
+    ],
+    "fig5_ddt_head.png": [
+      945,
+      522
+    ],
+    "fig6b_compute.png": [
+      1061,
+      1371
+    ]
+  },
+  "eq": {}
+}

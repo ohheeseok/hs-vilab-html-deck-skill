@@ -28,6 +28,12 @@ as a subagent with only that role's inputs. Name every fallback in the delivery.
    *Self-Flow run*: agy reported a conference acceptance that the arXiv page does not carry and a
    baseline FID not on the abstract page — both dropped. Its follow-up paper was real and became
    a discussion point.
+   *RAE run*: the first research call came back "확인 못 함" five times — given `--dir`,
+   `delegate.py` had told it not to use the web; research now always gets the web. A reported
+   ICLR acceptance could not be opened (OpenReview asked for a bot challenge, which is not ours to
+   pass), so the cover says arXiv. Two follow-ups by overlapping authors went to the discussion:
+   at text-to-image scale the wide head and the noisy decoder stopped helping, and RAE needed a
+   second model for guidance.
 4. **Answer every finding** in `review/log.md`: accepted, partly, rejected — and why. Put the
    target structure (slide list) at the end of the log.
 5. **Revise once** — codex gets: the brief's task and constraints, `# Revision` ("apply every
@@ -67,6 +73,10 @@ result "reverses", crop the figure and look before you write.
 It happened again on REPA: the outline said "all layers 4–24" and "layers 20–24 match vanilla"; the
 zoomed Fig. 3 has points from layer 6, and at layer 24 REPA is above vanilla again. Any claim taken
 from a curve is written with its range and marked "곡선 근거" until you have looked.
+And on RAE, in the second verification of `deck.json`: the verifier "corrected" an alt text from
+DiT^DH-L ≈ 2.4 to ≈ 2.6 on Fig. 6a. Zoomed, the point sits below the 2.5 gridline (≈ 2.36); the
+verifier had read the label, which is printed above its point. A reviewer's correction of a curve
+reading is a claim like any other: look before you apply it.
 
 **Korean editor** — see `korean-style.md`.
 

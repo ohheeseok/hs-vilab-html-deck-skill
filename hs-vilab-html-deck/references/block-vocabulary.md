@@ -48,8 +48,8 @@ false`, for your own work).
 | `caption` | condition line under a figure/table | `text` | starts with `**Fig. n**` / `**Table n**` |
 | `deltas` | change against ONE named baseline | `items[{value, label, small, pair}]`, `provenance` | one big number per metric; `pair` names two rows drawn on the slide → hover/focus marks them (gate checks they exist) |
 | `bars` | one metric across ≥ 4 models | `title`, `metric`, `better`, `items[{label, sub, value, focus}]`, `provenance` | SVG drawn by the build, sorted best first, `focus` = the paper's model |
-| `table` | several metrics | `columns[{label, dir, align}]`, `groups[{label, rows[{cells, focus}]}]`, `provenance` | `**x**` = best; number columns align right, word columns left (auto); `focus` row tinted |
-| `figure` | a paper figure | `src`, `alt`, `caption`, `height` | crop the REGION (axes, legend) at 400 dpi with `extract_figures.py`; caption written by the slide. With `height` the figure keeps that size (it does not shrink) |
+| `table` | several metrics | `columns[{label, dir, align}]`, `groups[{label, rows[{cells, focus}]}]`, `provenance` | `**x**` = best; number columns align right, word columns left (auto; a `—` for "not reported" does not turn a number column into a word column); `focus` row tinted |
+| `figure` | a paper figure | `src`, `alt`, `caption`, `height` | crop the REGION (axes, legend) at 400 dpi with `extract_figures.py`; caption written by the slide. With `height` the figure keeps that size (it does not shrink). Two figures side by side at one `height`: give the split columns in the ratio of their aspects, or one is held by its width |
 | `figureNumbered` | a complex figure needing pointers | `src`, `marks[{x, y}]` (0–1), `items` | one item per mark |
 | `diagram` | a figure we redraw as SVG | `svg` (path under the work dir), `caption` | token colours, `role="img"` + `<title>`; math in `<foreignObject>` via `$…$` |
 | `equation` | an equation carries the slide | `lines` (TeX), `tags`, `symbols[[sym, meaning]]` | TeX → dvisvgm → inline SVG, Arev Sans |
@@ -61,7 +61,7 @@ false`, for your own work).
 
 ## Inline syntax (any text field)
 
-`**bold**`, `$TeX$` (inline math, rendered at build time), `_{sub}`; hyphenated names
+`**bold**`, `$TeX$` (inline math, rendered at build time), `_{sub}`, `^{sup}` (`DiT^{DH}-XL` — the name and its suffix never split); hyphenated names
 (`Self-Flow`, `SiT-XL/2`) never break, a Korean particle stays on the math before it
 (`$\ell_1$에서`), and a count stays with its unit (`1M step`, `50 ODE steps`). Use U+00A0 to keep a short phrase on one line
 (`DINOv2 feature`) and U+2007 (figure space) to align a decimal in a table column. The build also keeps

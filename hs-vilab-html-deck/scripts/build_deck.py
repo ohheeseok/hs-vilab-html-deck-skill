@@ -55,6 +55,8 @@ def math_html(tex: str, display: bool = False) -> str:
 
 def _text(s: str) -> str:
     s = html.escape(s, quote=False)
+    # a superscript name (DiT^{DH}-XL, RAE run) is one unbreakable unit with the suffix after it
+    s = re.sub(r"(\w+)\^\{(.+?)\}((?:-[\w.]+)*)", r'<span class="nw">\1<sup>\2</sup>\3</span>', s)
     # keep hyphenated names (Self-Flow, SiT-XL/2, text-to-image) on one line
     s = re.sub(r"(?<![\w-])([A-Za-z0-9][\w.]*(?:-[\w.]+)+)", r'<span class="nw">\1</span>', s)
     # short pairs that must not split at a line end: "약 625M", "no CFG"
@@ -72,7 +74,7 @@ def _text(s: str) -> str:
 
 
 def md(s: str) -> str:
-    """Escape, then a small inline syntax: **bold**, _{subscript}, $TeX math$ (\\$ = literal $)."""
+    """Escape, then a small inline syntax: **bold**, _{subscript}, ^{superscript}, $TeX math$ (\\$ = literal $)."""
     parts = re.split(r"(?<!\\)\$(.+?)(?<!\\)\$", str(s))
     out = []
     for k, part in enumerate(parts):
@@ -85,6 +87,7 @@ def md(s: str) -> str:
 def plain(s: str) -> str:
     s = re.sub(r"\*\*(.+?)\*\*", r"\1", str(s))
     s = re.sub(r"\$(.+?)\$", r"\1", s)
+    s = re.sub(r"\^\{(.+?)\}", r"\1", s)
     return re.sub(r"_\{(.+?)\}", r"\1", s)
 
 
@@ -201,6 +204,61 @@ def check(deck: dict, work: Path, gate: Gate) -> None:
             k = e["use"]
             ok = 1 <= k <= n and ref in slides[k - 1].get("cite", [])
             gate(ok, f"ledger {ref}: slide {k} does not cite it")
+    # every character on the stage must be in the bundled fonts (RAE run: ✓/✗ in a table fell back
+    # to Segoe UI Symbol and Noto Sans KR — a different look on every PC, a box on some)
+    for where, ch, text in uncovered(deck, work):
+        gate(False, f"{where}: {ch!r} (U+{ord(ch):04X}) is not in the bundled fonts — in {text[:40]!r}; "
+                    "write it another way (a word, ○/×, bold) or put it in math")
+
+
+# keys whose strings are never set in the stage fonts (spoken, alt text, paths, ids, TeX)
+NOT_STAGE = {"notes", "provenance", "alt", "src", "svg", "id", "cite", "message", "reveals", "start",
+             "print", "type", "cols", "layout", "section", "tone", "valign", "lines", "tags", "url",
+             "slug", "team", "figures", "lang", "titleLang", "statementTheme", "motion", "occasion"}
+
+
+def _font_cover() -> set[int] | None:
+    try:
+        from fontTools.ttLib import TTFont
+    except ImportError:
+        return None     # QA's glyph-face check still catches a fallback font
+    cover: set[int] = set()
+    for f in (ASSETS / "fonts").glob("*.woff2"):
+        cover |= set(TTFont(f).getBestCmap())
+    return cover
+
+
+def uncovered(deck: dict, work: Path):
+    cover = _font_cover()
+    if cover is None:
+        return
+    seen = set()
+
+    def strings(x, where):
+        if isinstance(x, str):
+            yield where, x
+        elif isinstance(x, list):
+            for v in x:
+                yield from strings(v, where)
+        elif isinstance(x, dict):
+            for k, v in x.items():
+                if k not in NOT_STAGE:
+                    yield from strings(v, where)
+
+    items = list(strings({k: v for k, v in deck["meta"].items()}, "meta"))
+    for i, sl in enumerate(deck["slides"], 1):
+        items += list(strings(sl, f"slide {i}"))
+        for b in walk(sl.get("body", [])):
+            if b.get("svg") and (work / b["svg"]).is_file():
+                svg = (work / b["svg"]).read_text(encoding="utf-8")
+                svg = re.sub(r"<(title|desc)\b.*?</\1>", "", svg, flags=re.S)
+                items.append((f"slide {i} {b['svg']}", " ".join(re.findall(r">([^<]+)<", svg))))
+    for where, s in items:
+        s = re.sub(r"\$[^$]*\$", "", s)          # inline math is drawn as SVG
+        for ch in s:
+            if ord(ch) > 0x7F and ord(ch) not in cover and not ch.isspace() and (where, ch) not in seen:
+                seen.add((where, ch))
+                yield where, ch, s
 
 
 def is_dark(deck, sl) -> bool:
@@ -284,6 +342,7 @@ def r_figure(b, ctx):
 
 
 NUMERIC = re.compile(r"^\**\s*[−+\-]?(?:약\s*)?[\d.,]+[ %×MKk]*\s*\**$")
+PLACEHOLDER = {"—", "–", "-", "N/A", "n/a"}
 
 
 def r_table(b, ctx):
@@ -292,7 +351,10 @@ def r_table(b, ctx):
     left = []
     for j in range(ncol):
         cells = [r["cells"][j] for g in b["groups"] for r in g["rows"] if j < len(r["cells"]) and r["cells"][j].strip()]
-        auto = j == 0 or not all(NUMERIC.match(c) for c in cells)
+        # a "—" (not reported) does not make a number column a word column (RAE run: the gFID and
+        # IS columns with "—" rows aligned left while the next gFID column aligned right)
+        nums = [c for c in cells if c.strip("* ") not in PLACEHOLDER]
+        auto = j == 0 or not nums or not all(NUMERIC.match(c) for c in nums)
         left.append(b["columns"][j].get("align", "left" if auto else "right") == "left")
     lc = lambda j: ' class="l"' if left[j] and j else ""
     head = "".join(
@@ -765,6 +827,11 @@ def copy_assets(out: Path) -> None:
 
 
 def main() -> int:
+    for st in (sys.stdout, sys.stderr):   # Korean paths and labels on a cp949 console
+        try:
+            st.reconfigure(encoding="utf-8")
+        except Exception:  # noqa: BLE001
+            pass
     if len(sys.argv) != 2:
         print(__doc__)
         return 2

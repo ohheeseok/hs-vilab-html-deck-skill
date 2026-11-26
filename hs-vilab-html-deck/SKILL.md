@@ -108,7 +108,8 @@ do not draft, and nobody reviews their own work.**
    `delegate.py text --prompt-file $W/brief.md --dir $W/source --out $W/outline.md`.
 2. **Review.** Put `outline.md`, `paper.txt`, `paper.pdf` and `references/narrative-rules.md` in
    `$W/review/ref/`; run critic and verifier as two separate agy calls on that folder, and the
-   researcher on 3–6 specific questions taken from the draft.
+   researcher on 3–6 specific questions taken from the draft (`delegate.py research`: it searches
+   the web; a `--dir` is extra reading, never a fence).
 3. **Check research at the source** → `review/research_verified.md` (fact, URL, what disagreed).
    Only that file feeds a slide, marked `external`.
 4. **Answer every finding** in `review/log.md`; end it with the target slide list.

@@ -1,5 +1,43 @@
 # Changelog
 
+## 0.4.0 — 2026-11-25
+
+Third paper: RAE (Diffusion Transformers with Representation Autoencoders, arXiv 2510.11690), a
+20-minute, 21-slide seminar deck (`work/rae`) built on "two beliefs, refuted one at a time":
+① semantic encoders cannot reconstruct, ② diffusion fails in high-dimensional latents. Signature
+stepper: the gFID ladder as each fix is added (23.08 → 4.81 → 4.28 → 2.16, SD-VAE 7.13 drawn as
+the baseline); Fig. 6a/6b as image tabs. Everything below was found by running it.
+
+Process
+- **The researcher was fenced off the web.** Given `--dir`, `delegate.py` appended "do not use the
+  web" to every role, research included; the first research call answered "확인 못 함" five times.
+  Research now always searches the web, and a folder is extra reading.
+- A reviewer's correction of a curve reading was wrong again (Fig. 6a: it read a label's position
+  as the point, 2.6 for ≈ 2.36). `narrative-roles.md`: corrections of curve readings are checked
+  on the zoomed figure too.
+- A reported ICLR acceptance could not be opened (OpenReview asked for a bot challenge) and was
+  not used; two follow-ups by overlapping authors became discussion points.
+
+Engine
+- **Build gate: every stage character is in the bundled fonts** (fontTools; preflight reports it).
+  ✓/✗ in a table fell back to Segoe UI Symbol and Noto Sans KR. Diagram SVG labels are checked too.
+- **`^{sup}` in the inline syntax**: `DiT^{DH}-XL` renders as a superscript and never splits.
+- A table column with `—` ("not reported") rows is still a number column (it aligned left beside a
+  right-aligned gFID column).
+- `valign: center` and statement slides centre with `safe center`: content taller than the body
+  starts at the top instead of being pushed up under the title (slide 16, after Fig. 1 moved there).
+- `build_deck.py`, `qa_render.py` print UTF-8 (Korean paths came out garbled on a cp949 console).
+
+QA
+- `overflow` now includes the side margins: a four-column table ran 94px into the right margin
+  while staying on the stage, and passed. SVG children are left to the SVG viewport.
+- PDF check: a text-shadow halo prints the same glyphs twice at one place; that copy is no longer
+  reported as overlapping text.
+
+Layout lessons (deck.json, not engine): two figures side by side at one `height` need split
+columns in the ratio of their aspects, or one of them is held by its width; a tall figure in a
+toggle is sized by its height, so the media column should be only as wide as the figure.
+
 ## 0.3.1 — 2026-11-24
 
 - **Motion plays by default.** Opening the file with no address parameter used to follow the OS,
