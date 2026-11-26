@@ -26,7 +26,6 @@
   - 논문이 겨냥한 두 통념(① 의미 인코더는 복원을 못 한다, ② 확산은 고차원 latent에서 안 된다)을 하나씩 따라가는 줄기. 13번은 설계 변경을 하나씩 더할 때의 gFID 막대 stepper, 15번은 그림 탭입니다.
   - 처리 기록은 `review/log.md`, `verify2_triage.md`, `visual_triage_r1.md`·`visual_triage_r2.md`에 있습니다.
   - **최종본은 [rae.html](work/rae/rae.html)**, 대본은 `rae-script.html`입니다.
-- [work/self-flow](work/self-flow) — 같은 논문의 디자인 샘플입니다(6장 + 마무리). 엔진과 표지를 정할 때 썼습니다. 최종본은 `self-flow.html`입니다.
 
 | 키 | 동작 |
 |---|---|
@@ -73,7 +72,6 @@ work/self-flow-full/   전체 실행
   self-flow-full.html  최종본(단일 파일) · self-flow-full-script.html 대본
 work/repa/             두 번째 전체 실행(같은 구성, figures/에 새로 그린 도식)
 work/rae/              세 번째 전체 실행(같은 구성)
-work/self-flow/        디자인 샘플 6장 + 마무리(같은 구성)
 ```
 
 `deck/assets/math/`는 수식 SVG 캐시입니다. 저장소에 두면 TeX 없이도 같은 최종본이 다시 빌드됩니다. `deck/`의 나머지(엔진·글꼴·로고 사본, `index.html`)는 빌드할 때마다 다시 생기므로 저장소에 넣지 않습니다.

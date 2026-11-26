@@ -149,4 +149,5 @@ Process lessons, written into `references/narrative-roles.md`
 ## Sample stage (before 0.1.0)
 
 Engine, cover, toggle, bars, table, deltas, panels, dark statement slides, motion, HSU signature
-from the official vector, two agy visual rounds on a 6-slide sample (`work/self-flow`).
+from the official vector, two agy visual rounds on a 6-slide sample (`work/self-flow`, removed
+from the repo after 0.4.0; the full Self-Flow run is `work/self-flow-full`).
