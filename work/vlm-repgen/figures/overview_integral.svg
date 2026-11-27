@@ -1,6 +1,6 @@
 <svg class="diagram" viewBox="0 0 1696 530" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="oi-title oi-desc">
   <title id="oi-title">Integral이 VLM에 생성을 붙이는 방식 (Fig. 1, Fig. 4, Fig. 5와 Sec. 2.2–2.3, App. A.1을 바탕으로 그림)</title>
-  <desc id="oi-desc">기존 설계(BAGEL 등): 이해는 고정된 vision encoder의 마지막 층 표현을 VLM에 넣고, 생성은 별도 VAE latent 위에서 VLM의 층마다 짝지은 생성 expert가 맡는다. Integral은 고정된 vision encoder의 여러 층 표현을 Abstraction Fusion으로 모아 시각 토큰 z를 만들고, 이해 입력(semantic projector를 거쳐)과 생성 latent가 모두 이 z의 공간에 놓인다. 생성 결과는 pixel decoder가 이미지로 바꾼다. 생성 stream은 VLM 32층 중 4층마다, 8곳에서만 VLM의 key와 value를 읽는다(Block-wise MoT). 두 질문: 공유 표현의 생성 이득은 무엇에서 오나(①), 그 이득은 어떤 조건에서 확인됐나(②).</desc>
+  <desc id="oi-desc">기존 설계(BAGEL 등): 이해는 고정된 vision encoder의 마지막 층 표현을 VLM에 넣고, 생성은 별도 VAE latent 위에서 VLM의 층마다 짝지은 생성 expert가 맡는다. Integral은 고정된 vision encoder의 여러 층 표현을 Abstraction Fusion으로 모아 시각 토큰 z를 만들고, 이해 입력(semantic projector를 거쳐)과 생성 latent가 모두 이 z의 공간에 놓인다. 생성 결과는 pixel decoder가 이미지로 바꾼다. 생성 stream은 VLM 32층 중 4층마다, 8곳에서만 VLM의 key와 value를 읽는다(Block-wise MoT). 두 질문: AF 토큰으로 생성이 잘되는 이유는 무엇인가(①), 어떤 실험 조건에서 확인했나(②).</desc>
   <!-- the file draws the finished picture (beat 3); overview_integral.anim.js starts it from the
        baseline design (final-layer understanding input, a separate VAE latent, a generation expert
        at every VLM layer). Elements the script moves carry data-anim. One VLM layer = 19.38 px. -->
@@ -9,7 +9,7 @@
   <!-- question ①: over the shared token path -->
   <g data-anim="q1">
     <path d="M364 66V52H720V66" fill="none" stroke="var(--color-warm)" stroke-width="4"/>
-    <foreignObject x="204.0" y="2" width="676.0" height="44"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-h">① 공유 표현의 생성 이득은 무엇에서 오나</div></foreignObject>
+    <foreignObject x="204.0" y="2" width="676.0" height="44"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-h">① AF 토큰으로 생성이 잘되는 이유는 무엇인가</div></foreignObject>
   </g>
 
   <!-- input image (an icon, not a sample) -->
@@ -85,7 +85,7 @@
   <!-- question ②: under the generation path -->
   <g data-anim="q2">
     <path d="M760 458V472H1624V458" fill="none" stroke="var(--color-warm)" stroke-width="4"/>
-    <foreignObject x="760.0" y="480" width="864.0" height="44"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-h">② 그 이득은 어떤 조건에서 확인됐나</div></foreignObject>
+    <foreignObject x="760.0" y="480" width="864.0" height="44"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-h">② 어떤 실험 조건에서 확인했나</div></foreignObject>
   </g>
 </g>
 </svg>

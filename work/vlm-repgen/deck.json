@@ -172,15 +172,15 @@
       },
       "time": 20,
       "notes": [
-        "오늘은 NAVER Cloud와 KAIST의 Integral을 소개합니다. 사전학습 VLM에 이미지 생성을 붙이되, 이해와 생성이 같은 시각 표현을 쓰게 한 연구입니다. 그 효과를 통제 비교 중심으로 보겠습니다."
+        "오늘은 NAVER Cloud와 KAIST의 Integral을 소개합니다. 사전학습 VLM에 이미지 생성 기능을 붙이면서, 이미지를 이해할 때와 생성할 때 같은 시각 토큰을 쓰게 한 연구입니다. 이렇게 같은 토큰을 쓰는 것이 생성에 정말 도움이 되는지, 논문의 비교 실험을 중심으로 보겠습니다."
       ]
     },
     {
       "id": "tldr",
       "layout": "statement",
       "section": "summary",
-      "title": "Integral의 구조와 통제 비교",
-      "message": "Integral은 고정된 VLM의 vision encoder에서 여러 층의 표현을 모아 시각 토큰 하나를 만든다. 이 토큰을 이해 입력과 생성 latent로 함께 쓴다.",
+      "title": "Integral의 구조와 비교 실험",
+      "message": "Integral은 고정된 VLM의 vision encoder에서 여러 층의 표현을 모아 시각 토큰 하나를 만든다. VLM이 이미지를 읽을 때도, 이미지를 생성할 때도 이 토큰을 쓴다.",
       "cite": [
         "Abstract",
         "Sec. 1",
@@ -191,7 +191,7 @@
       "body": [
         {
           "type": "lead",
-          "text": "고정된 VLM의 vision encoder에서 여러 층의 표현을 모아 시각 토큰 $z$ 하나를 만든다. 이 토큰을 이해 입력과 생성 latent로 함께 쓴다."
+          "text": "고정된 VLM의 vision encoder에서 여러 층의 표현을 모아 시각 토큰 $z$ 하나를 만든다. VLM이 이미지를 읽을 때도, 이미지를 생성할 때도 이 토큰을 쓴다."
         },
         {
           "type": "cards",
@@ -203,11 +203,11 @@
             },
             {
               "title": "Block-wise MoT",
-              "text": "VLM 32층 중 4층마다 K/V를 읽는 생성 stream, 생성 전용 0.89B"
+              "text": "생성을 맡는 별도 transformer(0.89B)가 VLM 32층 중 4층마다 VLM의 K/V를 참조"
             },
             {
-              "title": "표현 공유의 효과를 살피는 통제 비교",
-              "text": "tokenizer·조건 모델·의미 정렬·백본 크기를 바꾼 50K step 비교"
+              "title": "생성 비교 실험",
+              "text": "tokenizer, 조건을 주는 모델, 의미 정렬 손실, 백본 크기를 하나씩 바꾸고 50K step 학습해 비교"
             }
           ]
         }
@@ -217,7 +217,7 @@
       },
       "notes": [
         "Integral은 사전학습 VLM을 고정한 채 이미지 생성 기능을 추가합니다. 이해와 생성에는 같은 시각 토큰 z를 씁니다.",
-        "구성 요소는 둘입니다. Abstraction Fusion은 vision encoder의 여러 층에서 나온 표현을 모아 z를 만들고, Block-wise MoT는 VLM의 네 층마다 조건을 읽습니다. 저자들은 통제 비교를 근거로 표현을 공유하면 생성 학습에 도움이 된다고 주장합니다."
+        "구성 요소는 둘입니다. Abstraction Fusion은 vision encoder의 여러 층에서 나온 표현을 모아 z를 만들고, Block-wise MoT는 생성을 맡는 transformer가 VLM의 네 층마다 VLM의 정보를 참조하게 합니다. 저자들은 비교 실험을 근거로, 이해와 생성이 같은 토큰을 쓰면 생성 학습이 잘된다고 주장합니다."
       ]
     },
     {
@@ -358,7 +358,7 @@
       "id": "overview",
       "section": "background",
       "title": "Integral의 VLM 기반 생성 구조",
-      "message": "Integral은 VLM의 이해 입력과 같은 토큰 z를 생성 latent로 쓴다. 생성 stream이 VLM의 key와 value를 읽는 빈도는 네 층마다 한 번으로 줄인다.",
+      "message": "Integral은 VLM이 읽는 이미지 토큰 z를 생성 모델의 latent로도 쓴다. 생성 stream이 VLM의 key와 value를 참조하는 곳은 네 층마다 한 곳으로 줄인다.",
       "cite": [
         "Fig. 1",
         "Fig. 4",
@@ -385,15 +385,15 @@
             },
             {
               "title": "공유 토큰 $z$",
-              "text": "AF가 encoder 여러 층을 모아 $z$로. 이해 입력은 $z$에서 만들고, 생성은 $z$의 공간에서 한다"
+              "text": "AF가 encoder 여러 층을 모아 $z$를 만든다. VLM은 $z$에서 만든 입력을 읽고, 생성 모델은 $z$와 같은 공간의 토큰을 만든다"
             },
             {
               "title": "Block-wise MoT",
-              "text": "생성 stream은 VLM 32층 중 4층마다, 8곳에서만 VLM의 K/V를 읽는다"
+              "text": "생성 stream(생성을 맡는 transformer)은 VLM 32층 중 4층마다, 8곳에서만 VLM의 K/V를 참조한다"
             },
             {
               "title": "두 질문",
-              "text": "① 공유 표현의 생성 이득은 무엇에서 오나 ② 그 이득은 어떤 조건에서 확인됐나"
+              "text": "① AF 토큰으로 생성이 잘되는 이유는 무엇인가 ② 어떤 실험 조건에서 확인했나"
             }
           ],
           "caption": "**Fig. 1 · 4 · 5** 다시 그림(Sec. 2.2–2.3, App. A.1 반영). 기존 설계는 Fig. 5a의 Full MoT와 Sec. 3.2의 BAGEL 서술(MoT, FLUX.1-VAE)을 합침",
@@ -411,9 +411,9 @@
       },
       "notes": [
         "먼저 논문이 대비하는 기존 설계입니다. 이해할 때는 vision encoder의 출력을 VLM에 넣습니다. 생성은 별도 VAE latent에서 하고, VLM의 층마다 생성 layer를 짝짓습니다. Fig. 5a의 Full MoT이고, BAGEL이 MoT와 FLUX.1-VAE를 씁니다.",
-        "[1] Integral은 고정된 encoder의 여러 층에서 나온 표현을 Abstraction Fusion으로 모아 토큰 z를 만듭니다. VLM의 이해 입력은 z에서 projector로 만들고, 생성은 z의 공간에서 합니다. 이미지는 pixel decoder로 재구성합니다.",
-        "[2] 생성 stream은 VLM 32층 전부가 아니라 네 층마다, 여덟 곳에서만 VLM의 key와 value를 읽습니다.",
-        "[3] 뒤에서 다룰 질문은 두 가지입니다. 공유 표현이 생성에 주는 이득은 재구성 품질 외에 어떤 요인에서 올까요? 그 이득은 어떤 조건에서 확인됐을까요?"
+        "[1] Integral은 고정된 encoder의 여러 층에서 나온 표현을 Abstraction Fusion으로 모아 토큰 z를 만듭니다. VLM은 z를 projector에 통과시킨 입력을 읽고, 생성 모델은 z와 같은 공간의 토큰을 만듭니다. 이미지는 pixel decoder가 이 토큰에서 재구성합니다.",
+        "[2] 생성 stream은 생성을 맡는 별도 transformer입니다. VLM 32층 전부가 아니라 네 층마다, 여덟 곳에서만 VLM의 key와 value를 참조합니다.",
+        "[3] 뒤에서 답할 질문은 두 가지입니다. 첫째, AF 토큰으로 생성하면 왜 잘되는가, 재구성 품질 말고 다른 이유가 있는가. 둘째, 그 결과를 어떤 실험 조건에서 확인했는가입니다."
       ]
     },
     {
@@ -603,7 +603,7 @@
       "id": "mot",
       "section": "method",
       "title": "Block-wise MoT의 조건 전달",
-      "message": "생성 stream의 query가 VLM의 block 경계에서 두 stream의 key와 value를 읽고, 생성 전용 파라미터는 0.89B다.",
+      "message": "생성 stream의 query는 VLM의 block 경계에서 생성 stream과 VLM 양쪽의 key·value를 참조한다. 생성 전용 파라미터는 0.89B다.",
       "cite": [
         "Fig. 5",
         "Eq. 4",
@@ -660,7 +660,7 @@
         "adaLN": "verbatim: Fig. 5d(곡선)"
       },
       "notes": [
-        "생성 stream은 VLM 32층 중 네 층마다 붙은 여덟 개 block입니다. 각 block의 query는 생성 stream에서 나오고, key와 value는 생성 stream과 해당 VLM 층 양쪽에서 가져옵니다. VLM의 계산은 바뀌지 않습니다.",
+        "생성 stream은 생성을 맡는 별도 transformer로, VLM 32층 중 네 층마다 붙은 여덟 개 block입니다. 각 block의 query는 생성 stream에서 나오고, key와 value는 생성 stream과 해당 VLM 층 양쪽에서 가져옵니다. VLM의 계산은 바뀌지 않습니다.",
         "timestep은 block마다 adaLN-single로 넣는데, Fig. 5d에서 입력에 더하는 방식보다 GenEval 곡선이 높았습니다. 마지막 DDT head가 velocity를 예측하고, 생성 전용 파라미터는 모두 0.89B입니다. 부록 C.2에는 Full MoT가 31개 block이라고 나옵니다. VLM의 32층과 하나 차이가 나는데, 논문은 이유를 밝히지 않습니다."
       ]
     },
@@ -669,7 +669,7 @@
       "section": "method",
       "valign": "center",
       "title": "학습 단계와 규모",
-      "message": "tokenizer를 먼저 학습해 z의 공간을 고정하고 생성을 600K step 학습한다. 뒤의 통제 비교는 생성 1단계 설정의 50K step이다.",
+      "message": "tokenizer를 먼저 학습해 z의 공간을 고정한 뒤 생성 모델을 600K step 학습한다. 뒤의 비교 실험은 생성 1단계를 50K step만 학습한 결과다.",
       "cite": [
         "Table 7",
         "Sec. 3.1",
@@ -770,7 +770,7 @@
         },
         {
           "type": "callout",
-          "text": "생성 통제 비교(Sec. 3.4–3.6)는 1단계 설정의 50K step: step 수로 생성 전체의 1/12"
+          "text": "Sec. 3.4–3.6의 생성 비교 실험은 1단계를 50K step만 학습한 결과: 생성 전체 step 수의 1/12"
         }
       ],
       "provenance": {
@@ -779,7 +779,7 @@
       },
       "notes": [
         "tokenizer는 세 단계로 학습하고, 마지막에는 z의 공간을 고정한 채 pixel decoder만 미세조정합니다. 생성은 text-to-image부터 interleaved SFT까지 600K step입니다. VLM은 처음부터 끝까지 고정입니다.",
-        "뒤에서 볼 생성 통제 비교는 생성 1단계 설정에서 50K step까지만 학습한 결과입니다. step 수로는 생성 전체의 12분의 1이고, 뒤 단계는 해상도와 배치도 다릅니다. tokenizer 구조 비교는 이와 별도로 20K step입니다."
+        "뒤에서 볼 생성 비교 실험은 생성 1단계, 즉 256 해상도 text-to-image를 50K step까지만 학습한 결과입니다. step 수로는 생성 전체의 12분의 1이고, 뒤 단계는 해상도와 배치도 다릅니다. tokenizer 구조 비교는 이와 별도로 20K step입니다."
       ]
     },
     {
@@ -1049,7 +1049,7 @@
         },
         {
           "type": "caption",
-          "text": "**Table 3 · 4** 최종 시스템 비교: 백본과 학습 데이터가 모델마다 다르다(통제 비교 아님). ImgEdit-Bench Overall은 GPT-4.1 평가이고, 비공개 GPT-4o는 4.20. 굵게는 표에 보인 행 중 최고. 행·열 일부"
+          "text": "**Table 3 · 4** 최종 시스템 비교: 백본과 학습 데이터가 모델마다 다르다(조건을 맞춘 비교 아님). ImgEdit-Bench Overall은 GPT-4.1 평가이고, 비공개 GPT-4o는 4.20. 굵게는 표에 보인 행 중 최고. 행·열 일부"
         }
       ],
       "provenance": {
@@ -1117,7 +1117,7 @@
       "id": "af-vs-flux",
       "section": "analysis",
       "title": "AF와 FLUX.1-VAE: 50K step 비교",
-      "message": "같은 VLM 조건과 생성 설정에서 재구성 PSNR은 1.1 dB 차이지만 50K step GenEval은 0.41 대 0.18이다.",
+      "message": "VLM, 생성 모델 구조, 학습 설정을 같게 두고 latent만 바꾸면, 재구성 PSNR은 1.1 dB 차이인데 50K step GenEval은 0.41 대 0.18이다.",
       "cite": [
         "Fig. 1",
         "Fig. 6a",
@@ -1162,7 +1162,7 @@
               "type": "bullets",
               "size": "sm",
               "items": [
-                "같게 둔 것: Qwen3.5-9B 조건, 생성 구조, 256×256 50K step 학습",
+                "같게 둔 것: 조건을 주는 Qwen3.5-9B, 생성 모델 구조, 학습(256×256, 50K step)",
                 {
                   "text": "저자 해석에 따르면 재구성 품질이 비슷한데도 생성 성능에 큰 차이가 난 것은 VLM과 표현을 공유했기 때문이다",
                   "note": true
@@ -1179,7 +1179,7 @@
         "보고 없음": "verbatim: Sec. 3.4·App. 확인"
       },
       "notes": [
-        "통제 비교에서는 VLM 조건과 생성 구조, 학습 설정을 같게 두고 생성할 latent만 AF와 FLUX.1-VAE로 바꿨습니다.",
+        "이제 이 발표의 중심인 비교 실험입니다. 한 가지만 바꾸고 나머지는 같게 둔 실험입니다. 여기서는 조건을 주는 VLM, 생성 모델 구조, 학습 설정을 같게 두고, 생성 모델이 만들 latent만 AF와 FLUX.1-VAE로 바꿨습니다.",
         "두 tokenizer의 재구성 PSNR은 1.1 dB 차이인데, 50K step의 GenEval은 0.41 대 0.18로 두 배 넘게 벌어집니다. 저자들은 재구성 품질로 설명되지 않는 이 차이를 VLM과 표현을 공유한 덕으로 봅니다.",
         "다만 두 latent는 차원과 토큰 수, 분포도 다를 수 있고, 이를 맞췄다는 보고는 없습니다. 다음 장에서는 네 비교를 하나씩 보면서 이 해석이 어느 범위까지 맞는지 살펴보겠습니다."
       ]
@@ -1187,8 +1187,8 @@
     {
       "id": "controls",
       "section": "analysis",
-      "title": "통제 비교 네 가지",
-      "message": "네 비교에서 각각 다른 대안 설명을 검토한다. 조건 모델에 VLM을 쓰지 않은 LLM + AF도 VLM + FLUX.1-VAE보다 점수가 높다.",
+      "title": "하나씩 바꾼 비교 실험 네 가지",
+      "message": "네 실험은 GenEval 차이를 다른 이유로 설명할 수 있는지 하나씩 확인한다. VLM 대신 텍스트 전용 LLM이 조건을 줘도 AF가 FLUX.1-VAE보다 높다.",
       "cite": [
         "Fig. 6",
         "Fig. 7",
@@ -1210,7 +1210,7 @@
             9
           ],
           "panel": true,
-          "reveals": "같은 50K step 동안 학습하면서 한 가지씩 바꿔 비교했다. 각 결과로 배제할 수 있는 대안 설명과 여전히 가능한 설명을 구분한다.",
+          "reveals": "같은 50K step 학습에서 한 가지씩 바꾼 실험을 넘겨 보면, GenEval 차이를 설명하는 이유 가운데 어떤 것이 맞지 않고 어떤 것이 아직 가능한지 보인다.",
           "start": "siglip",
           "print": "expand",
           "states": [
@@ -1220,7 +1220,7 @@
               "src": "assets/fig/fig6a.png",
               "alt": "Fig. 6(a). 10K–50K step GenEval: AF(ours) 0.12에서 0.41, SigLIP2-AF 0.15에서 0.31, FLUX.1-VAE 0.07에서 0.18. 10K에서는 SigLIP2-AF가 조금 위, 20K에서 겹치고 30K부터 AF가 위.",
               "title": "SigLIP2-AF: 같은 AF, 다른 encoder",
-              "text": "50K GenEval은 AF 0.41, SigLIP2-AF 0.31. 정렬 표적과 PSNR(ImageNet 256², 34.08 대 32.20 dB)도 함께 바뀌었다. 의미 표현을 쓰면 어느 encoder든 결과가 같은지 검토한 비교다.",
+              "text": "50K GenEval은 Qwen AF 0.41, SigLIP2-AF 0.31. encoder를 바꾸면서 정렬 대상과 재구성 PSNR(ImageNet 256², 34.08 대 32.20 dB)도 함께 바뀌었다. 의미를 담은 encoder면 어느 것이든 효과가 같은지 본 실험이다.",
               "provenance": "verbatim: Sec. 3.4, Fig. 6a, Table 9, App. B.2"
             },
             {
@@ -1228,8 +1228,8 @@
               "label": "조건 모델",
               "src": "assets/fig/fig6b.png",
               "alt": "Fig. 6(b). 50K step GenEval: VLM + AF 0.41, LLM + AF 약 0.28, VLM + FLUX.1-VAE 0.18, LLM + FLUX.1-VAE 약 0.17.",
-              "title": "VLM 조건과 text-only LLM 조건",
-              "text": "VLM으로 바꾸면 AF +0.13, FLUX.1-VAE +0.01. 곡선에서 LLM + AF(약 0.28)도 VLM + FLUX.1-VAE(0.18)보다 높다. 비교 LLM의 이름과 크기는 밝히지 않았다.",
+              "title": "VLM이 조건을 줄 때와 텍스트 전용 LLM이 줄 때",
+              "text": "LLM 대신 VLM이 조건을 주면 AF +0.13, FLUX.1-VAE +0.01. LLM 조건에서도 AF(곡선, 약 0.28)가 VLM 조건의 FLUX.1-VAE(0.18)보다 높다. 비교한 LLM의 이름과 크기는 밝히지 않았다.",
               "provenance": "verbatim: Sec. 3.4, Fig. 6b; 약 값은 곡선"
             },
             {
@@ -1238,7 +1238,7 @@
               "src": "assets/fig/fig10a.png",
               "alt": "Fig. 10(a). 10K–50K step GenEval: AF(ours) 0.12에서 0.41, AF w/o sem. 약 0.07에서 약 0.25(곡선).",
               "title": "AF w/o sem.: 재구성은 더 좋다",
-              "text": "의미 정렬 손실만 뺐다. PSNR 32.2 → 33.7 dB, rFID 0.15 → 0.13. GenEval·DPG·WISE(Fig. 10b–c) 곡선이 모두 AF보다 낮다.",
+              "text": "의미 정렬 손실만 뺐다. 재구성은 좋아졌지만(PSNR 32.2 → 33.7 dB, rFID 0.15 → 0.13) GenEval·DPG·WISE(Fig. 10b–c)는 모두 AF보다 낮다.",
               "provenance": "verbatim: App. C.1, Table 11, Fig. 10"
             },
             {
@@ -1255,8 +1255,8 @@
         }
       ],
       "notes": [
-        "[1] 첫째, 같은 AF 구조를 외부 의미 encoder인 SigLIP2에 붙였습니다. 재구성은 34.08 dB로 더 좋지만 50K GenEval은 0.31로 낮습니다. 다만 encoder를 바꾸면서 정렬 표적과 PSNR도 함께 바뀌었고, 10K에서는 SigLIP2-AF가 잠깐 앞섭니다.",
-        "[2] 둘째, 조건을 주는 모델로 VLM과 text-only LLM을 비교했습니다. VLM으로 바꿀 때 AF는 0.13 오르고 FLUX.1-VAE는 0.01 오릅니다. 저자들은 이 차이를 공유 표현이 VLM 조건을 더 잘 활용한다는 근거로 봅니다. 그런데 그림을 보면 VLM 없이 LLM 조건만 준 AF도 곡선에서 약 0.28로, VLM 조건의 FLUX.1-VAE 0.18보다 높습니다.",
+        "[1] 첫째, 같은 AF 구조를 Qwen의 encoder 대신 외부 encoder인 SigLIP2에 붙였습니다. 재구성은 34.08 dB로 더 좋지만 50K GenEval은 0.31로 낮습니다. 다만 encoder를 바꾸면서 정렬 대상과 PSNR도 함께 바뀌었고, 10K에서는 SigLIP2-AF가 잠깐 앞섭니다.",
+        "[2] 둘째, 생성 모델에 조건을 주는 모델을 VLM과 텍스트 전용 LLM으로 바꿔 봤습니다. LLM 대신 VLM이 조건을 주면 AF는 0.13 오르고 FLUX.1-VAE는 0.01 오릅니다. 저자들은 이것을 VLM과 같은 토큰을 쓰는 AF가 VLM의 정보를 더 잘 활용한다는 근거로 봅니다. 그런데 그림을 보면 LLM이 조건을 준 AF도 곡선에서 약 0.28로, VLM이 조건을 준 FLUX.1-VAE의 0.18보다 높습니다.",
         "[3] 셋째, AF에서 의미 정렬 손실만 뺐습니다. 재구성 PSNR은 33.7 dB로 오히려 높아지는데, GenEval과 DPG, WISE 곡선은 모두 낮아집니다. 이 결과도 재구성 품질이 생성 성능을 결정한다는 설명과 맞지 않습니다.",
         "[4] 넷째, 2B 백본에 AF를 붙이면 9B FLUX.1-VAE보다 점수가 높습니다. 다만 2B에 FLUX.1-VAE를 적용한 비교 항목은 없습니다."
       ]
@@ -1265,8 +1265,8 @@
       "id": "ruled-out",
       "section": "analysis",
       "valign": "center",
-      "title": "통제 비교에서 배제된 설명과 남은 설명",
-      "message": "재구성 품질만으로 생성 성능 차이를 설명할 수는 없다. 다만 그 차이를 설명할 때 VLM과의 표현 공유 효과와 latent 자체의 효과를 완전히 구분하지는 못했다.",
+      "title": "50K step 비교로 확인한 것과 남은 질문",
+      "message": "재구성 품질만으로는 GenEval 차이를 설명할 수 없다. 하지만 그 차이가 VLM과 같은 토큰을 써서 생긴 것인지, AF latent가 원래 학습하기 쉬워서인지는 실험으로 가르지 못했다.",
       "cite": [
         "Fig. 6",
         "Fig. 7",
@@ -1283,16 +1283,16 @@
           "type": "table",
           "columns": [
             {
-              "label": "대안 설명"
+              "label": "다른 설명"
             },
             {
-              "label": "해당 비교"
+              "label": "확인한 실험"
             },
             {
               "label": "결과(256², 50K step)"
             },
             {
-              "label": "판정"
+              "label": "결론"
             }
           ],
           "groups": [
@@ -1300,43 +1300,43 @@
               "rows": [
                 {
                   "cells": [
-                    "재구성 품질이 순위를 정한다",
+                    "재구성을 잘하는 latent라서?",
                     "FLUX.1-VAE, AF w/o sem.",
-                    "PSNR이 비슷하거나 높아도 GenEval은 낮다",
-                    "지움"
+                    "재구성이 비슷하거나 더 좋아도 GenEval은 낮다",
+                    "아니다"
                   ]
                 },
                 {
                   "cells": [
-                    "의미 표현이면 충분하다",
+                    "의미를 담은 encoder면 다 되나?",
                     "SigLIP2-AF",
-                    "0.31 대 0.41. encoder·표적·PSNR도 다름",
-                    "일부"
+                    "0.31 대 0.41. 정렬 대상·PSNR도 바뀜",
+                    "일부만 확인"
                   ]
                 },
                 {
                   "cells": [
-                    "latent 자체가 학습하기 쉽다",
-                    "LLM 조건",
-                    "LLM 조건에서도 AF 약 0.28 > FLUX.1-VAE 약 0.17",
-                    "**남음**"
+                    "AF latent가 원래 학습하기 쉬워서?",
+                    "LLM이 조건을 줌",
+                    "LLM 조건: AF 약 0.28 > FLUX.1-VAE 약 0.17",
+                    "**가능성 남음**"
                   ],
                   "focus": true
                 },
                 {
                   "cells": [
-                    "9B 백본이 생성 성능 차이의 원인이다",
-                    "2B 백본",
-                    "2B AF 0.26 > 9B FLUX.1-VAE 0.18. 2B짝 없음",
-                    "일부"
+                    "9B 큰 백본이라서?",
+                    "2B 백본(AF만)",
+                    "2B AF 0.26 > 9B FLUX.1-VAE 0.18",
+                    "일부만 확인"
                   ]
                 },
                 {
                   "cells": [
-                    "초기 수렴이 빠를 뿐이다",
+                    "학습 초반에 빨리 오를 뿐?",
                     "없음",
-                    "50K까지만, 600K 전체 비교 없음",
-                    "**남음**"
+                    "50K step까지만. 600K 전체 학습 비교 없음",
+                    "**확인 안 됨**"
                   ],
                   "focus": true
                 }
@@ -1347,16 +1347,16 @@
         },
         {
           "type": "caption",
-          "text": "판정은 발표자의 해석. ‘약’이 붙은 값은 Fig. 6b 곡선에서 읽음, 나머지는 본문 값. 남은 두 설명은 토론 1·2번"
+          "text": "결론 열은 발표자의 판단. ‘약’이 붙은 값은 Fig. 6b 곡선에서 읽음, 나머지는 본문 값. 마지막 두 질문은 토론 1·2번"
         }
       ],
       "provenance": {
         "표": "derived + interpretation (발표자)"
       },
       "notes": [
-        "앞의 비교들을 대안 설명별로 정리했습니다. 재구성 품질이 생성 성능을 결정한다는 설명은 FLUX.1-VAE와의 비교와 의미 정렬을 제거한 비교에서 모두 결과와 맞지 않습니다. 따라서 이 설명은 배제해도 됩니다.",
-        "의미 표현이면 충분하다는 설명과 백본 크기가 원인이라는 설명은 일부만 배제할 수 있습니다. SigLIP2 비교에서는 정렬 표적과 PSNR도 함께 바뀌었고, 2B에 FLUX.1-VAE를 적용한 비교 항목은 없습니다.",
-        "남은 설명은 둘입니다. LLM 조건만 줘도 AF가 FLUX.1-VAE보다 앞서므로, 이득의 일부는 VLM과 표현을 공유한 효과와 별개로 latent 자체에서 생길 수 있습니다. VLM을 붙였을 때 AF가 더 오르는 몫은 공유의 몫으로 볼 수 있습니다. 그리고 모든 비교가 50K step이라, 수렴이 빠른 것인지 최종 품질이 다른 것인지는 알 수 없습니다. 이 둘을 토론에서 다시 묻겠습니다."
+        "앞의 실험들을 질문 형태로 정리했습니다. GenEval 차이를 다르게 설명할 수 있는지 하나씩 봅니다. 먼저 재구성을 잘하는 latent라서 생성도 잘한다는 설명은 맞지 않습니다. FLUX.1-VAE와 비교할 때도, 의미 정렬 손실을 뺀 AF와 비교할 때도 재구성 점수가 비슷하거나 더 높은 쪽의 GenEval이 낮았습니다.",
+        "의미를 담은 encoder면 아무것이나 되는지, 9B 큰 모델이라서인지는 일부만 확인됐습니다. SigLIP2 실험에서는 encoder와 함께 정렬 대상과 PSNR도 바뀌었고, 2B 백본에는 FLUX.1-VAE를 붙인 비교가 없습니다.",
+        "아직 답이 없는 질문은 둘입니다. 첫째, LLM이 조건을 줘도 AF가 FLUX.1-VAE보다 높습니다. 그러면 이득의 일부는 VLM과 같은 토큰을 써서가 아니라 AF latent 자체가 학습하기 쉬워서 생겼을 수 있습니다. VLM이 조건을 줄 때 AF가 더 오른 부분만 같은 토큰을 쓴 효과로 볼 수 있습니다. 둘째, 모든 비교가 50K step이라 AF가 빨리 배우는 것인지 끝까지 학습해도 더 좋은 것인지 알 수 없습니다. 이 두 질문은 토론에서 다시 묻겠습니다."
       ]
     },
     {
@@ -1578,7 +1578,7 @@
       "section": "analysis",
       "valign": "center",
       "title": "한계와 비용",
-      "message": "Qwen3.5 계열을 사용한 짧은 학습에서 표현 공유의 이득을 확인했다. 생성 전용 0.89B 외에도 비용이 든다.",
+      "message": "비교 실험은 짧은 학습과 Qwen3.5 계열에서만 했고, 생성 전용 0.89B 외에도 비용이 든다.",
       "cite": [
         "Sec. 2.2",
         "Sec. 3.4",
@@ -1596,9 +1596,9 @@
             {
               "heading": "검증 범위",
               "items": [
-                "tokenizer 통제 비교는 256², 50K step, 주로 GenEval",
+                "tokenizer 비교 실험은 256², 50K step, 주로 GenEval",
                 "조건 VLM은 Qwen3.5 계열(9B, 2B)만",
-                "$z$를 다음 턴 입력으로 바로 쓰면 손실이 없다는 이점(Sec. 2.2)은 측정하지 않음"
+                "생성한 $z$를 다음 턴 입력으로 바로 쓰면 디코딩·재인코딩 손실이 없다는 장점(Sec. 2.2)은 실험하지 않음"
               ]
             },
             {
@@ -1627,7 +1627,7 @@
         "비용": "verbatim: App. C.3, Table 12; +28.9% derived"
       },
       "notes": [
-        "한계는 세 가지로 정리했습니다. 먼저 검증 범위입니다. 통제 비교는 256 해상도에서 50K step까지, 주로 GenEval로 했고, 조건 VLM은 Qwen3.5 계열뿐입니다. z를 다음 턴에 바로 다시 쓰면 손실이 없다는 이점도 실험으로 재지 않았습니다.",
+        "한계는 세 가지로 정리했습니다. 먼저 검증 범위입니다. 비교 실험은 256 해상도에서 50K step까지, 주로 GenEval로 했고, 실험한 VLM은 Qwen3.5 계열뿐입니다. 생성한 z를 다음 턴에 바로 다시 쓰면 손실이 없다는 장점도 실험으로 재지 않았습니다.",
         "평가와 관련해 외부 자료 두 가지를 참고했습니다. WISE-Verified의 채점 모델인 Qwen3.5-35B-A3B는 Integral의 백본과 같은 계열입니다. 또 GenEval 2의 저자들은 GenEval이 이미 포화됐다고 봅니다.",
         "생성 전용 0.89B 외에도 시각 입력 경로의 파라미터가 126M 늘고, pixel decoder의 파라미터가 475M입니다. Qwen3.5-9B가 800×800 이미지 한 장을 이해할 때 prefill 지연은 29% 늘지만, 100 토큰 생성까지 포함한 전체 지연은 2.1% 늘어납니다."
       ]
@@ -1637,7 +1637,7 @@
       "layout": "statement",
       "section": "discussion",
       "title": "정리와 토론",
-      "message": "여러 비교 결과는 재구성 품질만으로는 생성 성능 차이를 설명할 수 없음을 뒷받침한다. 그 차이가 VLM과 표현을 공유한 데서 온다는 것은 저자 해석이다.",
+      "message": "재구성 품질만으로 GenEval 차이를 설명할 수 없다는 점은 여러 실험이 보여 준다. 그 차이가 VLM과 같은 토큰을 써서 생긴다는 것은 저자의 해석이다.",
       "cite": [
         "Sec. 2.1",
         "Sec. 2.2",
@@ -1658,20 +1658,20 @@
             {
               "heading": "정리",
               "items": [
-                "고정 encoder의 여러 층에서 나온 표현을 $z$ 하나로 모아 이해(99.8% 유지)와 재구성(32.2 dB)에 사용",
-                "50K step 비교에서 재구성 품질로는 생성 차이가 설명되지 않는다",
-                "그 차이가 VLM과 표현을 공유한 데서 온다는 것은 저자 해석이다"
+                "고정 encoder의 여러 층 표현을 모은 토큰 $z$ 하나로 VLM 이해 성능을 99.8% 지키면서 이미지 재구성(32.2 dB)도 한다",
+                "50K step 비교에서 AF 토큰으로 생성한 쪽의 GenEval이 높았고, 그 차이는 재구성 점수로 설명되지 않는다",
+                "그 차이가 VLM과 같은 토큰을 써서 생긴다는 것은 저자의 해석이다"
               ]
             },
             {
               "heading": "토론",
               "numbered": true,
               "items": [
-                "LLM 조건만 줘도 AF가 FLUX.1-VAE보다 높다(Fig. 6b). 공유의 몫과 latent 자체의 몫을 어떻게 나눠 잴까?",
-                "통제 비교는 50K step(생성 600K 중)의 GenEval이다. 수렴이 빠른 것인가, 최종 품질이 다른 것인가?",
-                "$z$를 다음 턴에 다시 쓰는 이점과 propagation bottleneck은 측정·개입 실험이 없다. 무엇을 재면 될까?",
+                "텍스트 전용 LLM이 조건을 줘도 AF가 FLUX.1-VAE보다 높았다(Fig. 6b). VLM과 같은 토큰을 쓴 효과와 AF latent 자체의 효과를 어떻게 따로 잴까?",
+                "비교는 모두 생성 학습 50K step(전체 600K)에서, 주로 GenEval로 했다. AF가 빨리 배우는 것인가, 끝까지 학습해도 더 좋은가?",
+                "생성한 $z$를 다음 턴에 바로 쓰는 장점과 propagation bottleneck 가설은 실험으로 확인하지 않았다. 무엇을 재면 확인할 수 있을까?",
                 {
-                  "text": "0.89B 밖의 비용(시각 경로, pixel decoder, VLM마다 tokenizer 재학습)을 넣어도 이득이 큰 조건은?",
+                  "text": "생성 전용 0.89B 외에 VLM 이미지 입력 모듈 교체, pixel decoder, VLM을 바꿀 때마다 tokenizer 재학습이 든다. 이 비용을 감안해도 쓸 만한 경우는?",
                   "note": true
                 }
               ]
@@ -1687,9 +1687,9 @@
         "토론 4": "전제 verbatim(App. C.3, Table 7; 650K derived) + interpretation"
       },
       "notes": [
-        "정리하겠습니다. Integral은 고정된 encoder의 여러 층에서 나온 표현을 z 하나로 모아 이해 성능을 거의 그대로 유지하면서 이미지도 재구성합니다. 50K step 비교들은 재구성 품질만으로는 생성 성능 차이가 설명되지 않는다는 점을 뒷받침합니다. 다만 그 차이가 VLM과 표현을 공유한 데서 온다는 것은 저자들의 해석입니다.",
-        "토론할 질문은 네 가지입니다. 첫째, VLM 조건 없이 LLM 조건만 준 AF도 FLUX.1-VAE보다 높았습니다. VLM과 표현을 공유한 효과와 latent 자체의 효과를 어떻게 구분해 측정할 수 있을까요? 둘째, 생성 통제 비교는 생성 1단계 설정의 50K step이고, 주로 GenEval로 쟀습니다. 수렴이 빠른 것인지 최종 품질이 다른 것인지 어떻게 가릴 수 있을까요?",
-        "셋째, z를 다음 턴에 다시 쓰는 이점과 propagation bottleneck을 직접 측정한 실험은 없습니다. 무엇을 측정하면 확인할 수 있을까요? 넷째는 제 해석에서 나온 질문입니다. 생성 전용 0.89B 외에 시각 경로와 pixel decoder, VLM을 바꿀 때마다 하는 tokenizer 재학습에도 비용이 듭니다. 이 비용까지 고려해도 이득이 큰 조건은 무엇일까요?"
+        "정리하겠습니다. Integral은 고정된 encoder의 여러 층에서 나온 표현을 토큰 z 하나로 모아, VLM의 이해 성능을 거의 그대로 지키면서 이미지도 재구성합니다. 50K step 비교 실험에서는 AF 토큰으로 생성한 쪽의 GenEval이 높았고, 그 차이는 재구성 점수로 설명되지 않았습니다. 다만 그 차이가 VLM과 같은 토큰을 써서 생긴다는 것은 저자들의 해석입니다.",
+        "토론할 질문은 네 가지입니다. 첫째, VLM 대신 텍스트 전용 LLM이 조건을 줘도 AF가 FLUX.1-VAE보다 높았습니다. VLM과 같은 토큰을 쓴 효과와 AF latent 자체가 학습하기 쉬운 효과를 어떻게 따로 잴 수 있을까요? 둘째, 비교 실험은 생성 학습 50K step에서, 주로 GenEval로 했습니다. AF가 빨리 배우는 것인지, 끝까지 학습해도 더 좋은 것인지 어떻게 가릴 수 있을까요?",
+        "셋째, 생성한 z를 다음 턴에 바로 쓰는 장점과 propagation bottleneck 가설은 실험으로 확인하지 않았습니다. 무엇을 측정하면 확인할 수 있을까요? 넷째는 제 해석에서 나온 질문입니다. 생성 전용 0.89B 외에도 VLM의 이미지 입력 모듈을 바꾸고, pixel decoder를 따로 두고, VLM을 바꿀 때마다 tokenizer를 다시 학습해야 합니다. 이 비용을 감안해도 쓸 만한 경우는 언제일까요?"
       ]
     },
     {
@@ -1709,7 +1709,7 @@
         "링크": "verbatim: p. 1(arXiv, 프로젝트), external: Hugging Face 모델 카드(코드·체크포인트)"
       },
       "notes": [
-        "들어 주셔서 감사합니다. 특히 VLM과 표현을 공유한 효과와 latent 자체의 효과를 구분하려면 어떤 실험이 필요할지 의견을 듣고 싶습니다."
+        "들어 주셔서 감사합니다. 특히 VLM과 같은 토큰을 쓴 효과와 AF latent 자체의 효과를 가르려면 어떤 실험이 필요할지 의견을 듣고 싶습니다."
       ]
     }
   ]
