@@ -1,6 +1,6 @@
 <svg class="diagram" viewBox="0 0 1696 510" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="os-title os-desc">
   <title id="os-title">Self-Flow가 정렬 목표를 얻는 방식 (Sec. 3.3–3.4와 Fig. 3을 바탕으로 그림)</title>
-  <desc id="os-desc">아래: student flow 모델이 noise latent에서 velocity를 예측한다. REPA는 고정된 외부 encoder가 깨끗한 입력에서 만든 표현에 중간층 feature를 맞춘다. Self-Flow는 이 외부 encoder 자리에 모델 자신의 EMA 사본(teacher)을 두고, student 중간층 feature를 teacher 깊은 층 feature에 맞추는 loss를 더한다(l = 0.3D, k = 0.7D). student 입력의 토큰에는 두 noise 수준이 섞이고, teacher 입력의 모든 토큰은 둘 중 낮은 수준이다. 두 질문: 무엇이 이득을 만드나(①), 모달리티와 모델 크기가 바뀌어도 남나(②).</desc>
+  <desc id="os-desc">아래: student flow 모델이 noise latent에서 velocity를 예측한다. REPA는 고정된 외부 encoder가 깨끗한 입력에서 만든 표현에 중간층 feature를 맞춘다. Self-Flow는 이 외부 encoder 자리에 모델 자신의 EMA 사본(teacher)을 두고, student 중간층 feature를 teacher 깊은 층 feature에 맞추는 loss를 더한다(l = 0.3D, k = 0.7D). student 입력의 토큰에는 두 noise 수준이 섞이고, teacher 입력의 모든 토큰은 둘 중 낮은 수준이다. 두 질문: 성능 향상은 어떤 구성 요소에서 오나(①), 모달리티와 모델 크기가 달라도 유지되나(②).</desc>
   <!-- the file draws the finished picture (beat 3); overview_selfflow.anim.js starts it from REPA-style
        alignment to a frozen external encoder. Elements the script moves carry data-anim.
        Bars: depth D = 1180 px; l = 0.3D at x 554, k = 0.7D at x 1026. -->
@@ -9,7 +9,7 @@
   <!-- question ①: over the teacher row -->
   <g data-anim="q1">
     <path d="M200 74V58H1380V74" fill="none" stroke="var(--color-warm)" stroke-width="4"/>
-    <foreignObject x="200.0" y="6" width="1180.0" height="44"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-h">① 무엇이 이득을 만드나</div></foreignObject>
+    <foreignObject x="200.0" y="6" width="1180.0" height="44"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-h">① 성능 향상은 어떤 구성 요소에서 오나</div></foreignObject>
   </g>
 
   <!-- top row labels, in turn: clean input (REPA) → noise latent → lower noise only -->
@@ -87,7 +87,7 @@
   <!-- question ②: under the whole student and its output -->
   <g data-anim="q2">
     <path d="M200 426V442H1624V426" fill="none" stroke="var(--color-warm)" stroke-width="4"/>
-    <foreignObject x="200.0" y="454" width="1424.0" height="44"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-h">② 모달리티와 모델 크기가 바뀌어도 남나</div></foreignObject>
+    <foreignObject x="200.0" y="454" width="1424.0" height="44"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-h">② 모달리티와 모델 크기가 달라도 유지되나</div></foreignObject>
   </g>
 </g>
 </svg>
