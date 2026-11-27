@@ -543,7 +543,7 @@ sup{vertical-align:.4em}
 
 /* ---------- toggle over paper figures (image tabs) ---------- */
 .toggle-grid{grid-template-rows:minmax(0,1fr)}
-.toggle-media{display:grid;grid-template-rows:minmax(0,1fr);min-height:0;flex:1 1 auto}
+.toggle-media{display:grid;grid-template-rows:minmax(0,1fr);min-height:0;flex:0 1 auto}
 .toggle-media > .figure{grid-area:1/1;min-height:0;height:100%}
 .toggle-media .figure-mat{flex:1 1 auto;min-height:0;display:flex;justify-content:flex-start;align-items:flex-start}
 .toggle-media .figure-mat img{width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain}
@@ -562,6 +562,13 @@ sup{vertical-align:.4em}
 .slide--center .slide-body{justify-content:safe center;padding-bottom:72px}
 /* a split stretches to fill the body; on a centred slide it must not, or nothing gets centred */
 .slide--center .split{flex:0 1 auto}
+/* the same for a toggle: with image tabs shorter than the body it centres instead of leaving the
+   bottom third empty (Integral run, slide 13) */
+.slide--center .toggle-grid{flex:0 1 auto}
+/* a caption under a table belongs to it: 16px, not the body's 40px or a column's 32px (Integral run:
+   table, caption and callout 40px apart read as three separate blocks) */
+.slide-body > .table + .caption{margin-top:-24px}
+.split > * > .table + .caption{margin-top:-16px}
 
 /* the toggle's buttons sit on their own row across both columns, so the visual and the readout
    can take any ratio without the buttons running into the readout */

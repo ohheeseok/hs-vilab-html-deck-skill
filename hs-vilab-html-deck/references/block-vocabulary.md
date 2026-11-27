@@ -64,7 +64,9 @@ false`, for your own work).
 
 `**bold**`, `$TeX$` (inline math, rendered at build time), `_{sub}`, `^{sup}` (`DiT^{DH}-XL` — the name and its suffix never split); hyphenated names
 (`Self-Flow`, `SiT-XL/2`) never break, a Korean particle stays on the math before it
-(`$\ell_1$에서`), and a count stays with its unit (`1M step`, `50 ODE steps`). Use U+00A0 to keep a short phrase on one line
+(`$\ell_1$에서`), and a count stays with its unit (`1M step`, `50 ODE steps`, `54.9 ms`, `32.2 dB`, `19.0 GiB`,
+`387.6 TFLOPs`). A table column whose cells are numbers aligns right — `0.41`, `약 0.28`, `600K`, `9.8B`,
+a range `256–512` and a bound `≤ 512` count as numbers, `—` is ignored. Use U+00A0 to keep a short phrase on one line
 (`DINOv2 feature`) and U+2007 (figure space) to align a decimal in a table column. The build also keeps
 `Fig. 3`, `Table 4`, `FID 5.30`, `= 9.6` and `$k$ = 10개로` on one line.
 

@@ -12,7 +12,11 @@ and `overview_map.*` (reconstruction and generation on RAE, and where the four c
 `work/repa/figures/overview_repa.*` (vanilla SiT's 28 blocks; the encoder path joins, the bar splits
 after block 8 and its output is aligned to the patch representation);
 `work/self-flow-full/figures/overview_selfflow.*` (REPA-style alignment to an external encoder, the
-encoder swapped for the model's own EMA copy, then the two inputs' noise levels part).
+encoder swapped for the model's own EMA copy, then the two inputs' noise levels part);
+`work/vlm-repgen/figures/overview_integral.*` (a VLM with a separate VAE latent and a generation
+expert at every layer; the latent swapped for the shared token z; the per-layer links thinned to
+every fourth layer). Its SVG is written by `work/vlm-repgen/make_overview_integral.py` (`fo2` draws a
+two-line label), so a geometry change is one constant.
 
 ## When
 
@@ -34,6 +38,10 @@ encoder swapped for the model's own EMA copy, then the two inputs' noise levels 
 - Mark a piece "training only" only where the paper says so. REPA's projector is (App. B); Self-Flow's
   EMA copy is not — it is the teacher **and** the evaluated model (App. A.3), so its line says
   "feature 정렬 loss" instead.
+- Beat 0 is the design the paper argues against, built from the paper's own words, and its caption
+  says where it comes from. Integral: no single figure draws it, so beat 0 joins Fig. 5a (Full MoT:
+  a generation layer at every VLM layer) with Sec. 3.2's BAGEL (MoT, FLUX.1-VAE latent). The
+  verifier caught the first caption crediting all of it to Sec. 3.2.
 
 ## How it plays
 
@@ -111,6 +119,12 @@ under it); `right` is the stepper's layout. In `notes`, `[1]`, `[2]` … mark wh
     piece will cover is drawn in pieces, so only the covered piece fades (one fading line next to a
     solid one shows a seam); a mark of size (a bar's length) gets a thin other side, or it reads as
     a dotted line; names swap inside their blocks, specs on the shared label line under them.
+11. From the Integral visual rounds: a label that counts something changes **with** the thing it
+    counts ("층마다 K/V" → "4층마다 K/V" while the 32 links thin to 8, not after them); a label for a
+    connecting line sits next to that line (14 px), with a dot at each end, or it reads as a note on
+    the nearest box; a line that leaves a box and joins another line appears with it, not before.
+12. `.fo` never wraps and the build escapes markup inside a label (`<br/>` showed as text): a two-line
+    label is two foreignObjects of 40 px, one under the other.
 
 ## Techniques (from the handover, in deck terms)
 

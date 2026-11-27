@@ -81,6 +81,16 @@ grid (the noise-placement toggle and the next two slides already use one) and a 
 modalities (a table of contents that would also hide their different autoencoders and mask ratios).
 Left out: the authors' "local correlations" explanation, which the probe and discussion slides weigh.
 
+Integral run, the first deck planned with the overview from the start (the brief asks codex for its
+slot and beats; 21 slides, 3 interactions of 4): the overview at the end of the background section
+(a separate VAE latent and a per-layer generation expert → the shared token z → links at every fourth
+layer → two questions), a two-state image toggle for knowledge generation and editing, and the
+signature, a four-state toggle over the paper's controlled comparisons (Fig. 6a, 6b, 10a, 7: one
+axis, 10K–50K steps and GenEval from 0), each state saying what changed and which explanation it
+aims at. Rejected: the draft's overview, an empty stage that added one arrow per press (a stepper
+dressed as an animation), and a static slide per comparison (five slides of one curve each).
+Image tabs of different aspects were padded to one with the figure's own background colour.
+
 ## Not used
 
 Sliders, hover-only content (a projector has no hover), animation that plays by itself (on entering

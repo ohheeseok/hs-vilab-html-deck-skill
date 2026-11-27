@@ -64,6 +64,8 @@ def _text(s: str) -> str:
     s = re.sub(r"\bno CFG\b", "no\u00a0CFG", s)
     # a count and its unit stay together: "1M step", "50 ODE steps", "600K step"
     s = re.sub(r"(\d[\d.,]*[KMB]?) (?=(?:ODE |SDE )?(?:steps?|epochs?|ep)\b)", "\\1\u00a0", s)
+    # a measurement and its unit: "54.9 ms", "32.2 dB", "19.0 GiB", "387.6 TFLOPs" (Integral run)
+    s = re.sub(r"(\d[\d.,]*) (?=(?:ms|dB|GiB|GB|MB|TFLOPs|GFLOPs)\b)", "\\1\u00a0", s)
     # a reference and its number, a metric and its value, "= 9.6": one unit each (REPA run)
     s = re.sub(r"\b(Fig\.|Figs\.|Table|Tables|Eq\.|Sec\.|App\.) (?=[\dA-Z(])", "\\1\u00a0", s)
     s = re.sub(r"\b(FID|sFID|IS|FVD|FAD|Acc\.|Pre\.|Rec\.) (?=[−+\-]?\d)", "\\1\u00a0", s)
@@ -401,7 +403,9 @@ def r_figure(b, ctx):
             f"{cap}</figure>")
 
 
-NUMERIC = re.compile(r"^\**\s*[−+\-]?(?:약\s*)?[\d.,]+[ %×MKk]*\s*\**$")
+# a number cell: "0.41", "+0.3", "약 0.28", "600K", "9.8B", a range "256–512" or "48–64", a bound "≤ 512"
+# (Integral run: the step, resolution and GPU columns of Table 7 and a Params column aligned left)
+NUMERIC = re.compile(r"^\**\s*(?:[≤≥<>]\s*)?[−+\-]?(?:약\s*)?[\d.,]+(?:\s*[–\-]\s*[\d.,]+)?[ %×MKkB]*\s*\**$")
 PLACEHOLDER = {"—", "–", "-", "N/A", "n/a"}
 
 

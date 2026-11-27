@@ -7,7 +7,7 @@
 - 디자인: hs-vilab-frontend-design의 토큰·글꼴·규칙(HSU 색, Geomini + Gmarket Sans, 글자 크기 사다리 80/56/48/40/36/32/28/24px, 24px 하한)
 - 제작 흐름과 내용 규칙: hs-vilab-deck(PPT판)을 HTML로 옮긴 것
 
-> **상태: 0.5.0.** 논문 세 편을 덱으로 끝까지 만들었습니다([work/self-flow-full](work/self-flow-full), [work/repa](work/repa), [work/rae](work/rae)). 0.5.0에서 연구 내용 앞의 **overview 애니메이션**(클리커를 누를 때마다 한 구간씩 움직이는 도식)을 넣었습니다.
+> **상태: 0.6.0.** 논문 네 편을 덱으로 끝까지 만들었습니다([work/self-flow-full](work/self-flow-full), [work/repa](work/repa), [work/rae](work/rae), [work/vlm-repgen](work/vlm-repgen)). 0.5.0에서 연구 내용 앞의 **overview 애니메이션**(클리커를 누를 때마다 한 구간씩 움직이는 도식)을 넣었고, 0.6.0에서는 그것을 개요 단계부터 계획했습니다.
 > 스킬 본문은 [hs-vilab-html-deck/SKILL.md](hs-vilab-html-deck/SKILL.md), 변경 내역은 [CHANGELOG.md](hs-vilab-html-deck/CHANGELOG.md)에 있습니다.
 > 읽기용 handout(세로 흐름 문서)과 `deck.json` 스키마 파일은 아직 없습니다.
 
@@ -29,6 +29,11 @@
   - **4·5번은 overview 애니메이션**입니다. 4번은 SD-VAE latent가 RAE latent로 바뀌는 과정(Fig. 2를 다시 그림), 5번은 RAE 위의 복원·생성 경로와 네 가지 변경이 붙는 곳입니다. 도식은 `figures/overview_*.svg`, 움직임은 `figures/overview_*.anim.js`에 있습니다.
   - 처리 기록은 `review/log.md`, `verify2_triage.md`, `visual_triage_r1.md`·`visual_triage_r2.md`, 애니메이션 논의는 `review/anim/log.md`에 있습니다.
   - **최종본은 [rae.html](work/rae/rae.html)**, 대본은 `rae-script.html`입니다.
+- [work/vlm-repgen](work/vlm-repgen) — *Let Vision-Language Models Generate Images through Their Representations*(Integral, Kim et al., 2026) 20분 세미나 21장. 네 번째 전체 실행입니다.
+  - 이해와 생성이 같은 시각 표현을 쓰면 재구성 품질로 설명되지 않는 생성 이득이 생긴다는 주장을 통제 비교로 따라가는 줄기. 13번은 지식 생성·편집 그림 탭, 15번은 통제 비교 네 가지를 같은 축으로 넘겨 보는 대표 toggle, 16번은 각 비교가 지운 설명과 남은 설명을 정리한 표입니다.
+  - **5번은 overview 애니메이션**입니다. 별도 VAE latent와 층마다 붙은 생성 expert에서 시작해, latent 자리에 AF의 공유 토큰 z가 들어오고, 생성 stream이 VLM을 읽는 곳이 네 층마다로 줄어듭니다(`figures/overview_integral.*`, 생성 스크립트 `make_overview_integral.py`).
+  - 처리 기록은 `review/log.md`, `verify2_triage.md`, `visual_triage_r1.md`·`visual_triage_r2.md`에 있습니다.
+  - **최종본은 [vlm-repgen.html](work/vlm-repgen/vlm-repgen.html)**, 대본은 `vlm-repgen-script.html`입니다.
 
 | 키 | 동작 |
 |---|---|
@@ -76,6 +81,7 @@ work/self-flow-full/   전체 실행
   self-flow-full.html  최종본(단일 파일) · self-flow-full-script.html 대본
 work/repa/             두 번째 전체 실행(같은 구성, figures/에 새로 그린 도식)
 work/rae/              세 번째 전체 실행(같은 구성, figures/에 overview 애니메이션 두 개)
+work/vlm-repgen/        네 번째 전체 실행(같은 구성, figures/에 overview 애니메이션 하나)
 ```
 
 `deck/assets/math/`는 수식 SVG 캐시입니다. 저장소에 두면 TeX 없이도 같은 최종본이 다시 빌드됩니다. `deck/`의 나머지(엔진·글꼴·로고 사본, `index.html`)는 빌드할 때마다 다시 생기므로 저장소에 넣지 않습니다.

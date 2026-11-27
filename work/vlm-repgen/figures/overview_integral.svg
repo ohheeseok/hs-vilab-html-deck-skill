@@ -1,0 +1,91 @@
+<svg class="diagram" viewBox="0 0 1696 530" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="oi-title oi-desc">
+  <title id="oi-title">Integral이 VLM에 생성을 붙이는 방식 (Fig. 1, Fig. 4, Fig. 5와 Sec. 2.2–2.3, App. A.1을 바탕으로 그림)</title>
+  <desc id="oi-desc">기존 설계(BAGEL 등): 이해는 고정된 vision encoder의 마지막 층 표현을 VLM에 넣고, 생성은 별도 VAE latent 위에서 VLM의 층마다 짝지은 생성 expert가 맡는다. Integral은 고정된 vision encoder의 여러 층 표현을 Abstraction Fusion으로 모아 시각 토큰 z를 만들고, 이해 입력(semantic projector를 거쳐)과 생성 latent가 모두 이 z의 공간에 놓인다. 생성 결과는 pixel decoder가 이미지로 바꾼다. 생성 stream은 VLM 32층 중 4층마다, 8곳에서만 VLM의 key와 value를 읽는다(Block-wise MoT). 두 질문: 공유 표현의 생성 이득은 무엇에서 오나(①), 그 이득은 어떤 조건에서 확인됐나(②).</desc>
+  <!-- the file draws the finished picture (beat 3); overview_integral.anim.js starts it from the
+       baseline design (final-layer understanding input, a separate VAE latent, a generation expert
+       at every VLM layer). Elements the script moves carry data-anim. One VLM layer = 19.38 px. -->
+<g transform="translate(44,0)">
+
+  <!-- question ①: over the shared token path -->
+  <g data-anim="q1">
+    <path d="M364 66V52H720V66" fill="none" stroke="var(--color-warm)" stroke-width="4"/>
+    <foreignObject x="204.0" y="2" width="676.0" height="44"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-h">① 공유 표현의 생성 이득은 무엇에서 오나</div></foreignObject>
+  </g>
+
+  <!-- input image (an icon, not a sample) -->
+  <foreignObject x="-20.0" y="58" width="160.0" height="36"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c">이미지</div></foreignObject>
+  <rect x="10" y="100" width="100" height="100" rx="6" fill="var(--color-surface-sunken)" stroke="var(--color-text-heading)" stroke-width="3"/>
+  <circle cx="82" cy="126" r="11" fill="var(--color-border-control)"/>
+  <path d="M16 192L48 146L70 172L84 158L104 192Z" fill="var(--color-border-control)"/>
+  <g stroke="var(--color-text-muted)" stroke-width="3" fill="none"><path d="M116 150H134"/><path d="M128 143L136 150L128 157"/></g>
+
+  <!-- frozen vision encoder: seven layer groups, shallow at the bottom, deep at the top -->
+  <rect x="140" y="70" width="180" height="144" rx="10" fill="var(--color-surface)" stroke="var(--color-text-heading)" stroke-width="3"/>
+  <rect x="156" y="192" width="148" height="12" rx="3" fill="var(--color-text-heading)" opacity="0.25"/><rect x="156" y="174" width="148" height="12" rx="3" fill="var(--color-text-heading)" opacity="0.36"/><rect x="156" y="156" width="148" height="12" rx="3" fill="var(--color-text-heading)" opacity="0.47"/><rect x="156" y="138" width="148" height="12" rx="3" fill="var(--color-text-heading)" opacity="0.58"/><rect x="156" y="120" width="148" height="12" rx="3" fill="var(--color-text-heading)" opacity="0.69"/><rect x="156" y="102" width="148" height="12" rx="3" fill="var(--color-text-heading)" opacity="0.80"/><rect x="156" y="84" width="148" height="12" rx="3" fill="var(--color-text-heading)" opacity="0.91"/>
+  <foreignObject x="90.0" y="218" width="280.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-muted">vision encoder · 고정</div></foreignObject>
+
+  <!-- baseline (beat 0): only the deepest layer goes on to the VLM -->
+  <path data-anim="b0-top" opacity="0" visibility="hidden" d="M324 90H740V140" fill="none" stroke="var(--color-text-muted)" stroke-width="3"/>
+
+  <!-- Integral: every depth into Abstraction Fusion, then the shared token z -->
+  <g data-anim="fan" stroke="var(--color-accent)" stroke-width="3" fill="none"><path d="M324 198L360 140"/><path d="M324 180L360 140"/><path d="M324 162L360 140"/><path d="M324 144L360 140"/><path d="M324 126L360 140"/><path d="M324 108L360 140"/><path d="M324 90L360 140"/></g>
+  <g data-anim="af">
+    <rect x="364" y="92" width="210" height="96" rx="10" fill="var(--color-surface-brand)" stroke="var(--color-accent)" stroke-width="3"/>
+    <g ><foreignObject x="364.0" y="100" width="210.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box">Abstraction</div></foreignObject><foreignObject x="364.0" y="140" width="210.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box">Fusion</div></foreignObject></g>
+  </g>
+  <g data-anim="af-z" stroke="var(--color-accent)" stroke-width="3" fill="none"><path d="M578 140H596"/><path d="M590 133L598 140L590 147"/></g>
+  <g data-anim="zc">
+    <rect x="600" y="100" width="120" height="80" rx="10" fill="var(--color-accent)"/>
+    <foreignObject x="600.0" y="100" width="120.0" height="80"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box" style="color:#fff">$z$</div></foreignObject>
+  </g>
+  <path data-anim="z-out" d="M722 140H740" fill="none" stroke="var(--color-accent)" stroke-width="3"/>
+  <!-- the piece both designs share: down into the VLM's visual input -->
+  <path data-anim="in" d="M740 140V275H754" fill="none" stroke="var(--color-accent)" stroke-width="3"/>
+  <path data-anim="in-head" d="M748 268L756 275L748 282" fill="none" stroke="var(--color-accent)" stroke-width="3"/>
+
+  <!-- text condition into the VLM -->
+  <foreignObject x="980.0" y="176" width="300.0" height="36"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-muted">텍스트 조건</div></foreignObject>
+  <g stroke="var(--color-text-muted)" stroke-width="3" fill="none"><path d="M1130 212V232"/><path d="M1123 226L1130 234L1137 226"/></g>
+
+  <!-- the pretrained VLM, frozen: 32 layers -->
+  <rect x="760" y="240" width="620" height="70" rx="10" fill="var(--color-text-heading)"/>
+  <path d="M779.4 244V254M779.4 296V306M798.8 244V254M798.8 296V306M818.1 244V254M818.1 296V306M837.5 244V254M837.5 296V306M856.9 244V254M856.9 296V306M876.2 244V254M876.2 296V306M895.6 244V254M895.6 296V306M915.0 244V254M915.0 296V306M934.4 244V254M934.4 296V306M953.8 244V254M953.8 296V306M973.1 244V254M973.1 296V306M992.5 244V254M992.5 296V306M1011.9 244V254M1011.9 296V306M1031.2 244V254M1031.2 296V306M1050.6 244V254M1050.6 296V306M1070.0 244V254M1070.0 296V306M1089.4 244V254M1089.4 296V306M1108.8 244V254M1108.8 296V306M1128.1 244V254M1128.1 296V306M1147.5 244V254M1147.5 296V306M1166.9 244V254M1166.9 296V306M1186.2 244V254M1186.2 296V306M1205.6 244V254M1205.6 296V306M1225.0 244V254M1225.0 296V306M1244.4 244V254M1244.4 296V306M1263.8 244V254M1263.8 296V306M1283.1 244V254M1283.1 296V306M1302.5 244V254M1302.5 296V306M1321.9 244V254M1321.9 296V306M1341.2 244V254M1341.2 296V306M1360.6 244V254M1360.6 296V306" stroke="#fff" stroke-width="3" opacity=".35"/>
+  <foreignObject x="760.0" y="240" width="620.0" height="70"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box" style="color:#fff">VLM · 32층 · 고정</div></foreignObject>
+
+  <!-- where the generation stream reads the VLM: every layer (baseline), every 4th (Block-wise MoT) -->
+  <path data-anim="lk-x" opacity="0" visibility="hidden" d="M769.7 314V366M789.1 314V366M808.4 314V366M847.2 314V366M866.6 314V366M885.9 314V366M924.7 314V366M944.1 314V366M963.4 314V366M1002.2 314V366M1021.6 314V366M1040.9 314V366M1079.7 314V366M1099.1 314V366M1118.4 314V366M1157.2 314V366M1176.6 314V366M1195.9 314V366M1234.7 314V366M1254.1 314V366M1273.4 314V366M1312.2 314V366M1331.6 314V366M1350.9 314V366" stroke="var(--color-text-muted)" stroke-width="3"/>
+  <path data-anim="lk-b" d="M827.8 314V366M905.3 314V366M982.8 314V366M1060.3 314V366M1137.8 314V366M1215.3 314V366M1292.8 314V366M1370.3 314V366" stroke="var(--color-accent)" stroke-width="5"/>
+  <foreignObject data-anim="kv0" opacity="0" visibility="hidden" x="1394.0" y="318" width="230.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-muted">층마다 K/V</div></foreignObject>
+  <foreignObject data-anim="kv1" x="1394.0" y="318" width="230.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo" style="font-weight:700;color:var(--color-text-heading)">4층마다 K/V</div></foreignObject>
+
+  <!-- the generation latent: a separate VAE latent (baseline) or z_t, in z's space -->
+  <foreignObject x="450.0" y="372" width="120.0" height="36"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-muted">noise</div></foreignObject>
+  <g stroke="var(--color-text-muted)" stroke-width="3" fill="none"><path d="M566 390H594"/><path d="M588 383L596 390L588 397"/></g>
+  <rect data-anim="gc" x="600" y="370" width="120" height="80" rx="10" fill="var(--color-accent)" stroke="var(--color-accent)" stroke-width="3"/>
+  <g data-anim="gc0" opacity="0" visibility="hidden" ><foreignObject x="600.0" y="370" width="120.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box">VAE</div></foreignObject><foreignObject x="600.0" y="410" width="120.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box">latent</div></foreignObject></g>
+  <foreignObject data-anim="gc1" x="600.0" y="370" width="120.0" height="80"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box" style="color:#fff">$z_t$</div></foreignObject>
+  <g data-anim="same">
+    <path d="M660 186V364" stroke="var(--color-accent)" stroke-width="3" stroke-dasharray="10 8"/>
+    <circle cx="660" cy="186" r="5" fill="var(--color-accent)"/><circle cx="660" cy="364" r="5" fill="var(--color-accent)"/>
+    <foreignObject x="430.0" y="250" width="216.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-r" style="font-weight:700;color:var(--color-text-heading)">같은 공간</div></foreignObject>
+  </g>
+  <g stroke="var(--color-text-muted)" stroke-width="3" fill="none"><path d="M724 410H754"/><path d="M748 403L756 410L748 417"/></g>
+
+  <!-- the generation stream: an expert at every layer (baseline) or 8 blocks (Block-wise MoT) -->
+  <rect data-anim="gbar" x="760" y="370" width="620" height="80" rx="10" fill="var(--color-surface-brand)" stroke="var(--color-accent)" stroke-width="3"/>
+  <foreignObject data-anim="gn0" opacity="0" visibility="hidden" x="760.0" y="370" width="620.0" height="80"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box">생성 expert · 층마다</div></foreignObject>
+  <foreignObject data-anim="gn1" x="760.0" y="370" width="620.0" height="80"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box">Block-wise MoT · 8블록</div></foreignObject>
+
+  <!-- decoder: the VAE's own (baseline) or a pixel decoder from z -->
+  <g stroke="var(--color-text-muted)" stroke-width="3" fill="none"><path d="M1384 410H1434"/><path d="M1428 403L1436 410L1428 417"/></g>
+  <rect data-anim="dec" x="1440" y="370" width="184" height="80" rx="10" fill="var(--color-surface-brand)" stroke="var(--color-accent)" stroke-width="3"/>
+  <g data-anim="dn0" opacity="0" visibility="hidden" ><foreignObject x="1440.0" y="370" width="184.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box">VAE</div></foreignObject><foreignObject x="1440.0" y="410" width="184.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box">decoder</div></foreignObject></g>
+  <g data-anim="dn1" ><foreignObject x="1440.0" y="370" width="184.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box">pixel</div></foreignObject><foreignObject x="1440.0" y="410" width="184.0" height="40"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-box">decoder</div></foreignObject></g>
+
+  <!-- question ②: under the generation path -->
+  <g data-anim="q2">
+    <path d="M760 458V472H1624V458" fill="none" stroke="var(--color-warm)" stroke-width="4"/>
+    <foreignObject x="760.0" y="480" width="864.0" height="44"><div xmlns="http://www.w3.org/1999/xhtml" class="fo fo-c fo-h">② 그 이득은 어떤 조건에서 확인됐나</div></foreignObject>
+  </g>
+</g>
+</svg>

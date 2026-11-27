@@ -1,5 +1,50 @@
 # Changelog
 
+## 0.6.0 — 2026-11-26
+
+**A fourth paper, with the overview planned from the start.** Integral ("Let Vision-Language Models
+Generate Images through Their Representations", arXiv 2611.31237; `work/vlm-repgen`, 21 slides,
+1200 s): a 20-minute lab seminar whose thread is the paper's central claim — sharing the visual
+representation between understanding and generation helps generative learning beyond what
+reconstruction quality explains — followed through its controlled comparisons to what they rule out.
+codex drafted and revised, agy critiqued, verified (outline and `deck.json`), researched and
+reviewed the captures twice; codex did the Korean edit; Claude conducted.
+
+The deck
+- 5: overview animation — a VLM with a separate VAE latent and a generation expert at every layer
+  (Fig. 5a and Sec. 3.2's BAGEL), the latent swapped for AF's shared token z, the links thinned to
+  every fourth layer (Block-wise MoT), two questions. The brief asked codex for its slot and beats;
+  the critic turned the draft's "empty stage plus one arrow per press" into a change of shape.
+- 15 (signature): a four-state toggle over Fig. 6a, 6b, 10a, 7 — one axis, each state saying what
+  changed and which explanation it aims at. 16: a table of the alternative explanations and whether
+  each comparison removes them. Both reviewers found the same point: under text-only LLM conditioning
+  the AF latent already beats FLUX.1-VAE under VLM conditioning, so part of the gain may come from the
+  latent itself — the first discussion question.
+- External, checked at the source: WISE-Verified is judged by Qwen3.5-35B-A3B, the backbone's family
+  (benchmark README); GenEval 2's authors consider GenEval saturated (abstract); code and checkpoint
+  links from the model card. Three related-work summaries were not opened and not used.
+- The critic struck a discussion point resting on two losses that are the same up to a factor
+  (RMS-normalised MSE = 2(1 − cos)); the second verification caught synthesis merging GPT-4o-Image
+  and GPT-4o, a baseline family miscounted, and a text value written as a curve reading.
+
+Engine
+- Table columns: a range (`256–512`, `48–64`), a bound (`≤ 512`) and a `B` suffix (`9.8B`) count as
+  numbers and align right (Table 7's step, resolution and GPU columns had aligned left).
+- A measurement stays with its unit: `54.9 ms`, `32.2 dB`, `19.0 GiB`, `387.6 TFLOPs`.
+- Image-tab toggles: the media column takes its content's height, so the caption sits under a short
+  figure instead of at the foot of the slide; `valign: center` now centres a toggle as it does a split.
+  Checked by rebuilding Self-Flow with the new engine (both viewports clean, tall tabs unchanged).
+- A caption right after a table sits 16 px under it, not 40 px (or 32 px in a split column).
+
+Docs
+- `handoff-narrative.md`: the brief template is now the Integral brief — it asks for the overview's
+  slot, beats and `reveals`, lists `animation` among the blocks, and ends on an `ending` slide.
+- `animation.md`: Integral as a worked example (its SVG is written by `make_overview_integral.py`);
+  beat 0 is the design the paper argues against, built from its own words with the source in the
+  caption; a counting label changes with what it counts; a link's label sits beside the link; a
+  two-line SVG label is two foreignObjects (the build escapes markup).
+- `interaction-rules.md`, `narrative-roles.md`, `block-vocabulary.md`: the Integral run's lessons.
+
 ## 0.5.0 — 2026-11-26
 
 **Overview animations.** A diagram drawn as a function of time — `render(t)` sets every moving

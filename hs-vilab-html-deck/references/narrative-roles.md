@@ -34,6 +34,11 @@ as a subagent with only that role's inputs. Name every fallback in the delivery.
    pass), so the cover says arXiv. Two follow-ups by overlapping authors went to the discussion:
    at text-to-image scale the wide head and the noisy decoder stopped helping, and RAE needed a
    second model for guidance.
+   *Integral run*: the research ran alongside the draft, from questions taken from the paper alone
+   (code, the backbone's config, the baselines' own papers, the benchmarks). Its useful find was
+   about a benchmark, not the paper: WISE-Verified is judged by Qwen3.5-35B-A3B, the same family as
+   Integral's backbone (the benchmark's README) — a limit and a discussion line, marked external.
+   Three one-line summaries of related papers were not opened and not used.
 4. **Answer every finding** in `review/log.md`: accepted, partly, rejected — and why. Put the
    target structure (slide list) at the end of the log.
 5. **Revise once** — codex gets: the brief's task and constraints, `# Revision` ("apply every
@@ -57,13 +62,19 @@ one message per slide; TL;DR second; a seminar ends on discussion points found i
 missing ablation); the leading thread carries the middle; method slides carry the paper's concrete
 facts; no two slides say the same thing; time per slide; block choice and legibility at 1024×768;
 whether each interaction reveals more than a static slide; what a strong deck would have that this
-one lacks.
+one lacks. *Integral run*: it struck a discussion point that set the paper's "cosine-distance" loss
+against the appendix's RMS-normalised MSE — the two are the same up to a factor of 2 — and asked
+for the deck's spine to be organised by the alternative explanation each controlled comparison
+rules out; that became a table slide ("지운 설명과 남은 설명").
 
 **Verifier** — not the author; every claim, number, comparison and causal link, with page and
 location; recompute every Δ; flag numbers without their condition (benchmark, setting, model size,
 step, CFG) and results stated more generally than the paper states them; check the figure ledger
 covers every main-body figure and table. *Self-Flow run*: it caught a robotics task where the
-baseline actually led at 100K, written as a win.
+baseline actually led at 100K, written as a win. *Integral run*, on `deck.json`: synthesis had
+merged two rows the paper keeps apart (GPT-4o-Image in Table 3, GPT-4o in Table 4), folded BAGEL
+into the wrong baseline family (Sec. 3.2 lists six, not five), and written a value from the text
+(0.18) with the "약" of a curve reading. Give the verifier the deck, not only the outline.
 
 **A finding that rests on reading a curve is checked by you, on the figure, zoomed.** In the
 Self-Flow run the first verifier said a linear probe reversed in late layers and the second said

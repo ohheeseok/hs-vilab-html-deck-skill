@@ -1,0 +1,104 @@
+| location | original | edit | rule |
+|---|---|---|---|
+| 2.title | Integral 한눈에 보기 | Integral의 구조와 통제 비교 | L1-16 |
+| 2.message | Integral은 고정된 VLM의 vision encoder 여러 층을 모은 시각 토큰 하나를 이해 입력과 생성 latent로 함께 쓴다. | Integral은 고정된 VLM의 vision encoder에서 여러 층의 표현을 모아 시각 토큰 하나를 만든다. 이 토큰을 이해 입력과 생성 latent로 함께 쓴다. | L3-3 |
+| 2.body.0.text | 고정된 VLM의 vision encoder 여러 층을 모은 시각 토큰 $z$ 하나를 이해 입력과 생성 latent로 함께 쓴다. | 고정된 VLM의 vision encoder에서 여러 층의 표현을 모아 시각 토큰 $z$ 하나를 만든다. 이 토큰을 이해 입력과 생성 latent로 함께 쓴다. | L3-3 |
+| 2.body.1.items.0.text | encoder 28개 층의 표현을 모아 이해와 재구성을 함께 맡는 256차원 $z$ | encoder 28개 층의 표현을 모아 만든 256차원 $z$를 이해와 재구성에 함께 사용 | L2-5 |
+| 2.body.1.items.2.title | 표현 공유 통제 비교 | 표현 공유의 효과를 살피는 통제 비교 | L3-3 |
+| 2.notes.0 | Integral은 사전학습 VLM을 고정한 채 이미지 생성을 붙입니다. 핵심은 이해와 생성이 같은 시각 토큰 z를 쓴다는 점입니다. | Integral은 사전학습 VLM을 고정한 채 이미지 생성 기능을 추가합니다. 이해와 생성에는 같은 시각 토큰 z를 씁니다. | L1-6, L2-1 |
+| 2.notes.1 | 구성 요소는 둘입니다. vision encoder의 여러 층을 모아 z를 만드는 Abstraction Fusion, 그리고 VLM의 네 층마다 조건을 읽는 Block-wise MoT입니다. 저자들은 통제 비교로 이 공유가 생성 학습을 돕는다고 주장하고, 이 발표는 그 비교를 중심으로 따라가겠습니다. | 구성 요소는 둘입니다. Abstraction Fusion은 vision encoder의 여러 층에서 나온 표현을 모아 z를 만들고, Block-wise MoT는 VLM의 네 층마다 조건을 읽습니다. 저자들은 통제 비교를 근거로 표현을 공유하면 생성 학습에 도움이 된다고 주장합니다. | L3-3, L2-1, L1-16 |
+| 3.message | 통합 멀티모달 모델은 이해와 생성이 어떤 시각 표현을 쓰고, 그것을 얼마나 공유하는지로 갈린다. | 통합 멀티모달 모델은 이해와 생성에 쓰는 시각 표현의 종류와 공유 범위에 따라 나뉜다. | L3-2 |
+| 3.body.1.text | 질문: 재구성 품질이 비슷할 때, 이해와 같은 시각 표현에서 생성하면 생성 학습이 달라지는가? | 재구성 품질이 비슷할 때, 이해에 쓰는 시각 표현으로 이미지를 생성하면 생성 학습이 달라지는가? | L1-16, L3-2 |
+| 3.notes.1 | Integral은 마지막 갈래에 속하지만, 생성을 별도 VAE latent가 아니라 VLM과 공유하는 표현에서 한다는 점이 다릅니다. 이 발표가 던질 질문은 재구성 품질이 비슷할 때 같은 표현을 쓰는 것만으로 생성 학습이 달라지는가입니다. | Integral도 마지막 갈래에 속합니다. 다만 별도 VAE latent를 쓰는 대신 VLM과 공유하는 표현에서 이미지를 생성합니다. 재구성 품질이 비슷할 때 같은 표현을 쓰는 것만으로 생성 학습이 달라질까요? | L1-16, L3-2 |
+| 4.message | VLM이 읽는 의미 표현에는 재구성에 필요한 세부가 부족하고, encoder를 재구성에 맞추면 의미가 흐려진다. | VLM에 입력하는 의미 표현에는 재구성에 필요한 세부 정보가 부족하다. encoder를 재구성에 맞춰 학습하면 의미 성능이 떨어진다. | L3-2 |
+| 4.body.0.items.1.items.0 | 기존 방법은 재구성 지향 VAE latent(FLUX.1-VAE 등)에서 생성한다 | 기존 방법은 재구성용 VAE latent(FLUX.1-VAE 등)에서 이미지를 생성한다 | L3-2 |
+| 4.body.1.text | VLM이 그대로 읽으면서 픽셀로도 되돌릴 수 있는 토큰을 만들 수 있는가? | VLM에 그대로 입력하고 픽셀 이미지 재구성에도 쓸 토큰을 만들 수 있는가? | L2-1 |
+| 4.notes.1 | 반대로 encoder를 재구성에 맞춰 학습하면 의미 성능이 떨어질 수 있습니다. 그래서 기존 방법은 생성용 latent를 따로 둡니다. Integral이 푸는 문제는 두 요구를 한 토큰에 담는 것입니다. | 반대로 encoder를 재구성에 맞춰 학습하면 의미 성능이 떨어질 수 있습니다. 그래서 기존 방법은 생성용 latent를 따로 둡니다. Integral에서는 하나의 토큰을 이해와 재구성에 모두 쓸 수 있게 했습니다. | L1-8, L2-1 |
+| 5.title | Integral이 VLM에 생성을 붙이는 방식 | Integral의 VLM 기반 생성 구조 | L2-1 |
+| 5.message | Integral은 생성 latent를 VLM의 이해 입력과 같은 토큰 z로 바꾸고, 생성 stream이 VLM을 읽는 곳을 네 층마다로 줄인다. | Integral은 VLM의 이해 입력과 같은 토큰 z를 생성 latent로 쓴다. 생성 stream이 VLM의 key와 value를 읽는 빈도는 네 층마다 한 번으로 줄인다. | L2-1, L3-2 |
+| 5.body.0.reveals | 별도 VAE latent가 VLM과 공유하는 z로 바뀌고, 층마다 붙던 생성 expert가 네 층 간격으로 줄어드는 것을 따라가면, Integral이 무엇을 공유하고 무엇을 새로 더하는지 보인다. | Integral은 별도 VAE latent 대신 VLM과 공유하는 z를 쓴다. 생성 expert도 VLM의 층마다 두던 설계에서 네 층마다 두는 설계로 바꾼다. | L2-1, L1-16 |
+| 5.body.0.beats.0.text | 이해는 encoder 출력, 생성은 별도 VAE latent와 층마다 붙은 expert | 이해에는 encoder 출력을 쓰고, 생성에는 별도 VAE latent와 층마다 배치한 expert를 쓴다 | L3-3 |
+| 5.body.0.beats.1.text | encoder 여러 층을 AF가 모아 $z$로. 이해 입력과 생성 latent가 모두 $z$의 공간 | AF는 encoder의 여러 층에서 나온 표현을 모아 $z$를 만든다. 이해 입력과 생성 latent는 모두 $z$의 공간에 속한다. | L3-3 |
+| 5.body.0.beats.3.text | ① 공유 표현의 생성 이득은 무엇에서 오나 ② 그 이득은 어떤 조건에서 확인됐나 | ① 표현을 공유할 때 생성 성능이 좋아지는 이유는 무엇인가? ② 그 이득은 어떤 조건에서 확인됐는가? | L3-3 |
+| 5.body.0.caption | **Fig. 1 · 4 · 5**와 Sec. 2.2–2.3, App. A.1을 바탕으로 그림. 기존 설계는 Sec. 3.2의 BAGEL 서술(MoT, FLUX.1-VAE) | **Fig. 1 · 4 · 5**와 Sec. 2.2–2.3, App. A.1을 바탕으로 그림. 기존 설계는 Sec. 3.2의 BAGEL 서술(MoT, FLUX.1-VAE)을 따름 | L3-5 |
+| 5.notes.0 | 먼저 논문이 대비하는 기존 설계입니다. 이해는 vision encoder의 출력을 VLM에 넣고, 생성은 별도 VAE latent에서 VLM의 층마다 붙은 생성 expert가 맡습니다. BAGEL이 이런 구조입니다. | 먼저 논문이 대비하는 기존 설계입니다. 이해할 때는 vision encoder의 출력을 VLM에 넣습니다. 생성할 때는 VLM의 층마다 배치한 생성 expert가 별도 VAE latent에서 이미지를 생성합니다. BAGEL이 이런 구조입니다. | L3-2 |
+| 5.notes.1 | [1] Integral은 고정된 encoder의 여러 층을 Abstraction Fusion으로 모아 토큰 z를 만듭니다. VLM의 이해 입력도, 생성할 latent도 이 z의 공간에 놓이고, 이미지는 pixel decoder가 되돌립니다. | [1] Integral은 고정된 encoder의 여러 층에서 나온 표현을 Abstraction Fusion으로 모아 토큰 z를 만듭니다. VLM의 이해 입력과 생성할 latent는 모두 z의 공간에 속합니다. 이미지는 pixel decoder로 재구성합니다. | L3-3, L2-1 |
+| 5.notes.3 | [3] 뒤의 분석에서 답할 질문은 두 가지입니다. 공유 표현의 이득이 재구성 품질 말고 무엇에서 오는지, 그리고 그 이득이 어떤 조건에서 확인됐는지입니다. | [3] 뒤에서 다룰 질문은 두 가지입니다. 공유 표현이 생성에 주는 이득은 재구성 품질 외에 어떤 요인에서 올까요? 그 이득은 어떤 조건에서 확인됐을까요? | L3-3 |
+| 6.message | 저자들은 encoder를 재구성에 맞춰 학습하면 깊은 층이 초기층을 닮게 된다는 관측을 가설의 근거로 들고, encoder를 고정한 채 여러 층을 모으는 AF를 제안한다. | 저자들은 encoder를 재구성에 맞춰 학습하면 깊은 층의 표현이 초기층의 표현과 비슷해진다는 관측을 가설의 근거로 든다. 이를 바탕으로 encoder를 고정한 채 여러 층의 표현을 모으는 AF를 제안한다. | L2-5, L3-3 |
+| 6.body.0.alt | Fig. 3. (a) Joint 학습은 마지막 층까지 저수준 정보가 전달되어야 하고 AF는 고정 encoder의 여러 층을 직접 합친다. (b) 층별 CKA: Joint는 깊은 층에서도 약 0.85로 높고, 강한 의미 감독 Joint는 약 0.2, AF(고정)는 0.05까지 내려간다. (c) 20K step 동안 cosine과 PSNR: AF는 Frozen과 비슷한 cosine에 PSNR이 가장 높다. | Fig. 3. (a) Joint 학습에서는 마지막 층까지 저수준 정보를 전달해야 하고, AF는 고정 encoder의 여러 층에서 나온 표현을 직접 합친다. (b) 층별 CKA는 Joint의 깊은 층에서도 약 0.85로 높고, 의미 감독을 강화한 Joint는 약 0.2, AF(고정)는 0.05까지 내려간다. (c) 20K step 동안 cosine과 PSNR을 비교하면, AF의 cosine은 Frozen과 비슷하고 PSNR은 가장 높다. | L3-2, L3-3 |
+| 6.body.1.items.0 | 저자 가설: 최종층만으로 재구성하게 학습하면 깊은 층이 초기층 정보를 붙들어 의미 추상화가 제약될 수 있다 | 저자 가설에 따르면 최종층만으로 재구성하도록 학습할 때 깊은 층에서 초기층 정보를 유지해야 하므로 의미 추상화가 제약될 수 있다 | L2-1 |
+| 6.body.1.items.1 | Joint 학습은 깊은 층의 CKA를 높인다. 의미 감독을 키우면 덜 높지만 PSNR이 낮다(Fig. 3b–c) | Joint 학습은 깊은 층의 CKA를 높인다. 의미 감독을 강화하면 CKA는 내려가지만 PSNR이 낮다(Fig. 3b–c) | L3-2 |
+| 6.body.1.items.3.text | CKA는 상관 근거이고, 가설에 개입해 확인한 실험은 없다 | CKA는 상관을 보여 준다. 직접 개입해 가설을 검증한 실험은 없다 | L3-2 |
+| 6.notes.0 | 저자들은 이 trade-off를 propagation bottleneck이라는 가설로 설명합니다. 최종층만으로 재구성하게 학습하면 깊은 층이 초기층의 세부를 붙들어야 해서 의미 추상화가 제약된다는 것입니다. | 저자들은 이 trade-off를 propagation bottleneck이라는 가설로 설명합니다. 최종층만으로 재구성하도록 학습하면 깊은 층에서 초기층의 세부 정보를 유지해야 하므로 의미 추상화가 제약된다고 봅니다. | L2-1, L1-8 |
+| 6.notes.2 | 다만 CKA는 상관을 보여 줄 뿐이고, 가설에 직접 개입한 실험은 없습니다. | 다만 CKA는 상관을 보여 줄 뿐입니다. 직접 개입해 가설을 검증한 실험은 없습니다. | L3-2 |
+| 7.body.0.left.0.alt | Fig. 4. 고정 vision encoder의 여러 층이 Abstraction Fusion(per-layer norm과 projection, self-attention, linear pooler)으로 들어가고, VAE를 지나 z가 된 뒤 semantic projector와 pixel decoder로 갈라진다. | Fig. 4. 고정 vision encoder의 여러 층에서 나온 표현을 Abstraction Fusion(per-layer norm과 projection, self-attention, linear pooler)에서 합친다. VAE를 거쳐 만든 z는 semantic projector와 pixel decoder에 각각 입력한다. | L2-7, L3-2 |
+| 7.body.0.right.0.steps.0.text | Qwen3.5-9B vision encoder 27블록 + patch embedding, patch 16, $d_h$ = 1152 | Qwen3.5-9B vision encoder의 27개 block과 patch embedding, patch 16, $d_h$ = 1152 | L1-8 |
+| 7.body.0.right.0.steps.1.text | ImageNet 50K장으로 구한 고정 통계, 4층씩 묶어 위치당 7개 | ImageNet 50K장으로 구한 고정 통계로 정규화한 뒤 4층씩 묶어 위치마다 표현 7개를 만든다 | L3-3 |
+| 7.notes.0 | Qwen3.5-9B의 vision encoder는 27개 블록입니다. patch embedding까지 28개 표현을 모두 씁니다. | Qwen3.5-9B의 vision encoder는 27개 block으로 구성됩니다. patch embedding까지 28개 표현을 모두 씁니다. | L1-8 |
+| 7.notes.1 | 층마다 고정 통계로 정규화하고, 네 층씩 묶어 위치마다 일곱 개 feature를 만듭니다. 층 방향 self-attention과 linear pooler가 이것을 융합 표현 f로 합치고, variational bottleneck이 256차원 z로 압축합니다. encoder 자체는 바꾸지 않습니다. | 층마다 고정 통계로 정규화하고, 네 층씩 묶어 위치마다 일곱 개 표현을 만듭니다. 층 방향 self-attention과 linear pooler로 이 표현들을 융합 표현 f로 합친 뒤, variational bottleneck으로 256차원 z로 압축합니다. encoder 자체는 바꾸지 않습니다. | L1-8, L1-11 |
+| 8.message | 같은 z에서 VLM의 원래 시각 embedding을 예측하는 손실과 이미지를 복원하는 손실을 함께 건다. | 같은 z에서 VLM의 원래 시각 embedding을 예측하는 손실과 이미지를 재구성하는 손실을 함께 쓴다. | L3-2, L1-8 |
+| 8.body.0.left.0.items.0.text | 2×2 토큰을 합쳐 MLP로 VLM 시각 입력($d_s$ = 4096)에. 표적은 원래 VLM의 $s$ | 2×2 토큰을 합친 뒤 MLP로 VLM 시각 입력($d_s$ = 4096)을 예측. 표적은 원래 VLM의 $s$ | L3-3 |
+| 8.notes.0 | z는 두 곳으로 갑니다. semantic projector는 이웃한 네 토큰을 합쳐 원래 VLM이 받던 4096차원 시각 입력을 예측하고, pixel decoder는 같은 z에서 이미지를 복원합니다. | z는 두 모듈에 입력됩니다. semantic projector는 이웃한 네 토큰을 합쳐 원래 VLM이 받던 4096차원 시각 입력을 예측합니다. pixel decoder는 같은 z에서 이미지를 재구성합니다. | L1-8, L2-7 |
+| 8.notes.1 | 의미 손실은 원래 embedding의 MSE와 토큰별로 정규화한 MSE를 섞습니다. 정규화한 두 벡터의 MSE를 전개하면 cosine distance의 두 배이므로, 본문이 말하는 cosine-distance 항이 이것입니다. 학습 내내 vision encoder와 VLM은 고정입니다. | 의미 손실에는 원래 embedding을 표적으로 삼는 MSE와 토큰별로 정규화한 MSE를 함께 씁니다. 정규화한 두 벡터의 MSE를 전개하면 cosine distance의 두 배가 됩니다. 논문 본문에서 이 항을 cosine-distance 항이라고 부릅니다. 학습 내내 vision encoder와 VLM은 고정입니다. | L1-8, L3-2 |
+| 9.message | 생성 stream의 query가 VLM 블록 경계에서 두 stream의 key와 value를 읽고, 생성 전용 파라미터는 0.89B다. | 생성 stream의 query가 VLM의 block 경계에서 두 stream의 key와 value를 읽고, 생성 전용 파라미터는 0.89B다. | L1-8 |
+| 9.body.0.right.0.groups.0.items.2 | $z_t$는 2층 MLP를 거쳐 생성 stream에만. VLM은 그대로 | $z_t$는 2층 MLP를 거쳐 생성 stream에만 입력한다. VLM의 계산은 그대로다 | L3-3 |
+| 9.body.0.right.0.groups.1.items.2 | DDT head 2블록·폭 3072가 velocity 예측. 생성 전용 0.89B(891M) | DDT head(2개 block, 폭 3072)가 velocity를 예측한다. 생성 전용 파라미터 0.89B(891M) | L3-3, L1-8 |
+| 9.notes.1 | timestep은 block마다 adaLN-single로 넣는데, Fig. 5d에서 입력에 더하는 방식보다 GenEval 곡선이 높았습니다. 마지막 DDT head가 velocity를 예측하고, 생성 전용 파라미터는 모두 0.89B입니다. 참고로 부록 C.2는 Full MoT를 31블록으로 적어 32층과 하나가 다른데, 논문은 이유를 밝히지 않습니다. | timestep은 block마다 adaLN-single로 넣는데, Fig. 5d에서 입력에 더하는 방식보다 GenEval 곡선이 높았습니다. 마지막 DDT head가 velocity를 예측하고, 생성 전용 파라미터는 모두 0.89B입니다. 부록 C.2에는 Full MoT가 31개 block이라고 나옵니다. VLM의 32층과 하나 차이가 나는데, 논문은 이유를 밝히지 않습니다. | L1-8, L3-2 |
+| 10.body.0.groups.0.rows.2.cells.1 | pixel decoder만, adversarial | adversarial 학습으로 pixel decoder만 미세조정 | L3-3 |
+| 10.notes.1 | 뒤에서 볼 통제 비교는 생성 1단계 설정에서 50K step까지만 학습한 결과입니다. 생성 전체 일정의 12분의 1이라는 점을 기억해 두시면 좋겠습니다. | 뒤에서 볼 통제 비교는 생성 1단계 설정에서 50K step까지만 학습한 결과입니다. 생성 전체 학습량의 12분의 1입니다. | L1-6 |
+| 11.title | AF의 재구성과 이해 유지 | AF의 재구성 품질과 이해 성능 유지 | L3-3 |
+| 11.message | 최종 AF tokenizer는 재구성 전용 VAE와 비슷하거나 나은 재구성을 하면서 Qwen3.5-9B의 이해 성능을 평균 99.8% 유지한다. | 최종 AF tokenizer는 재구성 전용 VAE와 비슷하거나 더 좋은 재구성 품질을 보이며 Qwen3.5-9B의 이해 성능을 평균 99.8% 유지한다. | L3-2 |
+| 11.body.0.right.0.body.0.items.0.label | 이해 20개 벤치마크 평균 유지율 | 이해 성능 유지율(20개 벤치마크 평균) | L3-3 |
+| 11.notes.1 | 오른쪽은 이해 성능입니다. VLM이 원래 시각 입력 대신 AF를 거친 입력을 받아도 20개 벤치마크 평균으로 99.8%를 유지합니다. MMMU는 조금 오르고 OCRBench는 조금 내립니다. | 오른쪽은 이해 성능입니다. VLM이 원래 시각 입력 대신 AF를 거친 입력을 받아도 20개 벤치마크에서 이해 성능을 평균 99.8% 유지합니다. MMMU 점수는 조금 오르고 OCRBench 점수는 조금 내려갑니다. | L3-2 |
+| 12.notes.1 | 편집에서는 ImgEdit Overall 3.50으로 BAGEL과 OmniGen2보다 높고 GPT-4o보다는 낮습니다. 다만 이 표는 백본과 학습 데이터가 모두 다른 시스템을 나란히 놓은 것입니다. BAGEL과의 이해 점수 차이도 출발한 VLM에서 이미 납니다. | 편집에서는 ImgEdit Overall 3.50으로 BAGEL과 OmniGen2보다 높고 GPT-4o보다는 낮습니다. 다만 이 표는 백본과 학습 데이터가 모두 다른 시스템을 비교한 것입니다. BAGEL과의 이해 점수 차이는 두 시스템의 기반 VLM에서 이미 나타납니다. | L2-1, L3-2 |
+| 13.body.0.reveals | 같은 지식 평가를 생성과 편집으로 나누어 보면, 프롬프트가 이름을 대지 않는 대상을 그리는 일과 입력 이미지를 지식에 맞게 바꾸는 일 모두에서 BAGEL과의 차이가 난다. | 같은 지식 평가에서 생성은 프롬프트에 이름이 나오지 않는 대상을 그리는 과제이고, 편집은 입력 이미지를 지식에 맞게 바꾸는 과제다. 두 과제 모두에서 BAGEL과 점수 차이가 난다. | L1-16, L3-2 |
+| 13.notes.1 | [2] 편집에서는 입력 이미지를 지시가 가리키는 지식에 맞게 바꿔야 합니다. KRIS-Bench에서 Integral은 60.79로 BAGEL보다 높고, 세 범주 모두에서 앞섭니다. 이 역시 최종 시스템끼리의 비교이고, 예시는 저자가 고른 것입니다. | [2] 편집에서는 지시를 이해하는 데 필요한 지식을 바탕으로 입력 이미지를 바꿔야 합니다. KRIS-Bench에서 Integral은 60.79로 BAGEL보다 높고, 세 범주 모두에서 앞섭니다. 이 역시 최종 시스템끼리의 비교이고, 예시는 저자가 고른 것입니다. | L3-2 |
+| 14.body.0.right.1.items.1.text | 저자 해석: 재구성 품질이 비슷한데 생성 차이가 크니, VLM과 표현을 공유한 덕이다 | 저자 해석에 따르면 재구성 품질이 비슷한데도 생성 성능에 큰 차이가 난 것은 VLM과 표현을 공유했기 때문이다. | L3-2 |
+| 14.notes.0 | 이제 이 발표의 중심인 통제 비교입니다. VLM 조건과 생성 구조, 학습 설정은 같고 생성할 latent만 AF와 FLUX.1-VAE로 바꿨습니다. | 통제 비교에서는 VLM 조건과 생성 구조, 학습 설정을 같게 두고 생성할 latent만 AF와 FLUX.1-VAE로 바꿨습니다. | L1-16 |
+| 14.notes.1 | 두 tokenizer의 재구성 PSNR은 1.1 dB 차이인데, 50K step의 GenEval은 0.41 대 0.18로 두 배 넘게 벌어집니다. 저자들은 재구성 품질로 설명되지 않는 이 차이를 VLM과 표현을 공유한 덕으로 봅니다. | 두 tokenizer의 재구성 PSNR은 1.1 dB 차이입니다. 50K step의 GenEval은 0.41 대 0.18로, AF 점수가 FLUX.1-VAE 점수의 두 배를 넘습니다. 저자들은 재구성 품질로 설명되지 않는 이 차이가 VLM과 표현을 공유한 데서 온다고 봅니다. | L2-1, L3-2 |
+| 14.notes.2 | 다만 두 latent는 차원과 토큰 수, 분포도 다를 수 있고, 이를 맞췄다는 보고는 없습니다. 다음 장의 네 비교가 이 해석을 하나씩 좁혀 갑니다. | 다만 두 latent는 차원과 토큰 수, 분포도 다를 수 있고, 이를 맞췄다는 보고는 없습니다. 다음 장에서는 네 비교를 하나씩 보면서 이 해석이 어느 범위까지 맞는지 살펴보겠습니다. | L2-1 |
+| 15.message | 네 비교는 각각 다른 대안 설명을 겨누고, 조건 VLM이 없는 LLM + AF도 VLM + FLUX.1-VAE보다 높다는 점이 함께 드러난다. | 네 비교에서 각각 다른 대안 설명을 검토한다. 조건 모델에 VLM을 쓰지 않은 LLM + AF도 VLM + FLUX.1-VAE보다 점수가 높다. | L2-1, L1-6 |
+| 15.body.0.reveals | 같은 50K step 예산에서 한 가지씩 바꾼 비교를 넘겨 보면, 각 결과가 어떤 대안 설명을 지우고 어떤 설명을 남기는지 보인다. | 같은 50K step 동안 학습하면서 한 가지씩 바꿔 비교했다. 각 결과로 배제할 수 있는 대안 설명과 여전히 가능한 설명을 구분한다. | L2-1, L1-16 |
+| 15.body.0.states.0.text | 50K GenEval: AF 0.41, SigLIP2-AF 0.31. 함께 바뀐 것: 정렬 표적과 PSNR(34.08 dB). 의미 표현이면 어느 encoder든 같다는 설명을 겨눈다. | 50K GenEval은 AF 0.41, SigLIP2-AF 0.31. 정렬 표적과 PSNR(34.08 dB)도 함께 바뀌었다. 의미 표현을 쓰면 어느 encoder든 결과가 같은지 검토한 비교다. | L2-1, L3-3 |
+| 15.body.0.states.1.text | VLM으로 바꾸면 AF +0.13, FLUX.1-VAE +0.01. 곡선에서 LLM + AF(약 0.28)도 VLM + FLUX.1-VAE(약 0.18)보다 위. 비교 LLM의 이름과 크기는 밝히지 않았다. | VLM으로 바꾸면 AF +0.13, FLUX.1-VAE +0.01. 곡선에서 LLM + AF(약 0.28) 점수도 VLM + FLUX.1-VAE(약 0.18)보다 높다. 비교 LLM의 이름과 크기는 밝히지 않았다. | L3-2 |
+| 15.notes.1 | [2] 둘째, 조건을 주는 모델을 VLM과 text-only LLM으로 바꿨습니다. VLM으로 바꿀 때 AF는 0.13 오르고 FLUX.1-VAE는 0.01 오릅니다. 저자들은 공유 표현이 VLM 조건을 더 잘 쓴다는 근거로 봅니다. 그런데 그림을 보면 VLM 없이 LLM 조건만 준 AF도 0.28로, VLM 조건의 FLUX.1-VAE 0.18보다 높습니다. | [2] 둘째, 조건을 주는 모델로 VLM과 text-only LLM을 비교했습니다. VLM으로 바꿀 때 AF는 0.13 오르고 FLUX.1-VAE는 0.01 오릅니다. 저자들은 이 차이를 공유 표현이 VLM 조건을 더 잘 활용한다는 근거로 봅니다. 그런데 그림을 보면 VLM 없이 LLM 조건만 준 AF도 0.28로, VLM 조건의 FLUX.1-VAE 0.18보다 높습니다. | L3-2 |
+| 15.notes.2 | [3] 셋째, AF에서 의미 정렬 손실만 뺐습니다. 재구성은 33.7 dB로 오히려 좋아지는데, GenEval과 DPG, WISE 곡선은 모두 낮아집니다. 재구성 품질이 생성을 정한다는 설명은 여기서 다시 맞지 않습니다. | [3] 셋째, AF에서 의미 정렬 손실만 뺐습니다. 재구성 PSNR은 33.7 dB로 오히려 높아지는데, GenEval과 DPG, WISE 곡선은 모두 낮아집니다. 이 결과도 재구성 품질이 생성 성능을 결정한다는 설명과 맞지 않습니다. | L3-2 |
+| 15.notes.3 | [4] 넷째, 2B 백본에 AF를 붙이면 9B FLUX.1-VAE보다 높습니다. 다만 2B에 FLUX.1-VAE를 붙인 짝은 없습니다. | [4] 넷째, 2B 백본에 AF를 붙이면 9B FLUX.1-VAE보다 점수가 높습니다. 다만 2B에 FLUX.1-VAE를 적용한 비교 항목은 없습니다. | L2-1, L3-2 |
+| 16.title | 지운 설명과 남은 설명 | 통제 비교에서 배제된 설명과 남은 설명 | L2-1 |
+| 16.message | 재구성 품질만으로 생성 차이를 설명할 수는 없다. 하지만 그 차이가 VLM과의 공유에서 오는지, latent 자체에서 오는지는 다 갈리지 않았다. | 재구성 품질만으로 생성 성능 차이를 설명할 수는 없다. 다만 그 차이를 설명할 때 VLM과의 표현 공유 효과와 latent 자체의 효과를 완전히 구분하지는 못했다. | L3-2 |
+| 16.body.0.columns.1.label | 겨눈 비교 | 해당 비교 | L2-1 |
+| 16.body.0.groups.0.rows.0.cells.0 | 재구성 품질이 생성을 정한다 | 재구성 품질이 생성 성능을 결정한다 | L3-2 |
+| 16.body.0.groups.0.rows.3.cells.0 | 9B 백본이라서 | 9B 백본이 생성 성능 차이의 원인이다 | L3-3 |
+| 16.body.0.groups.0.rows.3.cells.2 | 2B AF 0.26 > 9B FLUX.1-VAE 0.18. 2B짝 없음 | 2B AF 0.26 > 9B FLUX.1-VAE 0.18. 2B에서 대응하는 VAE 비교 항목은 없음 | L3-3 |
+| 16.notes.0 | 앞의 비교들을 대안 설명별로 정리했습니다. 재구성 품질이 생성을 정한다는 설명은 FLUX.1-VAE와 의미 정렬 제거, 두 비교에서 모두 맞지 않습니다. 이것은 지워졌다고 봐도 됩니다. | 앞의 비교들을 대안 설명별로 정리했습니다. 재구성 품질이 생성 성능을 결정한다는 설명은 FLUX.1-VAE와의 비교와 의미 정렬을 제거한 비교에서 모두 결과와 맞지 않습니다. 따라서 이 설명은 배제해도 됩니다. | L2-1, L3-2 |
+| 16.notes.1 | 의미 표현이면 충분하다는 설명과 백본 크기 설명은 일부만 지워졌습니다. SigLIP2 비교에서는 다른 것도 함께 바뀌었고, 2B에는 FLUX.1-VAE 짝이 없습니다. | 의미 표현이면 충분하다는 설명과 백본 크기가 원인이라는 설명은 일부만 배제할 수 있습니다. SigLIP2 비교에서는 정렬 표적과 PSNR도 함께 바뀌었고, 2B에 FLUX.1-VAE를 적용한 비교 항목은 없습니다. | L2-1, L1-11 |
+| 16.notes.2 | 남은 것은 둘입니다. LLM 조건에서도 AF가 앞서므로 이득의 일부는 VLM과의 공유가 아니라 latent 자체에서 올 수 있습니다. 그리고 모든 비교가 50K step이라, 수렴이 빠른 것인지 최종 품질이 다른 것인지는 알 수 없습니다. 이 둘을 토론에서 다시 묻겠습니다. | 남은 설명은 둘입니다. LLM 조건에서도 AF가 앞서므로 이득의 일부는 VLM과 표현을 공유한 효과와 별개로 latent 자체에서 생길 수 있습니다. 모든 비교가 50K step이라, 수렴이 빠른 것인지 최종 품질이 다른 것인지는 알 수 없습니다. 이 둘을 토론에서 다시 묻겠습니다. | L1-4, L3-2 |
+| 17.message | 20K step tokenizer 비교에서 AF는 단순 합산이나 attention pooling보다 재구성이 좋으면서 고정 encoder 수준의 cosine을 유지한다. | 20K step으로 학습한 tokenizer를 비교하면, AF는 단순 합산이나 attention pooling보다 재구성 품질이 높고 cosine은 고정 encoder 수준을 유지한다. | L3-2, L3-3 |
+| 17.body.0.left.0.alt | Fig. 8. tokenizer 학습 5K–20K step 동안 의미 cosine과 PSNR. AF의 PSNR이 24에서 26.7로 가장 높고, attention pooling 약 22, MLS 약 20.4, Frozen 약 19.4. cosine은 Frozen과 AF가 약 0.97로 가장 높다. | Fig. 8. tokenizer 학습 5K–20K step 동안 의미 cosine과 PSNR을 비교했다. AF의 PSNR은 24에서 26.7로 올라 가장 높다. attention pooling은 약 22, MLS는 약 20.4, Frozen은 약 19.4다. cosine은 Frozen과 AF가 약 0.97로 가장 높다. | L3-3 |
+| 17.notes.1 | 오른쪽 표는 AF의 구성요소를 하나씩 바꾼 결과입니다. 어느 것을 바꿔도 세 지표가 모두 나빠지고, attention pooling으로 바꾸면 크게 떨어집니다. 여기 26.67 dB는 20K step 시점이라 앞의 32.2 dB와는 학습량이 다릅니다. | 오른쪽 표는 AF의 구성 요소를 하나씩 바꾼 결과입니다. 어느 것을 바꿔도 세 지표가 모두 나빠지고, attention pooling으로 바꾸면 크게 떨어집니다. 여기서 본 26.67 dB는 20K step에서 측정한 값입니다. 앞서 본 32.2 dB를 측정했을 때와는 학습량이 다릅니다. | L3-2 |
+| 18.body.0.right.1.items.0.label | denoising 계산, Full MoT가 더 큼 | Full MoT의 denoising 계산량이 더 많음 | L3-2 |
+| 18.body.0.right.1.items.1.label | batch당 지연, Full MoT가 더 큼 | Full MoT의 batch당 지연이 더 김 | L3-2 |
+| 18.notes.0 | 생성 구조도 비교했습니다. 같은 AF 공간과 DDT head를 쓰면, 파라미터가 조금 적은 Block-wise MoT가 MMDiT보다 GenEval 곡선이 계속 높습니다. | 생성 구조도 비교했습니다. 같은 AF 공간과 DDT head를 썼을 때, Block-wise MoT는 MMDiT보다 파라미터가 조금 적고 GenEval 곡선은 계속 높습니다. | L3-2 |
+| 18.notes.1 | 층마다 block을 붙인 Full MoT와 비교하면 GenEval과 DPG는 Block-wise가, WISE는 Full MoT가 조금 높습니다. 대신 Full MoT는 계산이 2.5배, 지연이 3.1배입니다. 측정에 쓴 배치 크기와 step 수는 논문에 없습니다. | 층마다 block을 붙인 Full MoT와 비교하면 GenEval과 DPG는 Block-wise가, WISE는 Full MoT가 조금 높습니다. 대신 Full MoT의 계산량은 2.5배, 지연은 3.1배입니다. 측정에 쓴 배치 크기와 step 수는 논문에 없습니다. | L3-2 |
+| 19.message | 공유의 이득은 짧은 학습과 Qwen3.5 계열에서 확인됐고, 생성 전용 0.89B 밖에도 비용이 든다. | Qwen3.5 계열을 사용한 짧은 학습에서 표현 공유의 이득을 확인했다. 생성 전용 0.89B 외에도 비용이 든다. | L3-2, L2-1 |
+| 19.body.0.groups.0.items.2 | $z$를 다음 턴 입력으로 바로 쓰면 손실이 없다는 이점(Sec. 2.2)은 측정 없음 | $z$를 다음 턴 입력으로 바로 쓰면 손실이 없다는 이점(Sec. 2.2)은 측정하지 않음 | L3-2 |
+| 19.notes.1 | 평가에서는 외부 자료 두 가지를 덧붙입니다. WISE-Verified는 Qwen3.5-35B로 채점하는데, Integral의 백본과 같은 계열입니다. 또 GenEval 2의 저자들은 GenEval이 이미 포화됐다고 봅니다. | 평가와 관련해 외부 자료 두 가지를 참고했습니다. WISE-Verified의 채점 모델인 Qwen3.5-35B는 Integral의 백본과 같은 계열입니다. 또 GenEval 2의 저자들은 GenEval이 이미 포화됐다고 봅니다. | L3-2 |
+| 19.notes.2 | 비용도 있습니다. 생성 전용 0.89B 말고도 시각 입력 경로가 126M 커지고, pixel decoder가 475M입니다. 이해 추론에서 prefill은 29% 늘지만, 100 토큰을 생성하는 전체 지연으로는 2.1%입니다. | 생성 전용 0.89B 외에도 시각 입력 경로의 파라미터가 126M 늘고, pixel decoder의 파라미터가 475M입니다. 이해 추론에서 prefill 지연은 29% 늘지만, 100 토큰 생성까지 포함한 전체 지연은 2.1% 늘어납니다. | L3-2, L3-3 |
+| 20.message | 재구성 품질만으로 생성 차이를 설명할 수 없다는 점은 여러 비교가 뒷받침하지만, 그 차이를 VLM과의 공유로 돌리는 것은 저자 해석이다. | 여러 비교 결과는 재구성 품질만으로는 생성 성능 차이를 설명할 수 없음을 뒷받침한다. 그 차이가 VLM과 표현을 공유한 데서 온다는 것은 저자 해석이다. | L2-1, L3-2 |
+| 20.body.0.groups.0.items.0 | 고정 encoder의 여러 층을 모은 $z$ 하나로 이해(99.8% 유지)와 재구성(32.2 dB)을 함께 | 고정 encoder의 여러 층에서 나온 표현을 $z$ 하나로 모아 이해(99.8% 유지)와 재구성(32.2 dB)에 사용 | L3-3 |
+| 20.body.0.groups.0.items.2 | 그 차이를 VLM과의 공유로 돌리는 것은 저자 해석이다 | 그 차이가 VLM과 표현을 공유한 데서 온다는 것은 저자 해석이다 | L2-1 |
+| 20.body.0.groups.1.items.0 | LLM + AF(약 0.28)도 VLM + FLUX.1-VAE(약 0.18)보다 높다. 공유의 몫과 latent 자체의 몫을 어떻게 나눠 잴까? | LLM + AF(약 0.28)도 VLM + FLUX.1-VAE(약 0.18)보다 높다. VLM과 표현을 공유한 효과와 latent 자체의 효과를 어떻게 구분해 측정할 수 있는가? | L2-1, L3-2 |
+| 20.body.0.groups.1.items.1 | 통제 비교는 생성 600K 중 50K step의 GenEval이다. 수렴이 빠른 것인가, 최종 품질이 다른 것인가? | 생성 학습 600K 중 50K step 시점의 GenEval로 통제 비교를 했다. 수렴이 빠른 것인가, 최종 품질이 다른 것인가? | L3-2 |
+| 20.body.0.groups.1.items.2 | $z$를 다음 턴에 다시 쓰는 이점과 propagation bottleneck은 측정·개입 실험이 없다. 무엇을 재면 될까? | $z$를 다음 턴에 다시 쓰는 이점과 propagation bottleneck을 측정하거나 직접 개입해 확인한 실험은 없다. 무엇을 측정하면 확인할 수 있는가? | L3-2, L3-3 |
+| 20.body.0.groups.1.items.3.text | 0.89B 밖의 비용(시각 경로 +126.1M, pixel decoder 475.1M, VLM마다 tokenizer 650K step)을 넣어도 이득이 큰 조건은? | 생성 전용 0.89B에 더해 시각 경로 +126.1M, pixel decoder 475.1M, VLM마다 tokenizer 650K step까지 고려해도 이득이 큰 조건은? | L2-1, L3-3 |
+| 20.notes.0 | 정리하겠습니다. Integral은 고정된 encoder의 여러 층을 모은 z 하나로 이해를 거의 그대로 유지하면서 재구성까지 해냅니다. 50K step 비교들은 재구성 품질만으로는 생성 차이가 설명되지 않는다는 점을 뒷받침합니다. 다만 그 차이를 VLM과의 공유로 돌리는 것은 저자들의 해석입니다. | 정리하겠습니다. Integral은 고정된 encoder의 여러 층에서 나온 표현을 z 하나로 모아 이해 성능을 거의 그대로 유지하면서 이미지도 재구성합니다. 50K step 비교들은 재구성 품질만으로는 생성 성능 차이가 설명되지 않는다는 점을 뒷받침합니다. 다만 그 차이가 VLM과 표현을 공유한 데서 온다는 것은 저자들의 해석입니다. | L2-1, L3-2 |
+| 20.notes.1 | 토론하고 싶은 것은 네 가지입니다. 첫째, VLM 조건 없이 LLM 조건만 준 AF도 FLUX.1-VAE보다 높았습니다. 공유에서 오는 몫과 latent 자체에서 오는 몫을 어떻게 나눠 잴 수 있을까요? 둘째, 비교는 모두 50K step의 GenEval입니다. 수렴이 빠른 것인지 최종 품질이 다른 것인지 어떻게 가릴 수 있을까요? | 토론할 질문은 네 가지입니다. 첫째, VLM 조건 없이 LLM 조건만 준 AF도 FLUX.1-VAE보다 높았습니다. VLM과 표현을 공유한 효과와 latent 자체의 효과를 어떻게 구분해 측정할 수 있을까요? 둘째, 비교는 모두 50K step의 GenEval입니다. 수렴이 빠른 것인지 최종 품질이 다른 것인지 어떻게 가릴 수 있을까요? | L2-1, L3-2 |
+| 20.notes.2 | 셋째, z를 다음 턴에 다시 쓰는 이점과 propagation bottleneck은 직접 잰 실험이 없습니다. 무엇을 재면 확인할 수 있을까요? 넷째는 제 해석에서 나온 질문입니다. 생성 전용 0.89B 밖에도 시각 경로와 pixel decoder, VLM을 바꿀 때마다 다시 하는 tokenizer 학습이 듭니다. 이 비용을 넣어도 이득이 큰 조건은 무엇일까요? | 셋째, z를 다음 턴에 다시 쓰는 이점과 propagation bottleneck을 직접 측정한 실험은 없습니다. 무엇을 측정하면 확인할 수 있을까요? 넷째는 제 해석에서 나온 질문입니다. 생성 전용 0.89B 외에 시각 경로와 pixel decoder, VLM을 바꿀 때마다 하는 tokenizer 재학습에도 비용이 듭니다. 이 비용까지 고려해도 이득이 큰 조건은 무엇일까요? | L2-1, L3-2 |
+| 21.notes.0 | 들어 주셔서 감사합니다. 특히 공유의 몫과 latent 자체의 몫을 가르려면 어떤 실험이 필요할지 의견을 듣고 싶습니다. | 들어 주셔서 감사합니다. 특히 VLM과 표현을 공유한 효과와 latent 자체의 효과를 구분하려면 어떤 실험이 필요할지 의견을 듣고 싶습니다. | L2-1, L3-2 |
+
+### 고치지 않은 스캐너 후보와 이유
+
+- **L1-5** `5.notes.2`의 대조는 생성 stream이 VLM 32층 가운데 4층 간격의 여덟 곳에서만 key와 value를 읽는다는 제약을 전달한다. `3.notes.1`의 설계 차이와 `16.notes.2`의 두 원인 구분도 교정문에 남겼다.
+- **L1-1** `5.body.0.caption`의 ‘바탕으로’는 그림을 그릴 때 참고한 자료를 밝히므로 유지했다.
+- **L1-7** `1.figure.alt`처럼 여러 절의 경계를 표시하거나 대본에서 자연스러운 쉼을 주는 쉼표는 유지했다.
+- **L2-1** `7.body.0.right.0.steps.1.text`의 ‘4층씩 묶어’는 실제 연산을 설명하므로 유지했다.
