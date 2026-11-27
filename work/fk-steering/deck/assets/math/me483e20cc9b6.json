@@ -1,0 +1,1 @@
+{"tex": "p_{\\mathrm{FK},t}(x_{T:t}\\mid c)=\\frac{1}{Z_t}\\,p_\\theta(x_{T:t}\\mid c)\\prod_{s=T}^{t}G_s(x_{T:s},c)", "w": 21.402266, "h": 1.864604, "d": 1.288747}

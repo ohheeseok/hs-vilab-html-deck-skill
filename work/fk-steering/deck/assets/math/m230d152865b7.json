@@ -1,0 +1,1 @@
+{"tex": "p_{\\mathrm{target}}(x_0\\mid c)=\\frac{1}{Z}\\,p_\\theta(x_0\\mid c)\\,\\exp\\big(\\lambda\\, r(x_0,c)\\big)", "w": 21.239597, "h": 1.6055, "d": 0.817}

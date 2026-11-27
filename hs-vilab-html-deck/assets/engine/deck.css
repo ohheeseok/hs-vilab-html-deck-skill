@@ -84,6 +84,8 @@ body{overflow:hidden;background:var(--letterbox)}
 .split{display:grid;gap:var(--gap-col);flex:1 1 auto;min-height:0;align-items:start}
 .split > *{min-width:0;display:flex;flex-direction:column;gap:32px}
 .split .split{gap:40px}
+/* a compare or groups block in one column of a split: the full 96px gap squeezes its columns (FK run) */
+.split .groups{--gap-col:48px}
 .split--stretch{align-items:stretch}
 .col-push{margin-top:auto}
 

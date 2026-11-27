@@ -1,0 +1,1 @@
+{"tex": "\\tau=\\mathcal N\\!\\big(\\mu_\\theta(x_t,c)+\\sigma_\\theta^2\\lambda\\nabla_{x_t}r_\\phi(x_t,c),\\;\\sigma_\\theta^2 I_d\\big)", "w": 19.23922, "h": 0.9795400000000001, "d": 0.453358}

@@ -8,7 +8,7 @@
 - 제작 흐름과 내용 규칙: hs-vilab-deck(PPT판)을 HTML로 옮긴 것
 - 한국어 문장 규칙: heeseok-korean-anti-slop 1.3.0의 규칙을 덱용으로 줄여 담고, 네 덱에서 배운 규칙을 더한 것(`references/korean-style.md`, 검사기 `scripts/scan_slop.py`). 다른 스킬을 설치하지 않아도 됩니다.
 
-> **상태: 0.7.0.** 논문 네 편을 덱으로 끝까지 만들었습니다([work/self-flow-full](work/self-flow-full), [work/repa](work/repa), [work/rae](work/rae), [work/vlm-repgen](work/vlm-repgen)). 0.5.0에서 연구 내용 앞의 **overview 애니메이션**(클리커를 누를 때마다 한 구간씩 움직이는 도식)을 넣었고, 0.6.0에서는 그것을 개요 단계부터 계획했고, 0.7.0에서는 한국어 편집 규칙과 검사기를 스킬 안에 담았습니다.
+> **상태: 0.8.0.** 논문 다섯 편을 덱으로 끝까지 만들었습니다([work/self-flow-full](work/self-flow-full), [work/repa](work/repa), [work/rae](work/rae), [work/vlm-repgen](work/vlm-repgen), [work/fk-steering](work/fk-steering)). 0.5.0에서 연구 내용 앞의 **overview 애니메이션**(클리커를 누를 때마다 한 구간씩 움직이는 도식)을 넣었고, 0.6.0에서는 그것을 개요 단계부터 계획했고, 0.7.0에서는 한국어 편집 규칙과 검사기를 스킬 안에 담았고, 0.8.0에서는 처음으로 이론(수식) 중심 논문을 다루면서 대본 분량을 빌드 관문으로 넣었습니다.
 > 스킬 본문은 [hs-vilab-html-deck/SKILL.md](hs-vilab-html-deck/SKILL.md), 변경 내역은 [CHANGELOG.md](hs-vilab-html-deck/CHANGELOG.md)에 있습니다.
 > 읽기용 handout(세로 흐름 문서)과 `deck.json` 스키마 파일은 아직 없습니다.
 

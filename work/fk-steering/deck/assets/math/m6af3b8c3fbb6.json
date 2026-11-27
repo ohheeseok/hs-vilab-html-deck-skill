@@ -1,0 +1,1 @@
+{"tex": "p_{\\mathrm{FK},t}(x_{T:t}\\mid c)\\;\\propto\\;p_\\theta(x_t\\mid x_{t+1},c)\\,G_t(x_{T:t},c)\\cdot p_{\\mathrm{FK},t+1}(x_{T:t+1}\\mid c)", "w": 29.734467000000002, "h": 0.7635, "d": 0.23915899999999998}

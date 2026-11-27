@@ -82,8 +82,9 @@ def md(s: str) -> str:
     for k, part in enumerate(parts):
         out.append(math_html(part) if k % 2 else _text(part.replace("\\$", "$")))
     # keep "$s$ = 0.8" on one line, and a Korean particle on the math it follows ($\ell_1$에서)
-    return re.sub(r'(<span class="im"(?:(?!</span>).)*</svg></span>)([ \u00a0]=[ \u00a0][\d.]+[가-힣]*|[가-힣]+)',
-                  r'<span class="nw">\1\2</span>', "".join(out))
+    # brackets around math stay with it, so "($\mathrm{ESS}_t<k/2$)이면" never leaves ")이면" alone (FK run)
+    return re.sub(r'(\(?)(<span class="im"(?:(?!</span>).)*</svg></span>)([ \u00a0]=[ \u00a0][\d.]+[가-힣]*|[)\]]*[가-힣]+|[)\]]+)',
+                  r'<span class="nw">\1\2\3</span>', "".join(out))
 
 
 def plain(s: str) -> str:
@@ -121,6 +122,15 @@ def check(deck: dict, work: Path, gate: Gate) -> None:
         gate(bool(p.get("authors")), "meta.paper has no authors (drop meta.paper for your own work)")
         gate("*" not in p.get("authors", "") or bool(p.get("authorNote")),
              "meta.paper.authors has * but no authorNote saying what it marks (e.g. \"* 공동 1저자\", \"* 공동 지도\")")
+    # the spoken script must fit the talk. Korean is read aloud at about 4–5 characters (no spaces) a
+    # second; the five decks before this gate ran 3.8–5.0. The FK run's first script ran 7.8 (about 31
+    # minutes for a 20-minute talk) and nothing said so.
+    if str(meta.get("lang", "ko")).startswith("ko") and meta.get("target_minutes"):
+        chars = sum(len(re.sub(r"\s", "", "".join(sl.get("notes", [])))) for sl in slides)
+        rate = chars / (meta["target_minutes"] * 60)
+        gate(3.0 <= rate <= 5.5,
+             f"script is {chars} characters for {meta['target_minutes']} min = {rate:.1f}/s; "
+             f"spoken Korean runs about 4–5/s (keep it within 3.0–5.5): cut or add script, not slides")
     for i, sl in enumerate(slides, 1):
         where = f"slide {i} ({sl.get('id')})"
         gate(bool(sl.get("title")), f"{where}: no title")
@@ -405,7 +415,7 @@ def r_figure(b, ctx):
 
 # a number cell: "0.41", "+0.3", "약 0.28", "600K", "9.8B", a range "256–512" or "48–64", a bound "≤ 512"
 # (Integral run: the step, resolution and GPU columns of Table 7 and a Params column aligned left)
-NUMERIC = re.compile(r"^\**\s*(?:[≤≥<>]\s*)?[−+\-]?(?:약\s*)?[\d.,]+(?:\s*[–\-]\s*[\d.,]+)?[ %×MKkB]*\s*\**$")
+NUMERIC = re.compile(r"^\**\s*(?:[≤≥<>]\s*)?[−+\-]?(?:약\s*)?[\d.,]+(?:\s*[–\-]\s*[\d.,]+)?[ %×MKkB]*(?:초|배|ms|s)?\s*\**$")
 PLACEHOLDER = {"—", "–", "-", "N/A", "n/a"}
 
 

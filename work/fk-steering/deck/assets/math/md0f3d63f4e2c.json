@@ -1,0 +1,1 @@
+{"tex": "\\arg\\min_\\phi\\;\\mathbb E_{t\\sim U[0,T]}\\,\\mathbb E_{q_{\\mathrm{data}}(x_0\\mid c)\\,q(x_t\\mid x_0)}\\big\\|a_\\phi(x_t,c)-\\exp(r(x_0,c))\\big\\|_2^2,\\qquad r_\\phi=\\log a_\\phi", "w": 37.928607, "h": 1.160023, "d": 0.95034}

@@ -17,6 +17,9 @@ encoder swapped for the model's own EMA copy, then the two inputs' noise levels 
 expert at every layer; the latent swapped for the shared token z; the per-layer links thinned to
 every fourth layer). Its SVG is written by `work/vlm-repgen/make_overview_integral.py` (`fo2` draws a
 two-line label), so a geometry change is one constant.
+`work/fk-steering/figures/overview_fk.*` (four best-of-n paths; one intermediate step scored with
+bars; the low two cut and the best copied twice, joined to it by arcs that appear once the copies
+settle; the copies part on their way to x_0), written by `work/fk-steering/make_overview_fk.py`.
 
 ## When
 
@@ -125,6 +128,11 @@ under it); `right` is the stepper's layout. In `notes`, `[1]`, `[2]` … mark wh
     the nearest box; a line that leaves a box and joins another line appears with it, not before.
 12. `.fo` never wraps and the build escapes markup inside a label (`<br/>` showed as text): a two-line
     label is two foreignObjects of 40 px, one under the other.
+13. From the FK visual rounds: a copy that slides out of its parent needs a link to it, or the last
+    picture cannot say where it came from — and the link is its own element, faded in after the
+    copies settle, not part of the group that moves. A marker that has done its job (score bars)
+    leaves in the next beat, and the label over it swaps with it ("점수" → "다시 뽑기"). Lines that
+    start at a node are drawn before the nodes. Keys passed to `lib.node` are string literals.
 
 ## Techniques (from the handover, in deck terms)
 

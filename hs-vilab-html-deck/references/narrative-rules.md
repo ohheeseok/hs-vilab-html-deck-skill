@@ -288,5 +288,7 @@ are judged, and what comes out.
 Transition and summary slides get a short `script` and nothing else. Do not fill
 every field on every slide — a mechanically complete script is unreadable.
 
-Budget the length against `meta.target_minutes`; `make_script_docx.py` reports
-the estimate and flags a script that is well over or well under.
+Budget the length against `meta.target_minutes`: the build refuses a Korean script outside
+3.0–5.5 characters (no spaces) a second. An equation slide's `symbols`, `derivation` and a worked
+number fit in that budget only if the slide's other asides go — the FK deck's first script put every
+inconsistency the reviewers found into the notes and ran 7.8/s.

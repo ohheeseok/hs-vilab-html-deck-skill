@@ -91,6 +91,16 @@ aims at. Rejected: the draft's overview, an empty stage that added one arrow per
 dressed as an animation), and a static slide per comparison (five slides of one curve each).
 Image tabs of different aspects were padded to one with the figure's own background colour.
 
+FK run, the first theory paper (21 slides, 3 interactions of 4): the signature is the overview —
+best-of-n's four independent paths, then one intermediate step scored, the low two cut and the best
+copied, the copies parting to x_0 (Fig. 1 redrawn, one resampling instead of many). A toggle over
+three potentials (Difference, Max, Sum) on one set of illustrative reward histories, each state
+naming which particle it favours and its weights at λ = 1 — the paper gives only the formulas, so the
+histories are marked 설명용. And image tabs for Fig. 6 and Fig. 7; Fig. 7's three strips of eight
+were re-laid as two rows of four each (row labels kept, caption says so), because padded to Fig. 6's
+aspect the strips shrank to 34 px thumbnails at 1024. Rejected: a k = 4 / 8 toggle over Table 5
+(a six-row table reads better whole).
+
 ## Not used
 
 Sliders, hover-only content (a projector has no hover), animation that plays by itself (on entering

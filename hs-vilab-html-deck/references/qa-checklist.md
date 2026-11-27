@@ -18,6 +18,11 @@ A clean build is not a correct render. Three gates, in this order.
 - `note` blocks ≤ max(2, ⌈content slides / 4⌉)
 - the last slide is an `ending`
 - slide count = `meta.target_slides`; `time` sum within ±10% of `meta.target_minutes`
+- a Korean script (`meta.lang` ko or ko+en) runs 3.0–5.5 characters (no spaces) a second over
+  `meta.target_minutes` — spoken Korean is about 4–5/s; the FK run's first script ran 7.8, about 31
+  minutes for a 20-minute talk, and the `time` sum (which was right) said nothing
+- `node("key")` keys in an animation script are string literals: the gate reads them from the
+  source, so `lib.node("head-" + k)` is refused even when the SVG draws `head-p1` (FK run)
 - every referenced file (figure, diagram, state image) exists
 - every character on the stage (deck.json text outside math, diagram SVG labels) is in the bundled
   fonts — needs fontTools; without it QA's `faces` check still catches it (RAE run: ✓/✗ in a table)

@@ -39,6 +39,11 @@ as a subagent with only that role's inputs. Name every fallback in the delivery.
    about a benchmark, not the paper: WISE-Verified is judged by Qwen3.5-35B-A3B, the same family as
    Integral's backbone (the benchmark's README) — a limit and a discussion line, marked external.
    Three one-line summaries of related papers were not opened and not used.
+   *FK run* (a theory paper): the first answer came back cut off at question 5 of 6 — re-ask the
+   missing questions in a second call rather than guess. The useful find was a textbook, not a
+   paper: Naesseth et al. §2.2.2 resamples when the ESS falls *below* N/2, the opposite of what the
+   paper's App. C.3 prints; the PDF was searched locally to quote the section. It became a
+   discussion point marked external.
 4. **Answer every finding** in `review/log.md`: accepted, partly, rejected — and why. Put the
    target structure (slide list) at the end of the log.
 5. **Revise once** — codex gets: the brief's task and constraints, `# Revision` ("apply every
@@ -75,6 +80,11 @@ baseline actually led at 100K, written as a win. *Integral run*, on `deck.json`:
 merged two rows the paper keeps apart (GPT-4o-Image in Table 3, GPT-4o in Table 4), folded BAGEL
 into the wrong baseline family (Sec. 3.2 lists six, not five), and written a value from the text
 (0.18) with the "약" of a curve reading. Give the verifier the deck, not only the outline.
+*FK run*, on the outline: it recomputed the spacing of Fig. 2's FLOPs axis (0.30 per doubling of k)
+and showed the axis labelled ×10^14 is read as log10 — confirmed on the zoomed figure, it moved the
+figure from "use" to "cut" with that reason. On `deck.json` it caught that the SSD-LM toxicity
+classifiers were fine-tuned on x̂_t, not on noisy x_t (App. B.2), and that a schedule ending in t = 0
+contradicted the slide saying Algorithm 1 never resamples at t = 0.
 
 **A finding that rests on reading a curve is checked by you, on the figure, zoomed.** In the
 Self-Flow run the first verifier said a linear probe reversed in late layers and the second said
@@ -88,7 +98,13 @@ And on RAE, in the second verification of `deck.json`: the verifier "corrected" 
 DiT^DH-L ≈ 2.4 to ≈ 2.6 on Fig. 6a. Zoomed, the point sits below the 2.5 gridline (≈ 2.36); the
 verifier had read the label, which is printed above its point. A reviewer's correction of a curve
 reading is a claim like any other: look before you apply it.
+On FK the verifier corrected the reading of a sample grid (Fig. 3) and was half right: the baseline
+had failed the colours rather than swapped them, but the yellow bird it said was missing from the
+third row is there. A picture's content is checked on the zoomed crop like a curve.
 
-**Korean editor** — see `korean-style.md`.
+**Korean editor** — see `korean-style.md`. FK run: given the paper as well (`kref/paper.txt`, so it can tell
+what a compressed phrase stands for), codex returned 112 rows, and most on-screen rows got longer —
+every actor and object spelled out. Applied as written they would have overflowed three slides.
+The conductor keeps the edit's direction and its length budget: a slide line stays a slide line.
 
 **Visual reviewer** — see `qa-checklist.md` § visual.

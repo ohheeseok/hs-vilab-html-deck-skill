@@ -1,0 +1,1958 @@
+{
+ "meta": {
+  "slug": "fk-steering",
+  "title": "A General Framework for Inference-time Scaling and Steering of Diffusion Models",
+  "lang": "ko",
+  "titleLang": "ko",
+  "occasion": "연구실 논문 세미나, 발표 후 토론",
+  "target_minutes": 20,
+  "target_slides": 21,
+  "statementTheme": "dark",
+  "paper": {
+   "title": "A General Framework for Inference-time Scaling and Steering of Diffusion Models",
+   "authors": "Raghav Singhal*, Zachary Horvitz*, Ryan Teehan*, Mengye Ren, Zhou Yu, Kathleen McKeown, Rajesh Ranganath",
+   "authorNote": "* 공동 1저자",
+   "affiliations": "New York University, Columbia University",
+   "venue": "ICML 2025 (PMLR 267) · arXiv 2501.06848v5",
+   "url": "https://arxiv.org/abs/2501.06848"
+  },
+  "presenter": {
+   "name": "오희석",
+   "affiliation": [
+    "한성대학교",
+    "Visual Intelligence Lab"
+   ]
+  },
+  "event": "VILAB 논문 세미나",
+  "team": {
+   "author": "codex",
+   "critic": "agy",
+   "verifier": "agy",
+   "researcher": "agy, 사실은 Claude가 출처 페이지에서 확인",
+   "conductor": "Claude"
+  },
+  "sections": [
+   {
+    "id": "summary",
+    "label": "요약"
+   },
+   {
+    "id": "background",
+    "label": "배경"
+   },
+   {
+    "id": "method",
+    "label": "방법"
+   },
+   {
+    "id": "results",
+    "label": "결과"
+   },
+   {
+    "id": "analysis",
+    "label": "분석"
+   },
+   {
+    "id": "discussion",
+    "label": "정리와 토론"
+   }
+  ],
+  "figures": [
+   {
+    "ref": "Fig. 1",
+    "use": 5
+   },
+   {
+    "ref": "Fig. 2",
+    "cut": "왼쪽은 k = 2–16의 최고 보상 표본 GenEval로, 대표 비교는 Table 1의 k = 3, 4로 다룬다. 오른쪽은 축 라벨(FLOPs ×10^14)과 점 간격(로그 척도로 읽힘)이 맞지 않아 그대로 보이면 계산량을 잘못 읽게 된다. 토론 1번 대본에서 언급"
+   },
+   {
+    "ref": "Fig. 3",
+    "use": 13
+   },
+   {
+    "ref": "Fig. 4",
+    "cut": "입자 수에 따른 입자 평균 곡선과 ImageReward 분포. 입자 평균 비교는 potential만 바꾼 Table 5로 한다"
+   },
+   {
+    "ref": "Fig. 5",
+    "use": 17
+   },
+   {
+    "ref": "Table 1",
+    "use": 13
+   },
+   {
+    "ref": "Table 2",
+    "cut": "DPO로 fine-tuning한 모델에 FK steering을 더한 실험. 이 발표는 기본 모델에 적용한 비교만 다룬다"
+   },
+   {
+    "ref": "Table 3",
+    "use": 15
+   },
+   {
+    "ref": "Table 4",
+    "use": 14
+   },
+   {
+    "ref": "Table 5",
+    "use": 16
+   },
+   {
+    "ref": "Table 6",
+    "use": 17
+   },
+   {
+    "ref": "Table 7",
+    "use": 18
+   },
+   {
+    "ref": "Algorithm 1",
+    "use": 8
+   },
+   {
+    "ref": "Table 8",
+    "use": 15
+   },
+   {
+    "ref": "Table 9",
+    "use": 19
+   },
+   {
+    "ref": "Table 10",
+    "cut": "SDv1.4·SDv2.1·SDXL의 λ = 1, 10과 일정별 ImageReward·HPS(평균/최고)·CLIP-Div. 같은 경향을 Table 9로 보이고, Table 1과 값이 겹치는 점만 19번 대본에서 언급"
+   },
+   {
+    "ref": "Table 11",
+    "cut": "학습한 독성 분류기의 gradient를 proposal에 더한 추가 실험. gradient proposal의 비용은 시간이 함께 보고된 Table 3으로 다룬다"
+   },
+   {
+    "ref": "Fig. 6",
+    "use": 19
+   },
+   {
+    "ref": "Fig. 7",
+    "use": 19
+   },
+   {
+    "ref": "Fig. 8",
+    "cut": "interval resampling의 다양성 사례 한 쌍. 일정에 따른 다양성은 Table 9로 다룬다"
+   },
+   {
+    "ref": "Fig. 9",
+    "cut": "독립 표본과 FK 표본의 프롬프트 충실도 비교. 같은 내용을 Fig. 3으로 다룬다"
+   }
+  ]
+ },
+ "slides": [
+  {
+   "id": "cover",
+   "layout": "cover",
+   "title": "A General Framework for Inference-time Scaling and Steering of Diffusion Models",
+   "subtitle": "생성 도중 보상에 따라 입자를 다시 뽑아 diffusion 모델을 조정하는 FK steering",
+   "cite": [
+    "Fig. 1"
+   ],
+   "figure": {
+    "src": "assets/fig/fig1.png",
+    "alt": "Fig. 1. 세 패널. 왼쪽 Inference는 경로 하나로 x_T에서 x_0까지 간다. 가운데 Best-of-N은 경로 여러 개를 끝까지 만든 뒤 보상이 가장 높은 하나에 별을 붙인다. 오른쪽 FK Steering은 중간 단계에서 일부 경로에 빨간 ×를 치고, 남은 경로에서 여러 갈래가 다시 갈라진다. 프롬프트는 a green stop sign in a red field.",
+    "caption": "**Fig. 1** 독립 생성, best-of-N, FK steering의 입자 경로"
+   },
+   "time": 30,
+   "notes": [
+    "오늘은 ICML 2025에 실린 FK steering 논문을 소개합니다. diffusion 모델을 다시 학습하지 않고, 생성하는 동안 표본 여러 개를 함께 만들면서 보상이 높아 보이는 표본을 골라 이어 가는 방법입니다. 이 절차가 어떤 분포에서 표본을 뽑는지, 이론을 중심으로 보겠습니다."
+   ]
+  },
+  {
+   "id": "tldr",
+   "layout": "statement",
+   "section": "summary",
+   "title": "FK steering 요약",
+   "message": "FK steering은 중간 단계마다 여러 입자에 보상으로 점수를 매겨 다시 뽑는다. potential의 곱이 최종 보상의 지수함수 값과 같도록 정해 목표 분포를 근사한다.",
+   "cite": [
+    "Abstract",
+    "Sec. 1"
+   ],
+   "time": 60,
+   "body": [
+    {
+     "type": "lead",
+     "text": "생성 도중 여러 입자(particle)를 중간 보상으로 평가해 다시 뽑는다. 경로에 점수를 매기는 함수인 potential의 곱을 $\\exp(\\lambda r(x_0))$와 같게 정하면, 보상에 따라 확률을 조정한 목표 분포 $p_\\theta(x_0)\\exp(\\lambda r(x_0))$를 근사한다."
+    },
+    {
+     "type": "cards",
+     "numbered": true,
+     "items": [
+      {
+       "title": "Feynman-Kac 틀",
+       "text": "연속·이산 diffusion 모두에 쓰고, 미분할 수 없는 보상도 쓸 수 있는 입자 기반 샘플러"
+      },
+      {
+       "title": "세 가지 선택",
+       "text": "proposal과 다시 뽑는 방식, potential, 중간 보상을 고른다. TDS와 SVDD는 그 조합의 예다"
+      },
+      {
+       "title": "이미지·텍스트 실험",
+       "text": "Stable Diffusion을 ImageReward로 steering하고, 텍스트 diffusion의 품질과 독성을 조정한다. 모델은 다시 학습하지 않는다"
+      }
+     ]
+    }
+   ],
+   "provenance": {
+    "요약": "verbatim: Abstract, Sec. 1 Contributions",
+    "기울인 분포": "verbatim: Eq. 2, Fig. 1 캡션"
+   },
+   "notes": [
+    "FK steering은 생성 도중 여러 입자에 중간 보상으로 점수를 매기고, 그 점수에 따라 입자를 다시 뽑습니다. 점수를 매기는 함수를 논문은 potential이라고 부릅니다. potential의 곱이 최종 보상의 지수와 같아지게 정하면, 결과 표본이 보상으로 기울인 목표 분포를 근사합니다.",
+    "기여는 세 가지입니다. 연속 상태와 이산 상태 모델 모두에, 미분할 수 없는 보상으로도 쓸 수 있는 틀입니다. 사용자가 고를 것을 proposal과 다시 뽑는 방식, potential, 중간 보상으로 정리하고, TDS와 SVDD가 그 특정한 조합이라는 것을 보입니다. 그리고 이미지와 텍스트에서 모델을 다시 학습하지 않고 실험합니다."
+   ]
+  },
+  {
+   "id": "landscape",
+   "section": "background",
+   "title": "Diffusion steering의 연구 갈래",
+   "message": "기존 방법은 보상을 반영하기 위해 모델을 다시 학습하거나, 추론 중 보상의 gradient로 다음 상태를 뽑는 분포를 바꾸거나, 여러 표본 중에서 고른다.",
+   "cite": [
+    "Sec. 1",
+    "Sec. 2"
+   ],
+   "time": 50,
+   "body": [
+    {
+     "type": "table",
+     "columns": [
+      {
+       "label": "갈래"
+      },
+      {
+       "label": "대표 방법"
+      },
+      {
+       "label": "필요한 것"
+      },
+      {
+       "label": "제약"
+      }
+     ],
+     "groups": [
+      {
+       "rows": [
+        {
+         "cells": [
+          "Fine-tuning",
+          "DDPO, Diffusion-DPO",
+          "보상으로 추가 학습",
+          "보상마다 추가 학습 필요"
+         ]
+        },
+        {
+         "cells": [
+          "Gradient guidance",
+          "classifier·universal guidance",
+          "보상의 gradient",
+          "미분 가능한 보상, 연속 상태"
+         ]
+        },
+        {
+         "cells": [
+          "입자 기반",
+          "best-of-$n$, TDS, SVDD",
+          "표본 여러 개",
+          "best-of-$n$은 끝까지 생성, TDS는 gradient 필요"
+         ]
+        }
+       ]
+      }
+     ],
+     "provenance": "verbatim: Sec. 1–2의 서술을 표로 정리"
+    },
+    {
+     "type": "callout",
+     "text": "생성 도중 보상이 높아 보이는 입자에 계산을 더 쓰면서도 목표 분포에서 표본을 얻을 수 있는가?"
+    }
+   ],
+   "provenance": {
+    "갈래와 제약": "verbatim: Sec. 1(p. 2), Sec. 2(pp. 4–5)",
+    "질문": "interpretation: 발표의 질문"
+   },
+   "notes": [
+    "보상을 반영하는 방법은 세 갈래입니다. fine-tuning은 보상으로 모델을 추가 학습하므로 보상마다 학습이 필요합니다. gradient guidance는 추론 중 보상의 gradient로 다음 상태를 옮기므로, 보상이 미분 가능하고 상태가 연속이어야 합니다.",
+    "입자 기반 방법은 표본 여러 개를 만들고 고릅니다. best-of-n은 어떤 보상이든 쓸 수 있지만 보상이 낮게 끝날 표본도 끝까지 생성합니다. TDS는 중간에 고르지만 classifier guidance를 쓰므로 gradient가 필요하고, SVDD는 매 단계 한 상태를 복제해 다양성이 줄어듭니다. 논문은 gradient guidance와 입자 기반 방법을 함께 추론 시점 방법으로 묶습니다. 이 발표가 답할 질문은 화면 아래와 같습니다."
+   ],
+   "valign": "center"
+  },
+  {
+   "id": "target",
+   "section": "background",
+   "title": "목표 분포와 importance sampling",
+   "message": "목표 분포는 기본 모델의 확률에 보상의 지수함수 값을 곱해 정규화한 분포다. 기본 모델에서 보상이 높은 표본이 드물면, 생성이 끝난 뒤에만 고르는 방법에는 표본이 많이 필요하다.",
+   "cite": [
+    "Eq. 1",
+    "Eq. 2",
+    "Sec. 3.2",
+    "Sec. 1"
+   ],
+   "time": 70,
+   "body": [
+    {
+     "type": "split",
+     "cols": [
+      11,
+      9
+     ],
+     "left": [
+      {
+       "type": "equation",
+       "lines": [
+        "p_{\\mathrm{target}}(x_0\\mid c)=\\frac{1}{Z}\\,p_\\theta(x_0\\mid c)\\,\\exp\\big(\\lambda\\, r(x_0,c)\\big)"
+       ],
+       "tags": [
+        "2"
+       ],
+       "symbols": [
+        [
+         "$p_\\theta$",
+         "기본 diffusion 모델. $x_T$에서 시작해 $x_{T-1},\\dots,x_0$ 순서로 노이즈를 제거"
+        ],
+        [
+         "$r(x_0,c)$",
+         "보상: 사람 선호 점수, 분류기 확률 등"
+        ],
+        [
+         "$\\lambda$",
+         "보상을 얼마나 강하게 반영할지 정하는 값. 클수록 보상이 높은 표본에 확률이 더 몰린다."
+        ],
+        [
+         "$c,\\ Z$",
+         "조건(프롬프트), 정규화 상수"
+        ]
+       ]
+      }
+     ],
+     "right": [
+      {
+       "type": "groups",
+       "columns": 1,
+       "groups": [
+        {
+         "heading": "Importance sampling",
+         "items": [
+          "$p_\\theta$에서 완성 표본 $k$개 생성",
+          "$\\exp(\\lambda r)$에 비례하는 확률로 완성 표본을 다시 뽑음"
+         ]
+        },
+        {
+         "heading": "Best-of-$n$",
+         "items": [
+          "완성 표본 $n$개 생성",
+          "보상이 가장 높은 하나를 고름"
+         ]
+        },
+        {
+         "heading": "공통점",
+         "items": [
+          "importance sampling과 best-of-$n$은 모두 생성이 끝난 뒤에만 보상을 계산한다"
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "provenance": {
+    "Eq. 2": "verbatim: Eq. 2(p. 6)",
+    "IS": "verbatim: Sec. 3.2(p. 6)",
+    "best-of-n": "verbatim: Sec. 1(p. 2)",
+    "끝난 뒤에만": "derived: 두 절차의 정의"
+   },
+   "notes": [
+    "목표 분포부터 보겠습니다. 기본 모델 p세타는 x_T에서 시작해 노이즈를 한 단계씩 제거해 x_0를 만듭니다. 그 확률에 exp(람다 r)을 곱하고 정규화한 것이 식 2의 목표 분포입니다. 람다가 클수록 보상이 높은 표본에 확률이 몰립니다.",
+    "가장 단순한 방법은 importance sampling입니다. 완성 표본 k개를 뽑고 exp(람다 r)에 비례해 다시 뽑습니다. best-of-n은 그중 가장 높은 하나를 고릅니다. 둘 다 생성이 끝난 뒤에만 보상을 봅니다.",
+    "설명용 가상 수치로, 기본 모델에서 확률 1%인 사건에 보상 1, 나머지에 0을 주겠습니다. 람다가 10이면 목표 분포에서 그 사건의 확률은 99.55%입니다. 그런데 독립 표본 4개를 뽑아 그 사건이 한 번이라도 나올 확률은 3.94%입니다. 논문이 인용하는 Chatterjee와 Diaconis도 필요한 표본 수가 KL divergence의 지수 정도라고 보였습니다."
+   ]
+  },
+  {
+   "id": "overview",
+   "section": "background",
+   "title": "FK steering의 입자 경로",
+   "message": "FK steering은 생성 도중 중간 보상이 낮은 입자를 버리고 높은 입자를 복제한 뒤, 복제된 입자들이 각자 생성을 이어 간다.",
+   "cite": [
+    "Fig. 1",
+    "Sec. 3.3",
+    "Algorithm 1"
+   ],
+   "time": 70,
+   "body": [
+    {
+     "type": "animation",
+     "name": "overview-fk",
+     "svg": "figures/overview_fk.svg",
+     "script": "figures/overview_fk.anim.js",
+     "side": "below",
+     "print": "expand",
+     "signature": true,
+     "reveals": "best-of-n과 같은 입자들로 시작한다. FK steering에서 다시 뽑으면 어느 입자가 빠지고, 어느 입자의 복제본이 서로 다른 경로로 이어지는지 보인다.",
+     "beats": [
+      {
+       "title": "best-of-$n$",
+       "text": "입자 4개를 $x_T$에서 $x_0$까지 따로 생성하고, 보상이 가장 높은 하나를 고른다"
+      },
+      {
+       "title": "입자별 중간 보상 계산",
+       "text": "한 중간 단계에서 입자마다 중간 보상으로 점수(potential)를 계산한다. 막대 길이가 점수"
+      },
+      {
+       "title": "다시 뽑기",
+       "text": "점수에 비례하는 확률로 4개를 다시 뽑는다. 낮은 두 입자가 빠지고 가장 높은 입자가 세 번 뽑혔다"
+      },
+      {
+       "title": "생성 이어 가기",
+       "text": "뽑힌 입자들이 각자 노이즈 제거를 이어 가 서로 다른 $x_0$에 도착한다"
+      }
+     ],
+     "caption": "**Fig. 1** 가운데·오른쪽 패널을 다시 그렸다. 다시 뽑기는 한 번만 보여 주며 입자의 높이는 설명용이다.",
+     "provenance": {
+      "best-of-n": "verbatim: Fig. 1 가운데",
+      "점수·다시 뽑기·다시 생성": "verbatim: Fig. 1 오른쪽, Algorithm 1(Resample, Propose)",
+      "높이": "illustrative"
+     }
+    }
+   ],
+   "provenance": {
+    "그림": "derived: Fig. 1, Algorithm 1"
+   },
+   "notes": [
+    "지금은 best-of-n입니다. 입자 4개가 각자 x_0까지 생성되고, 끝에서 보상이 가장 높은 하나에 별을 붙입니다. Fig. 1의 가운데 패널입니다.",
+    "[1] FK steering은 생성 도중 한 단계에서 입자마다 중간 보상으로 점수를 계산합니다. 막대 길이가 그 점수, 곧 potential입니다.",
+    "[2] 점수에 비례하는 확률로 입자 4개를 다시 뽑습니다. 이 예에서는 점수가 낮은 두 입자가 빠지고 가장 높은 입자가 세 번 뽑혔습니다.",
+    "[3] 뽑힌 입자들은 각자 노이즈 제거를 이어 가고, 생성에 무작위성이 있으므로 서로 다른 x_0에 도착합니다. 이 그림은 다시 뽑기를 한 번으로 줄인 개념도이고, 실제로는 여러 단계에서 반복합니다. 이제 이 절차가 어떤 분포를 근사하는지 보겠습니다."
+   ]
+  },
+  {
+   "id": "fk-path",
+   "section": "method",
+   "title": "Feynman-Kac 경로 분포",
+   "message": "FK 경로 분포를 구하려면 기본 모델의 경로 확률에 지금까지의 potential을 모두 곱해 정규화한다. 한 단계 더 진행할 때는 직전 FK 경로 분포에 기본 모델의 전이 확률과 이번 단계의 potential 하나를 곱해 정규화한다.",
+   "cite": [
+    "Eq. 3",
+    "Eq. 4",
+    "Sec. 3.3"
+   ],
+   "time": 65,
+   "valign": "center",
+   "body": [
+    {
+     "type": "equation",
+     "lines": [
+      "p_{\\mathrm{FK},t}(x_{T:t}\\mid c)=\\frac{1}{Z_t}\\,p_\\theta(x_{T:t}\\mid c)\\prod_{s=T}^{t}G_s(x_{T:s},c)",
+      "p_{\\mathrm{FK},t}(x_{T:t}\\mid c)\\;\\propto\\;p_\\theta(x_t\\mid x_{t+1},c)\\,G_t(x_{T:t},c)\\cdot p_{\\mathrm{FK},t+1}(x_{T:t+1}\\mid c)"
+     ],
+     "tags": [
+      "3",
+      "4"
+     ],
+     "symbols": [
+      [
+       "$x_{T:t}$",
+       "$x_T$부터 $x_t$까지의 경로"
+      ],
+      [
+       "$G_t$",
+       "potential: 지금까지의 경로에 점수를 매기는 양수 함수"
+      ],
+      [
+       "$p_\\theta(x_t\\mid x_{t+1},c)$",
+       "기본 모델의 한 단계 전이"
+      ],
+      [
+       "$Z_t$",
+       "정규화 상수"
+      ]
+     ]
+    }
+   ],
+   "provenance": {
+    "Eq. 3–4": "verbatim: Eq. 3–4(p. 6), 표기를 정리"
+   },
+   "notes": [
+    "식 3의 x_{T:t}는 x_T부터 x_t까지 지나온 경로입니다. FK 경로 분포는 기본 모델이 이 경로를 만들 확률에, 단계마다 계산한 potential G를 모두 곱해 정규화한 분포입니다. potential은 보상이 높게 끝날 경로에 큰 값을 주도록 고르는 양수 함수입니다.",
+    "식 4는 같은 분포를 한 단계씩 쌓는 형태입니다. 직전 단계의 FK 분포에 기본 모델의 한 단계 전이 확률과 이번 단계의 potential을 곱합니다. 매 단계 기본 모델의 전이를 potential로 기울인다고 보면 됩니다. 원문 식 3의 곱 안 첨자는 G_s로 고쳐 적었고, 식 4는 비례 형태로 정리했습니다."
+   ]
+  },
+  {
+   "id": "product",
+   "section": "method",
+   "title": "Potential 곱 조건과 목표 분포",
+   "message": "경로 전체의 potential을 곱한 값이 최종 보상의 지수함수 값과 같으면, 마지막 단계의 FK 경로 분포에서 중간 상태를 적분해 목표 분포를 얻는다.",
+   "cite": [
+    "Eq. 5",
+    "Sec. 3.3"
+   ],
+   "time": 60,
+   "body": [
+    {
+     "type": "split",
+     "cols": [
+      3,
+      2
+     ],
+     "left": [
+      {
+       "type": "equation",
+       "lines": [
+        "\\prod_{t=T}^{0}G_t(x_{T:t},c)=\\exp\\big(\\lambda\\, r(x_0,c)\\big)",
+        "\\int p_{\\mathrm{FK},0}(x_{T:0}\\mid c)\\,dx_{T:1}=\\frac{1}{Z}\\,p_\\theta(x_0\\mid c)\\exp\\big(\\lambda\\, r(x_0,c)\\big)"
+       ],
+       "tags": [
+        "5",
+        null
+       ]
+      }
+     ],
+     "right": [
+      {
+       "type": "process",
+       "direction": "vertical",
+       "steps": [
+        {
+         "title": "Eq. 5를 Eq. 3에 대입",
+         "text": "potential의 곱 자리에 $\\exp(\\lambda r(x_0,c))$를 넣는다"
+        },
+        {
+         "title": "보상 항을 적분 밖으로",
+         "text": "보상 항은 완성 상태 $x_0$와 조건 $c$에만 의존한다"
+        },
+        {
+         "title": "중간 상태를 적분",
+         "text": "기본 모델의 경로 분포 $p_\\theta(x_{T:0}\\mid c)$에서 중간 상태를 적분하면 완성 상태의 분포 $p_\\theta(x_0\\mid c)$를 얻는다"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "callout",
+     "text": "Eq. 5를 만족하는 potential 조합은 여러 가지다. 어느 조합을 쓰느냐에 따라 보상이 높은 표본을 얻는 데 필요한 입자 수가 달라진다."
+    }
+   ],
+   "provenance": {
+    "Eq. 5": "verbatim: Eq. 5(p. 6)",
+    "주변화": "derived: p. 7의 서술 'p_FK,0 ∝ p_θ exp(λr)'를 풀어 씀",
+    "여러 개": "verbatim: p. 7, p. 8"
+   },
+   "notes": [
+    "핵심 조건은 식 5입니다. 경로 전체의 potential을 곱한 값이 exp(람다 r(x_0))와 같아야 합니다.",
+    "오른쪽 세 단계가 그 이유입니다. 마지막 단계의 식 3에 식 5를 넣으면, 남는 보상 항은 x_0와 c에만 의존하므로 중간 상태를 적분할 때 밖으로 뺄 수 있습니다. 남은 경로 확률을 적분하면 기본 모델의 x_0 분포가 되고, 결과는 목표 분포입니다. 이 적분식은 논문 7쪽의 서술을 풀어 쓴 것입니다.",
+    "이 조건을 만족하는 potential은 여러 개입니다. 곱만 맞으면 중간 단계에 점수를 어떻게 나누어 주든 되고, 논문은 그 선택에 따라 필요한 입자 수가 달라진다고 씁니다."
+   ],
+   "valign": "center"
+  },
+  {
+   "id": "smc",
+   "section": "method",
+   "title": "SMC 가중치와 Algorithm 1",
+   "message": "SMC는 매 단계 현재 가중치에 비례하는 확률로 입자를 다시 뽑고, proposal에서 다음 상태를 뽑는다. 기본 모델과 proposal의 전이 확률비에 potential을 곱해 새 가중치를 매긴다.",
+   "cite": [
+    "Algorithm 1",
+    "Eq. 6",
+    "Eq. 7",
+    "Sec. 3.3"
+   ],
+   "time": 75,
+   "valign": "center",
+   "body": [
+    {
+     "type": "split",
+     "cols": [
+      9,
+      11
+     ],
+     "left": [
+      {
+       "type": "process",
+       "direction": "vertical",
+       "steps": [
+        {
+         "title": "Resample",
+         "text": "가중치 $G_t^i$에 비례하는 확률로 부모 입자 $k$개를 다시 뽑는다"
+        },
+        {
+         "title": "Propose",
+         "text": "부모 입자마다 proposal $\\tau$에서 다음 상태 $x_{t-1}^i$를 뽑는다"
+        },
+        {
+         "title": "Re-weight",
+         "text": "Eq. 7로 $G_{t-1}^i$를 계산한다"
+        },
+        {
+         "title": "반환",
+         "text": "마지막 단계 $t=0$에서 가중치 $G_0^i$를 계산한다. 그 가중치로 다시 뽑지 않고 완성 표본 $\\{x_0^i\\}$를 반환한다"
+        }
+       ]
+      }
+     ],
+     "right": [
+      {
+       "type": "equation",
+       "lines": [
+        "G_t^i\\;\\propto\\;\\frac{p_\\theta(x_t^i\\mid x_{t+1}^i,c)}{\\tau(x_t^i\\mid x_{T:t+1}^i,c)}\\;G_t(x_{T:t}^i,c)"
+       ],
+       "tags": [
+        "7"
+       ],
+       "symbols": [
+        [
+         "$\\tau$",
+         "proposal은 다음 상태를 실제로 뽑는 분포다. 가장 단순한 선택은 기본 모델 $p_\\theta$의 전이 분포다."
+        ],
+        [
+         "$G_t^i$",
+         "입자 $i$의 가중치"
+        ],
+        [
+         "$k$",
+         "입자 수"
+        ]
+       ]
+      },
+      {
+       "type": "callout",
+       "text": "입자 수가 무한히 늘어나면($k\\to\\infty$) SMC 입자의 경험분포는 목표 분포 $p_{\\mathrm{target}}$에 수렴한다."
+      }
+     ]
+    }
+   ],
+   "provenance": {
+    "Algorithm 1": "verbatim: Algorithm 1(p. 7)",
+    "Eq. 7": "verbatim: Eq. 6–7(p. 7), = 를 ∝ 로 정리",
+    "수렴": "verbatim: p. 7(Del Moral & Miclo 정리 3.19 인용)"
+   },
+   "notes": [
+    "FK 경로 분포에서 직접 뽑을 수는 없으므로 SMC로 근사합니다. Algorithm 1은 매 단계 세 가지를 반복합니다. 가중치에 비례해 부모를 다시 뽑고, proposal 타우에서 다음 상태를 뽑고, 식 7로 새 가중치를 계산합니다.",
+    "식 7의 앞부분은 기본 모델과 proposal의 전이 확률비로, proposal이 기본 모델과 다르게 뽑은 만큼을 보정합니다. proposal로 기본 모델을 쓰면 이 비율은 1이고 potential만 남습니다. 원문은 등호로 적었지만 정규화 상수가 빠져 비례로 적었습니다.",
+    "설명용 가상 수치로, 가중치가 1, 1, 2, 6이면 다시 뽑힐 확률은 0.1, 0.1, 0.2, 0.6입니다. 논문은 k가 무한대로 가면 입자의 경험분포가 목표 분포로 수렴한다고 Del Moral과 Miclo의 정리를 인용합니다. 다만 인쇄된 Algorithm 1은 마지막에 G_0를 계산하고 그 가중치로 다시 뽑지 않습니다. 이 점은 토론에서 다룹니다."
+   ]
+  },
+  {
+   "id": "potentials",
+   "section": "method",
+   "title": "Difference·Max·Sum potential",
+   "message": "단계별 중간 보상이 같아도, 직전 단계보다 오른 정도와 지금까지의 최고값, 누적값 중 무엇으로 가중치를 계산하느냐에 따라 다시 뽑힐 확률이 달라진다.",
+   "cite": [
+    "Sec. 3.3",
+    "Eq. 5"
+   ],
+   "time": 70,
+   "body": [
+    {
+     "type": "toggle",
+     "svg": "figures/potentials.svg",
+     "cols": [
+      11,
+      9
+     ],
+     "start": "diff",
+     "print": "expand",
+     "reveals": "단계별 중간 보상은 그대로 두고 potential만 바꾼다. 다시 뽑힐 확률이 가장 큰 입자는 Difference에서 A, Max에서 B, Sum에서 C다.",
+     "states": [
+      {
+       "id": "diff",
+       "label": "Difference",
+       "title": "최근 증가량",
+       "equation": "G_t=e^{\\lambda[r_\\phi(x_t,c)-r_\\phi(x_{t+1},c)]}",
+       "text": "Difference는 직전 단계보다 중간 보상이 많이 오른 입자에 큰 가중치를 준다. $\\lambda=1$일 때 예시 가중치는 A 1.82 · B 1.11 · C 1.00. 시작 단계는 $G_T=1$",
+       "provenance": "verbatim: Sec. 3.3(p. 7); 예시 derived"
+      },
+      {
+       "id": "max",
+       "label": "Max",
+       "title": "지금까지의 최고값",
+       "equation": "G_t=e^{\\lambda\\max_{s\\ge t} r_\\phi(x_s,c)}",
+       "text": "Max는 지금까지 받은 중간 보상의 최고값이 큰 입자에 큰 가중치를 준다. 예시 가중치는 A 2.23 · B 2.46 · C 1.82",
+       "provenance": "verbatim: Sec. 3.3(p. 7); 예시 derived"
+      },
+      {
+       "id": "sum",
+       "label": "Sum",
+       "title": "누적값",
+       "equation": "G_t=e^{\\lambda\\sum_{s\\ge t} r_\\phi(x_s,c)}",
+       "text": "Sum은 지금까지 받은 중간 보상의 합이 큰 입자에 큰 가중치를 준다. 예시 가중치는 A 2.72 · B 3.32 · C 6.05",
+       "provenance": "verbatim: Sec. 3.3(p. 8); 예시 derived"
+      }
+     ],
+     "mediaCaption": "설명용 보상 이력 A·B·C. 단계 1이 먼저",
+     "caption": "Max와 Sum은 최종 보상의 지수함수 값을 앞 단계 potential의 곱으로 나눠 마지막 potential을 정한다. $G_0=\\exp(\\lambda r(x_0,c))\\big(\\prod_{t=1}^{T}G_t\\big)^{-1}$ (Sec. 3.3)"
+    }
+   ],
+   "provenance": {
+    "세 potential": "verbatim: Sec. 3.3(pp. 7–8)",
+    "보상 이력": "illustrative"
+   },
+   "notes": [
+    "식 5를 만족하는 potential로 논문은 세 가지를 제안합니다. 모두 중간 보상 r_phi로 계산합니다. A, B, C는 설명용 가상 보상 이력이고, 세 번째 단계에서 다시 뽑는다고 하겠습니다.",
+    "[1] Difference는 직전 단계보다 오른 정도를 봅니다. 0.2에서 0.8로 오른 A가 가장 높습니다. 인접 단계의 항이 지워져 곱이 최종 보상으로 모이는데, G_T를 1로 두면 시작 상태의 항이 남습니다. 토론에서 다룹니다.",
+    "[2] Max는 지금까지의 최고값을 봅니다. 처음에 0.9를 찍은 B가 가장 높습니다.",
+    "[3] Sum은 누적값을 봅니다. 0.6을 세 번 쌓은 C가 가장 높습니다. Max와 Sum은 마지막 G_0에서 앞 단계의 곱을 나누어 식 5를 맞춥니다. 논문은 보상에 상한이 있으면 Difference가 상한에 일찍 닿은 입자를 낮게 매길 수 있다고 설명합니다."
+   ]
+  },
+  {
+   "id": "schedule",
+   "section": "method",
+   "title": "Interval resampling과 ESS",
+   "message": "이미지 실험은 정해 둔 몇 단계에서만 입자를 다시 뽑는다. 부록은 입자 간 가중치가 얼마나 고른지 ESS로 재서 다시 뽑을지 정하는 방법도 설명한다.",
+   "cite": [
+    "Sec. 3.3",
+    "Sec. 4.1",
+    "Algorithm 1",
+    "Eq. 13",
+    "App. C.3"
+   ],
+   "time": 50,
+   "body": [
+    {
+     "type": "split",
+     "cols": [
+      11,
+      9
+     ],
+     "left": [
+      {
+       "type": "diagram",
+       "svg": "figures/schedule.svg",
+       "caption": "**Sec. 4.1** 이미지 실험은 DDIM $T=100$에서 $\\mathcal R=[0,20,40,60,80]$을 다시 뽑기 일정으로 정했다. 일정 밖의 단계($t\\notin\\mathcal R$)에서는 $G_t=1$로 둔다."
+      },
+      {
+       "type": "bullets",
+       "size": "sm",
+       "items": [
+        "Algorithm 1은 $t=T,\\dots,1$의 매 단계에서 다시 뽑는다",
+        "interval resampling은 일정 $\\mathcal R$에 포함된 단계에서만 입자를 다시 뽑아 계산을 줄인다"
+       ]
+      }
+     ],
+     "right": [
+      {
+       "type": "equation",
+       "lines": [
+        "\\mathrm{ESS}_t=\\frac{1}{\\sum_{i=1}^{k}\\big(\\widehat G_t^i\\big)^2}\\in[1,k]"
+       ],
+       "tags": [
+        "13"
+       ],
+       "symbols": [
+        [
+         "$\\widehat G_t^i$",
+         "합이 1이 되게 정규화한 가중치"
+        ],
+        [
+         "범위",
+         "가중치가 고르면 $k$, 한 입자에 몰리면 1"
+        ]
+       ]
+      },
+      {
+       "type": "lead",
+       "size": "sm",
+       "text": "App. C.3은 ESS가 입자 수의 절반보다 작으면 다시 뽑지 않는다고 적는다($\\mathrm{ESS}_t<k/2$)"
+      }
+     ]
+    }
+   ],
+   "provenance": {
+    "interval": "verbatim: Sec. 3.3(p. 8), Sec. 4.1(p. 9)",
+    "Algorithm 1": "verbatim: p. 7",
+    "ESS": "verbatim: Eq. 13, App. C.3(p. 24)"
+   },
+   "notes": [
+    "Algorithm 1은 매 단계 다시 뽑지만, 인접한 단계의 상태는 크게 다르지 않으므로 몇 단계에서만 다시 뽑아도 됩니다. 정해 둔 시점 밖에서는 potential을 1로 둡니다. text-to-image 실험의 일정은 DDIM 100단계 중 0, 20, 40, 60, 80이고, 0은 마지막 단계입니다.",
+    "부록 C.3은 ESS로 다시 뽑을지 정한다고 적습니다. ESS는 가중치가 고르면 k, 한 입자에 몰리면 1에 가깝습니다. 부록은 ESS가 k의 절반보다 작으면 다시 뽑지 않는다고 적는데, 이 방향은 토론에서 보겠습니다."
+   ],
+   "valign": "center"
+  },
+  {
+   "id": "rewards",
+   "section": "method",
+   "title": "중간 보상 $r_\\phi$를 얻는 세 방법",
+   "message": "중간 보상을 얻는 방법은 세 가지다. 현재 상태에서 완성 표본을 추정해 평가하거나, 여러 완성 표본을 뽑아 평가하거나, 중간 상태에서 최종 보상을 예측하는 모델을 따로 학습한다.",
+   "cite": [
+    "Sec. 3.3",
+    "Eq. 8",
+    "Sec. 4.3",
+    "App. B.2"
+   ],
+   "time": 60,
+   "valign": "center",
+   "body": [
+    {
+     "type": "cards",
+     "numbered": true,
+     "items": [
+      {
+       "title": "추정한 완성 표본에서 평가",
+       "text": "기본 모델이 현재 상태에서 완성 표본의 조건부 평균 $\\mathbb E[x_0\\mid x_t]$을 $\\hat x_t$로 추정한다. 여기에 보상 함수를 적용한다. $r_\\phi(x_t,c)=r(\\hat x_t,c)$. 이미지·텍스트 품질 실험의 기본 설정"
+      },
+      {
+       "title": "여러 표본에서 평가",
+       "text": "현재 상태에서 완성 표본 $x_0^j$를 $N$개 뽑아 보상을 평가하고 log-mean-exp로 모은다. MDLM 독성 실험에서 $N$ = 4, 16"
+      },
+      {
+       "title": "따로 학습",
+       "text": "중간 상태에서 최종 보상을 예측하도록 학습. ImageNet은 noisy 상태 $x_t$로 분류기를 학습, SSD-LM 독성은 $\\hat x_t$로 기존 분류기 3개를 시간 구간별로 fine-tuning. 일반 보상은 아래 Eq. 8"
+      }
+     ]
+    },
+    {
+     "type": "equation",
+     "lines": [
+      "\\arg\\min_\\phi\\;\\mathbb E_{t\\sim U[0,T]}\\,\\mathbb E_{q_{\\mathrm{data}}(x_0\\mid c)\\,q(x_t\\mid x_0)}\\big\\|a_\\phi(x_t,c)-\\exp(r(x_0,c))\\big\\|_2^2,\\qquad r_\\phi=\\log a_\\phi"
+     ],
+     "tags": [
+      "8"
+     ],
+     "symbols": [
+      [
+       "$a_\\phi$",
+       "중간 상태에서 $\\exp(r)$을 예측하는 모델 (방법 3)"
+      ],
+      [
+       "$q$",
+       "데이터에 노이즈를 더하는 forward 과정"
+      ]
+     ]
+    }
+   ],
+   "provenance": {
+    "세 방법": "verbatim: Sec. 3.3(p. 8)",
+    "실험 설정": "verbatim: Sec. 4.1, Sec. 4.3, App. B.2(pp. 22–23)",
+    "Eq. 8": "verbatim: Eq. 8"
+   },
+   "notes": [
+    "potential은 모두 중간 보상으로 계산합니다. 논문은 세 가지 방법을 제시합니다.",
+    "첫째, 현재 상태에서 모델이 추정한 완성 표본 x̂_t에 기존 보상 모델을 적용합니다. 추가 비용이 보상 평가 한 번이고, 품질 실험은 모두 이 방법입니다. 둘째, 완성 표본을 N개 뽑아 보상의 log-mean-exp를 씁니다. 셋째, 중간 상태에서 최종 보상을 예측하도록 따로 학습합니다.",
+    "식 8은 exp(r)을 회귀하는데, 제곱오차를 최소화하는 예측값은 조건부 평균입니다. 논문은 이 선택이 단계별 potential의 분산을 최소화한다고 Chopin 등의 정리를 인용합니다. 실제 SSD-LM 독성 실험은 문장 5만 2천 개를 노이즈를 더한 뒤 x̂_t로 바꾸고, 그것으로 기존 분류기 세 개를 시간 구간별로 fine-tuning했습니다."
+   ]
+  },
+  {
+   "id": "special-cases",
+   "section": "method",
+   "title": "IS·TDS·SVDD와 FK steering의 선택",
+   "message": "importance sampling, TDS, SVDD가 쓰는 potential과 proposal, 다시 뽑는 방식을 FK 틀에서 각각 나타낼 수 있다.",
+   "cite": [
+    "App. C.2",
+    "Sec. 2",
+    "Sec. 3.3",
+    "Sec. 4.1",
+    "Eq. 11"
+   ],
+   "time": 55,
+   "valign": "center",
+   "body": [
+    {
+     "type": "table",
+     "columns": [
+      {
+       "label": "방법"
+      },
+      {
+       "label": "Potential"
+      },
+      {
+       "label": "Proposal"
+      },
+      {
+       "label": "다시 뽑는 방식"
+      }
+     ],
+     "groups": [
+      {
+       "rows": [
+        {
+         "cells": [
+          "Importance sampling",
+          "$G_{t\\ge1}=1$, $G_0=e^{\\lambda r}$",
+          "기본 모델",
+          "끝에서 한 번"
+         ]
+        },
+        {
+         "cells": [
+          "TDS",
+          "Difference ($\\hat x_t$에서 평가)",
+          "classifier guidance",
+          "SMC"
+         ]
+        },
+        {
+         "cells": [
+          "SVDD",
+          "Difference",
+          "기본 모델",
+          "매 단계 하나를 골라 $k$번 복제"
+         ]
+        },
+        {
+         "cells": [
+          "FK text-to-image 실험",
+          "Max ($\\hat x_t$에서 IR 평가)",
+          "기본 모델",
+          "일정 $[0,20,40,60,80]$의 SMC"
+         ],
+         "focus": true
+        }
+       ]
+      }
+     ],
+     "provenance": "verbatim: App. C.2, Sec. 3.3, Sec. 4.1의 서술을 표로 정리"
+    },
+    {
+     "type": "caption",
+     "text": "**App. C.2** TDS는 gradient를 쓰므로 미분 가능한 보상과 연속 상태가 필요하다. SVDD에서 람다를 무한히 키우면($\\lambda\\to\\infty$) 매 단계 best-of-$n$을 하는 것과 같다. 이산 상태에서는 기본 모델의 전이 확률에 potential을 곱한 $p_\\theta G_t$를 정규화해 proposal로 쓸 수도 있다(App. C.1, Eq. 11)."
+    }
+   ],
+   "provenance": {
+    "IS": "verbatim: Sec. 3.3(p. 7)",
+    "TDS·SVDD": "verbatim: App. C.2(p. 24), Sec. 2(p. 5)",
+    "이미지 실험": "verbatim: Sec. 4.1(p. 9)",
+    "Eq. 11": "verbatim: App. C.1(p. 24)"
+   },
+   "notes": [
+    "기존 방법을 이 틀로 보면 세 가지 선택의 조합입니다. importance sampling은 중간 potential을 모두 1로 두고 마지막에만 보상을 줍니다.",
+    "TDS는 Difference potential과 classifier guidance proposal을 씁니다. 그래서 보상이 미분 가능하고 상태가 연속이어야 합니다. SVDD도 Difference를 쓰지만 proposal은 기본 모델이고, 매 단계 하나를 골라 k번 복제합니다. 람다를 무한대로 보내면 매 단계 best-of-n과 같습니다.",
+    "마지막 행이 이 논문의 text-to-image 실험 설정입니다. Max potential, x̂_t에서 평가한 ImageReward, 기본 모델 proposal, 그리고 0부터 80까지 20 간격의 다시 뽑기 일정입니다."
+   ]
+  },
+  {
+   "id": "t2i",
+   "section": "results",
+   "tone": "wash",
+   "title": "Text-to-image 결과: SDv2.1과 SDXL",
+   "message": "ImageReward로 steering한 SDv2.1(k = 4)의 최고 보상 표본은 GenEval에서 SDXL과 SDXL-DPO보다 높았고, HPS에서는 낮았다.",
+   "cite": [
+    "Table 1",
+    "Fig. 3",
+    "Sec. 4.1"
+   ],
+   "time": 55,
+   "body": [
+    {
+     "type": "split",
+     "cols": [
+      11,
+      9
+     ],
+     "left": [
+      {
+       "type": "table",
+       "columns": [
+        {
+         "label": "모델 · sampler"
+        },
+        {
+         "label": "GenEval",
+         "dir": "↑"
+        },
+        {
+         "label": "IR",
+         "dir": "↑"
+        },
+        {
+         "label": "HPS",
+         "dir": "↑"
+        }
+       ],
+       "groups": [
+        {
+         "rows": [
+          {
+           "cells": [
+            "기본, $k=1$",
+            "0.5104",
+            "0.372",
+            "0.253"
+           ]
+          },
+          {
+           "cells": [
+            "BoN, $k=4$",
+            "0.6172",
+            "0.888",
+            "0.263"
+           ]
+          },
+          {
+           "cells": [
+            "FK, $k=3$",
+            "0.5987",
+            "0.864",
+            "0.265"
+           ]
+          },
+          {
+           "cells": [
+            "FK, $k=4$",
+            "**0.6289**",
+            "**1.006**",
+            "0.268"
+           ],
+           "focus": true
+          }
+         ],
+         "label": "SDv2.1 (0.8B)"
+        },
+        {
+         "rows": [
+          {
+           "cells": [
+            "기본, $k=1$",
+            "0.5571",
+            "0.871",
+            "0.289"
+           ]
+          },
+          {
+           "cells": [
+            "DPO, $k=1$",
+            "0.5811",
+            "0.859",
+            "**0.296**"
+           ]
+          }
+         ],
+         "label": "SDXL (2.6B)"
+        }
+       ],
+       "provenance": "verbatim: 논문 표, 행 일부"
+      },
+      {
+       "type": "caption",
+       "text": "**Table 1** FK·BoN 행은 $k$개 중 최고 보상 표본. FK: $\\lambda=10$, Max, 기본 모델 proposal, 일정 $[0,20,40,60,80]$, DDIM $T=100$. GenEval은 GenEval 프롬프트, IR·HPS는 ImageReward 프롬프트. 행 일부"
+      }
+     ],
+     "right": [
+      {
+       "type": "figure",
+       "src": "assets/fig/fig3_two.png",
+       "alt": "Fig. 3의 앞 두 열. 첫 줄 SDXL 독립 표본, 둘째 줄 FK steering + SDXL, 셋째 줄 FK steering + SDv2.1. 왼쪽 열 프롬프트는 a photo of a black motorbike and a yellow bird: 첫 줄에는 새가 없고 오토바이가 노랗다. 둘째·셋째 줄에는 검은 오토바이 옆에 노란 새가 있다. 오른쪽 열은 a photo of an orange cow and a purple sandwich: 첫 줄은 흰·갈색 소에 배경만 보라색이다.",
+       "caption": "**Fig. 3** 앞 두 열(행 라벨 유지). FK 두 행은 $k=4$의 최고 보상 표본"
+      }
+     ]
+    }
+   ],
+   "provenance": {
+    "표": "verbatim: Table 1(p. 10)",
+    "그림": "verbatim: Fig. 3(p. 4)",
+    "그림 읽기": "interpretation: 발표자가 그림에서 읽은 것"
+   },
+   "notes": [
+    "이미지 실험은 Stable Diffusion 계열을 ImageReward로 steering하고, 다른 프롬프트 세트로 GenEval을 잽니다. 표의 FK와 BoN 행은 k개 중 보상이 가장 높은 표본의 성능입니다.",
+    "0.8B인 SDv2.1에 FK를 k = 4로 쓰면 GenEval이 0.6289로, 같은 k의 best-of-n과 2.6B인 SDXL, SDXL-DPO보다 높습니다. k = 3에서는 같은 모델의 best-of-n k = 4보다 낮습니다.",
+    "IR은 steering에 쓴 보상 모델 그 자체입니다. steering에 쓰지 않은 HPS에서는 SDv2.1 FK가 SDXL과 SDXL-DPO보다 낮습니다. 오른쪽 Fig. 3의 왼쪽 열은 검은 오토바이와 노란 새입니다. 제가 읽기로는 SDXL 독립 표본에는 새가 없고 오토바이가 노랗고, FK를 쓴 두 줄에는 노란 새가 있습니다. 저자가 고른 예시입니다."
+   ]
+  },
+  {
+   "id": "text-quality",
+   "section": "results",
+   "tone": "wash",
+   "title": "텍스트 품질: perplexity·CoLA·Dist",
+   "message": "SSD-LM과 MDLM 모두에서 FK steering은 같은 보상, 같은 입자 수의 best-of-n보다 perplexity가 낮았고, distinct n-gram은 조금 줄거나 같았다.",
+   "cite": [
+    "Table 4",
+    "Sec. 4.1",
+    "App. B"
+   ],
+   "time": 45,
+   "body": [
+    {
+     "type": "split",
+     "cols": [
+      13,
+      7
+     ],
+     "left": [
+      {
+       "type": "table",
+       "columns": [
+        {
+         "label": "모델 · sampler"
+        },
+        {
+         "label": "PPL",
+         "dir": "↓"
+        },
+        {
+         "label": "CoLA",
+         "dir": "↑"
+        },
+        {
+         "label": "Dist-1/2/3",
+         "dir": "↑"
+        }
+       ],
+       "groups": [
+        {
+         "rows": [
+          {
+           "cells": [
+            "기본, $k=1$",
+            "23.2",
+            "68.3",
+            "**46/83/92**"
+           ]
+          },
+          {
+           "cells": [
+            "BoN, $k=4$",
+            "13.6",
+            "75.6",
+            "42/77/88"
+           ]
+          },
+          {
+           "cells": [
+            "FK, $k=4$",
+            "**11.0**",
+            "**80.0**",
+            "40/73/86"
+           ],
+           "focus": true
+          }
+         ],
+         "label": "SSD-LM (연속, 355M), GPT2 보상"
+        },
+        {
+         "rows": [
+          {
+           "cells": [
+            "기본, $k=1$",
+            "85.3",
+            "28.9",
+            "**57/91/94**"
+           ]
+          },
+          {
+           "cells": [
+            "BoN, $k=4$",
+            "52.1",
+            "30.1",
+            "53/89/93"
+           ]
+          },
+          {
+           "cells": [
+            "FK, $k=4$",
+            "**40.3**",
+            "**37.0**",
+            "50/87/93"
+           ],
+           "focus": true
+          }
+         ],
+         "label": "MDLM (이산, 170M), trigram 보상"
+        }
+       ],
+       "provenance": "verbatim: 논문 표, 행 일부"
+      },
+      {
+       "type": "caption",
+       "text": "**Table 4** 길이 50인 텍스트, 3 seeds 평균. PPL은 GPT2-XL로 측정. FK는 $\\lambda=10$과 Difference를 쓰고 50번 다시 뽑은 뒤 최고 점수 표본을 반환한다. 행 일부"
+      }
+     ],
+     "right": [
+      {
+       "type": "deltas",
+       "items": [
+        {
+         "value": "−2.6",
+         "label": "SSD-LM PPL",
+         "small": "FK − BoN, $k=4$"
+        },
+        {
+         "value": "−11.8",
+         "label": "MDLM PPL",
+         "small": "FK − BoN, $k=4$"
+        }
+       ],
+       "provenance": "derived: Table 4"
+      }
+     ]
+    }
+   ],
+   "provenance": {
+    "표": "verbatim: Table 4(p. 13)",
+    "Δ": "derived: Table 4",
+    "설정": "verbatim: Sec. 4.1(p. 11), App. B"
+   },
+   "notes": [
+    "텍스트에서도 같은 틀을 씁니다. SSD-LM은 연속 상태, MDLM은 이산 상태 모델이고, proposal은 둘 다 기본 모델입니다. 평가 perplexity는 GPT2-XL로 잽니다.",
+    "같은 입자 수 4의 best-of-n보다 perplexity가 SSD-LM에서 2.6, MDLM에서 11.8 낮습니다. MDLM의 trigram 보상은 미분하지 않으므로 gradient guidance로는 할 수 없는 경우입니다. distinct n-gram은 조금 낮거나 같습니다. 본문 4.1절의 MDLM 수치는 표 4와 다르게 적혀 있어 화면은 표 4를 따랐습니다."
+   ]
+  },
+  {
+   "id": "grad-cost",
+   "section": "analysis",
+   "tone": "wash",
+   "title": "Gradient proposal의 비용",
+   "message": "SDv1.5에서 FK proposal에 ImageReward gradient를 더하면 GenEval은 0.02 오르고 시간은 8.1초에서 55초로 늘었다.",
+   "cite": [
+    "Table 3",
+    "Table 8",
+    "Eq. 10",
+    "App. C.1"
+   ],
+   "time": 50,
+   "body": [
+    {
+     "type": "split",
+     "cols": [
+      3,
+      2
+     ],
+     "left": [
+      {
+       "type": "table",
+       "columns": [
+        {
+         "label": "SDv1.5"
+        },
+        {
+         "label": "GenEval",
+         "dir": "↑"
+        },
+        {
+         "label": "IR",
+         "dir": "↑"
+        },
+        {
+         "label": "HPS",
+         "dir": "↑"
+        },
+        {
+         "label": "시간"
+        }
+       ],
+       "groups": [
+        {
+         "rows": [
+          {
+           "cells": [
+            "기본, $k=1$",
+            "0.44",
+            "0.187",
+            "0.245",
+            "2.4초"
+           ]
+          },
+          {
+           "cells": [
+            "gradient guidance, $k=1$",
+            "0.45",
+            "0.668",
+            "0.245",
+            "20초"
+           ]
+          },
+          {
+           "cells": [
+            "FK, $k=4$",
+            "0.54",
+            "0.898",
+            "0.263",
+            "8.1초"
+           ]
+          },
+          {
+           "cells": [
+            "FK + gradient, $k=4$",
+            "**0.56**",
+            "**1.290**",
+            "**0.268**",
+            "55초"
+           ],
+           "focus": true
+          }
+         ]
+        }
+       ],
+       "provenance": "verbatim: 논문 표, 행 일부"
+      },
+      {
+       "type": "caption",
+       "text": "**Table 3** 보상은 ImageReward. FK 행의 IR·HPS는 Table 1의 최고 보상 표본 값과 같다"
+      },
+      {
+       "type": "table",
+       "columns": [
+        {
+         "label": "모델"
+        },
+        {
+         "label": "기본 $k=1$"
+        },
+        {
+         "label": "FK $k=4$"
+        },
+        {
+         "label": "FK $k=4$, 2장 병렬"
+        }
+       ],
+       "groups": [
+        {
+         "rows": [
+          {
+           "cells": [
+            "SDv1.4/v1.5",
+            "2.4초",
+            "8.1초",
+            "5.0초"
+           ]
+          },
+          {
+           "cells": [
+            "SDv2.1",
+            "4.6초",
+            "17.4초",
+            "9.1초"
+           ]
+          },
+          {
+           "cells": [
+            "SDXL",
+            "11.5초",
+            "43.5초",
+            "21.7초"
+           ]
+          }
+         ]
+        }
+       ],
+       "provenance": "verbatim: 논문 표, 행 일부"
+      },
+      {
+       "type": "caption",
+       "text": "**Table 8** 시간. A100 1장 기준, 마지막 열은 2장 병렬 구현"
+      }
+     ],
+     "right": [
+      {
+       "type": "equation",
+       "lines": [
+        "\\tau=\\mathcal N\\big(\\tilde\\mu,\\ \\sigma_\\theta^2 I_d\\big)",
+        "\\tilde\\mu=\\mu_\\theta(x_t,c)+\\sigma_\\theta^2\\lambda\\nabla_{x_t}r_\\phi(x_t,c)"
+       ],
+       "tags": [
+        "10",
+        null
+       ],
+       "symbols": [
+        [
+         "$\\mu_\\theta,\\ \\sigma_\\theta^2$",
+         "기본 모델 Gaussian 전이의 평균과 분산"
+        ],
+        [
+         "$\\nabla r_\\phi$",
+         "중간 보상의 gradient 방향으로 기본 모델의 전이 평균만 옮긴다."
+        ]
+       ]
+      },
+      {
+       "type": "deltas",
+       "items": [
+        {
+         "value": "+0.02",
+         "label": "GenEval",
+         "small": "FK + gradient − FK"
+        },
+        {
+         "value": "+46.9초",
+         "label": "시간",
+         "small": "FK 두 행의 차이"
+        }
+       ],
+       "provenance": "derived: Table 3"
+      }
+     ]
+    }
+   ],
+   "provenance": {
+    "Table 3": "verbatim: Table 3(p. 11)",
+    "Table 8": "verbatim: Table 8(p. 21)",
+    "Eq. 10": "verbatim: App. C.1 Eq. 10(p. 23), I_d 보완",
+    "Δ": "derived"
+   },
+   "notes": [
+    "proposal 선택의 효과입니다. 보상이 미분 가능하면 식 10처럼 기본 전이의 평균을 보상의 gradient 방향으로 옮길 수 있고, 차이는 식 7의 전이 확률비가 보정합니다. 원문 식 10의 공분산에는 I_d를 보완했고, 평균은 μ̃로 묶어 두 줄로 적었습니다.",
+    "SDv1.5에서 FK를 k = 4로 쓰면 gradient 없이 GenEval 0.54, 8.1초입니다. gradient proposal을 더하면 0.56으로 오르지만 55초가 걸립니다.",
+    "아래 표 8에서 A100 한 장 기준 FK k = 4는 기본 생성의 3.4배에서 3.8배 시간이 걸리고, 두 장으로 병렬화하면 줄어듭니다. gradient 행의 람다와 장비 조건은 표 3에 적혀 있지 않습니다."
+   ]
+  },
+  {
+   "id": "potential-cmp",
+   "section": "analysis",
+   "tone": "wash",
+   "title": "Potential 비교: 입자 평균 GenEval",
+   "message": "ImageReward, λ = 10, 같은 일정에서 Max potential은 네 모델과 두 입자 수 모두에서 입자 평균 GenEval이 가장 높았다.",
+   "cite": [
+    "Table 5",
+    "Sec. 4.2"
+   ],
+   "time": 45,
+   "body": [
+    {
+     "type": "split",
+     "cols": [
+      3,
+      2
+     ],
+     "left": [
+      {
+       "type": "table",
+       "columns": [
+        {
+         "label": "Potential"
+        },
+        {
+         "label": "SDv1.4",
+         "dir": "↑"
+        },
+        {
+         "label": "SDv1.5",
+         "dir": "↑"
+        },
+        {
+         "label": "SDv2.1",
+         "dir": "↑"
+        },
+        {
+         "label": "SDXL",
+         "dir": "↑"
+        }
+       ],
+       "groups": [
+        {
+         "rows": [
+          {
+           "cells": [
+            "Max",
+            "**0.540**",
+            "**0.540**",
+            "**0.616**",
+            "**0.633**"
+           ],
+           "focus": true
+          },
+          {
+           "cells": [
+            "Sum",
+            "0.496",
+            "0.499",
+            "0.569",
+            "0.613"
+           ]
+          },
+          {
+           "cells": [
+            "Difference",
+            "0.525",
+            "0.526",
+            "0.578",
+            "0.603"
+           ]
+          }
+         ],
+         "label": "$k=4$"
+        },
+        {
+         "rows": [
+          {
+           "cells": [
+            "Max",
+            "**0.569**",
+            "**0.561**",
+            "**0.635**",
+            "**0.648**"
+           ],
+           "focus": true
+          },
+          {
+           "cells": [
+            "Sum",
+            "0.532",
+            "0.517",
+            "0.588",
+            "0.634"
+           ]
+          },
+          {
+           "cells": [
+            "Difference",
+            "0.566",
+            "0.553",
+            "0.615",
+            "0.640"
+           ]
+          }
+         ],
+         "label": "$k=8$"
+        }
+       ],
+       "provenance": "verbatim: 논문 표, 행 일부"
+      },
+      {
+       "type": "caption",
+       "text": "**Table 5** 모든 입자의 평균 GenEval. ImageReward($[-2,2]$), $\\lambda=10$, 일정 $[0,20,40,60,80]$"
+      }
+     ],
+     "right": [
+      {
+       "type": "bullets",
+       "items": [
+        "Difference: 상한 2에 일찍 닿은 입자는 증가량이 0이 되어 낮게 매겨질 수 있다",
+        "Max: 같은 $\\lambda$, 같은 입자 수에서 입자 다양성이 Difference보다 낮을 수 있다(App. D 사례)",
+        "작은 모델에서는 Sum의 입자 평균 GenEval이 가장 낮다"
+       ]
+      }
+     ]
+    }
+   ],
+   "provenance": {
+    "표": "verbatim: Table 5(p. 14)",
+    "설명": "verbatim: Sec. 4.2(p. 12)"
+   },
+   "notes": [
+    "potential 선택의 효과입니다. 표 5는 표 1과 달리 모든 입자의 평균 GenEval이고, ImageReward, 람다 10, 다시 뽑기 일정을 같게 두고 potential만 바꿨습니다.",
+    "Max가 네 모델과 두 입자 수 모두에서 가장 높습니다. 논문은 ImageReward가 2를 넘지 않으므로, 일찍 2에 닿은 입자는 Difference에서 이후 증가량이 0이라 낮게 매겨질 수 있다고 설명합니다. 대신 Max는 입자 다양성이 Difference보다 낮다고 쓰는데, 19번에서 그림으로 보겠습니다."
+   ],
+   "valign": "center"
+  },
+  {
+   "id": "toxicity",
+   "section": "analysis",
+   "tone": "wash",
+   "title": "텍스트 독성 실험의 중간 보상 비교",
+   "message": "입자 수를 같게 두었을 때 SSD-LM은 중간 보상을 학습한 경우, MDLM은 중간 보상을 계산할 표본을 늘린 경우에 독성으로 판정된 생성문 비율이 더 높았다.",
+   "cite": [
+    "Fig. 5",
+    "Table 6",
+    "Sec. 4.3"
+   ],
+   "time": 55,
+   "body": [
+    {
+     "type": "split",
+     "cols": [
+      2,
+      3
+     ],
+     "left": [
+      {
+       "type": "figure",
+       "src": "assets/fig/fig5_tox.png",
+       "alt": "Fig. 5 오른쪽. SSD-LM에서 x̂_t로 잰 기존 독성 분류기(실선)와 학습한 보상(점선)이 최종 독성 보상과 얼마나 상관되는지, 추론 진행 0.2–1.0에 걸쳐 그린 곡선. 진행 0.2에서 학습한 보상은 약 0.4, 기존 분류기는 약 0.17이고, 1.0에서 둘 다 1이다.",
+       "caption": "**Fig. 5** 오른쪽 패널. SSD-LM 독성: 중간 보상과 최종 보상의 상관. 학습한 보상(점선)이 진행 초반에 더 높다(곡선 근거)"
+      }
+     ],
+     "right": [
+      {
+       "type": "table",
+       "columns": [
+        {
+         "label": "$k=8$"
+        },
+        {
+         "label": "SSD-LM 독성",
+         "dir": "↑"
+        },
+        {
+         "label": "PPL",
+         "dir": "↓"
+        },
+        {
+         "label": "MDLM 독성",
+         "dir": "↑"
+        },
+        {
+         "label": "PPL",
+         "dir": "↓"
+        }
+       ],
+       "groups": [
+        {
+         "rows": [
+          {
+           "cells": [
+            "기본 ($k=1$)",
+            "1.2%",
+            "23.2",
+            "1.9%",
+            "85.3"
+           ]
+          },
+          {
+           "cells": [
+            "BoN",
+            "8.1%",
+            "**23.0**",
+            "10.8%",
+            "84.6"
+           ]
+          },
+          {
+           "cells": [
+            "FK, 기본 $r_\\phi$",
+            "29.7%",
+            "23.9",
+            "48.3%",
+            "**74.3**"
+           ]
+          },
+          {
+           "cells": [
+            "FK, 개선한 $r_\\phi$",
+            "**38.0%**",
+            "26.9",
+            "**51.7%**",
+            "82.9"
+           ],
+           "focus": true
+          }
+         ]
+        }
+       ],
+       "provenance": "verbatim: Table 6(p. 14), holdout 열과 PPL 열만, 두 모델을 나란히 재배열"
+      },
+      {
+       "type": "caption",
+       "text": "**Table 6** 독성은 steering에 쓰지 않은 holdout 분류기(XLM-R), PPL은 GPT2-XL로 측정. FK: $\\lambda=10$, Difference, 기본 모델 proposal, 최고 점수 표본, 3 seeds 평균. 기본 $r_\\phi$: SSD-LM은 기존 분류기로 $\\hat x_t$ 평가, MDLM은 $N=4$. 개선한 $r_\\phi$: SSD-LM은 학습한 분류기, MDLM은 $N=16$"
+      }
+     ]
+    }
+   ],
+   "provenance": {
+    "Fig. 5": "verbatim: Fig. 5(p. 15), 곡선 읽기",
+    "표": "verbatim: Table 6(p. 14)",
+    "분류기": "verbatim: Sec. 4.3(p. 13)"
+   },
+   "notes": [
+    "중간 보상의 질을 보는 실험입니다. 기본 모델에서 독성 문장은 드물게 나오고, 논문은 이 실험을 red-teaming 용도라고 설명합니다.",
+    "Fig. 5 오른쪽은 중간 보상이 최종 보상을 얼마나 예측하는지입니다. 텍스트 독성에서는 기존 분류기를 그대로 쓰면 초반 상관이 낮고, 학습한 보상이 더 높습니다. 곡선에서 읽은 것입니다. 같은 그림 왼쪽의 이미지에서는 상관이 더 빨리 오릅니다.",
+    "표 6은 steering에 쓰지 않은 holdout 분류기로 잰 독성 비율입니다. 입자 8개에서 SSD-LM은 학습한 보상으로 29.7%에서 38.0%로, MDLM은 평가 표본을 4개에서 16개로 늘려 48.3%에서 51.7%로 오릅니다. 1절 기여 요약의 64.7%는 steering에 쓴 분류기로 잰 값입니다."
+   ]
+  },
+  {
+   "id": "imagenet",
+   "section": "analysis",
+   "tone": "wash",
+   "title": "ImageNet: 학습한 $r_\\phi$와 potential",
+   "message": "ImageNet 클래스 조건 생성에서 noisy 상태로 학습한 분류기를 쓰면, 기존 분류기로 추정한 완성 이미지를 평가할 때보다 목표 클래스 확률이 높았다.",
+   "cite": [
+    "Table 7",
+    "Sec. 4.3"
+   ],
+   "time": 45,
+   "valign": "center",
+   "body": [
+    {
+     "type": "split",
+     "cols": [
+      13,
+      7
+     ],
+     "left": [
+      {
+       "type": "table",
+       "columns": [
+        {
+         "label": "중간 보상 $r_\\phi$"
+        },
+        {
+         "label": "Potential"
+        },
+        {
+         "label": "평균",
+         "dir": "↑"
+        },
+        {
+         "label": "최대",
+         "dir": "↑"
+        }
+       ],
+       "groups": [
+        {
+         "rows": [
+          {
+           "cells": [
+            "$\\hat x_t$에서 평가 (TDS)",
+            "Difference",
+            "0.59",
+            "0.72"
+           ]
+          },
+          {
+           "cells": [
+            "$\\hat x_t$에서 평가",
+            "Max",
+            "0.65",
+            "0.70"
+           ]
+          },
+          {
+           "cells": [
+            "noisy 상태로 학습",
+            "Difference",
+            "**0.88**",
+            "0.94"
+           ],
+           "focus": true
+          },
+          {
+           "cells": [
+            "noisy 상태로 학습",
+            "Max",
+            "**0.88**",
+            "**0.96**"
+           ],
+           "focus": true
+          }
+         ]
+        }
+       ],
+       "provenance": "verbatim: 논문 표, 행 일부"
+      },
+      {
+       "type": "caption",
+       "text": "**Table 7** 목표 클래스 확률 $p(y\\mid x_0)$. ImageNet 1,000 클래스, 256×256, marginal diffusion, $k=4$, gradient guidance proposal, $\\lambda$는 미기재. 평균(최대)은 표 원문의 Mean (Max). 학습한 분류기는 potential과 proposal 모두에 쓰임"
+      }
+     ],
+     "right": [
+      {
+       "type": "deltas",
+       "items": [
+        {
+         "value": "+0.29",
+         "label": "Difference",
+         "small": "평균, 학습한 분류기 − $\\hat x_t$ 평가"
+        },
+        {
+         "value": "+0.23",
+         "label": "Max",
+         "small": "평균, 학습한 분류기 − $\\hat x_t$ 평가"
+        }
+       ],
+       "provenance": "derived: Table 7"
+      }
+     ]
+    }
+   ],
+   "provenance": {
+    "표": "verbatim: Table 7(p. 15)",
+    "설정": "verbatim: Sec. 4.3(p. 14)",
+    "Δ": "derived"
+   },
+   "notes": [
+    "클래스 조건 없이 학습한 ImageNet diffusion 모델로 목표 클래스를 생성하는 실험입니다. 보상은 분류기의 log 확률이고, proposal로 gradient guidance를 씁니다. 첫 행은 TDS의 선택과 같습니다.",
+    "noisy 상태에서 학습한 분류기를 쓰면 목표 클래스 확률의 평균이 0.88로 높습니다. 다만 학습한 분류기는 potential과 proposal 양쪽에 들어가므로 두 변경을 합친 효과이고, 평가도 이 확률 하나뿐입니다."
+   ]
+  },
+  {
+   "id": "diversity",
+   "section": "analysis",
+   "title": "$\\lambda$·potential과 입자 다양성",
+   "message": "λ를 키우거나 Max potential을 쓰면 입자별 이미지의 구도가 비슷해진다. 입자 평균 GenEval은 대체로 오르지만 항상 오르지는 않는다.",
+   "cite": [
+    "Fig. 6",
+    "Fig. 7",
+    "Table 9",
+    "App. A",
+    "App. D",
+    "Sec. 5"
+   ],
+   "time": 55,
+   "body": [
+    {
+     "type": "toggle",
+     "cols": [
+      11,
+      9
+     ],
+     "start": "lam",
+     "print": "expand",
+     "reveals": "같은 프롬프트에서 λ를 키우거나 potential을 Max로 바꾸면 입자별 이미지의 구도가 얼마나 비슷해지는지 보인다.",
+     "states": [
+      {
+       "id": "lam",
+       "label": "$\\lambda$ 비교",
+       "src": "assets/fig/fig6.png",
+       "alt": "Fig. 6. 맨 위는 기본 모델의 독립 표본 4개로 구도와 표지판 모양이 제각각이다. 아래 세 줄은 λ = 2, 4, 10의 FK 입자 4개. λ = 2에서는 두 쌍이 같은 구도이고, λ = 10에서는 네 장 모두 붉은 들판 가운데 초록 정지 표지판이다.",
+       "title": "Fig. 6 · $\\lambda$ = 2, 4, 10",
+       "text": "맨 위는 독립 표본 4개. $\\lambda$가 클수록 네 입자의 구도가 같아진다. SDXL, Max, $k=4$",
+       "provenance": "verbatim: Fig. 6, App. D"
+      },
+      {
+       "id": "pot",
+       "label": "Max vs Difference",
+       "src": "assets/fig/fig7_grid.png",
+       "alt": "Fig. 7을 4칸씩 두 줄로 다시 배열. 맨 위 두 줄은 독립 표본 8개, 가운데 두 줄은 Diff, 아래 두 줄은 Max. Max 줄은 길 끝의 정지 표지판 구도가 반복되고, Diff 줄은 배경과 구도가 더 다양하다.",
+       "title": "Fig. 7 · $\\lambda=2$, $k=8$",
+       "text": "맨 위는 독립 표본 8개. Max 줄이 Difference 줄보다 구도가 더 비슷하다",
+       "provenance": "verbatim: Fig. 7, App. D"
+      }
+     ],
+     "mediaCaption": "**Fig. 6 · 7** a green stop sign in a red field. SDXL, ImageReward, App. C.3의 adaptive resampling. Fig. 7은 4칸 두 줄로 다시 배열",
+     "side": [
+      {
+       "type": "table",
+       "columns": [
+        {
+         "label": "SDv1.4, $k=4$"
+        },
+        {
+         "label": "GenEval",
+         "dir": "↑"
+        },
+        {
+         "label": "CLIP-Div",
+         "dir": "↑"
+        }
+       ],
+       "groups": [
+        {
+         "rows": [
+          {
+           "cells": [
+            "독립 표본",
+            "0.4408",
+            "**0.3158**"
+           ]
+          },
+          {
+           "cells": [
+            "$\\lambda=2$, 20-80-20",
+            "0.4910",
+            "0.2239"
+           ]
+          },
+          {
+           "cells": [
+            "$\\lambda=10$, 5-30-5",
+            "0.4814",
+            "0.1437"
+           ]
+          },
+          {
+           "cells": [
+            "$\\lambda=10$, 20-80-20",
+            "**0.5258**",
+            "0.1050"
+           ],
+           "focus": true
+          }
+         ]
+        }
+       ],
+       "provenance": "verbatim: 논문 표, 행 일부"
+      },
+      {
+       "type": "caption",
+       "text": "**Table 9** 입자 평균. ImageReward 보상, Difference. 일정 이름은 표 표기 그대로"
+      }
+     ]
+    }
+   ],
+   "provenance": {
+    "그림": "verbatim: Fig. 6–7, App. D(p. 25)",
+    "표": "verbatim: Table 9(p. 22), App. A(p. 21)",
+    "한계": "verbatim: Sec. 5(p. 16)"
+   },
+   "notes": [
+    "[1] Fig. 6은 SDXL에서 Max potential로 람다를 바꾼 입자 4개입니다. 람다가 커질수록 구도가 같아지고, 람다 10에서는 거의 같은 그림입니다. 같은 부모에서 복제됐을 가능성이 큽니다.",
+    "[2] Fig. 7은 람다 2, 입자 8개에서 Difference와 Max입니다. Max 줄의 구도가 더 많이 반복됩니다.",
+    "오른쪽 표 9에서 SDv1.4의 CLIP 다양성은 람다 10에서 크게 줄고 GenEval은 오릅니다. 하지만 항상 오르지는 않아서, SDv2.1의 한 일정에서는 람다 2가 람다 10보다 높습니다. 논문 5절은 강한 보상 함수가 있어야 한다는 점을 한계로 듭니다. 또 부록 A는 이 표들을 Difference라고 적지만, 표 10의 일부 값이 Max로 적힌 표 1과 같아 확인이 필요합니다."
+   ]
+  },
+  {
+   "id": "discussion",
+   "layout": "statement",
+   "section": "discussion",
+   "title": "정리와 토론",
+   "message": "potential의 곱이 최종 보상의 지수함수 값과 같으면, FK 경로 분포에서 완성 상태는 목표 분포를 따른다. 유한한 입자로 얻은 실험 결과를 해석하려면 어떤 표본을 반환했는지, 무엇을 평가했는지, 어느 장비에서 시간을 쟀는지 확인해야 한다.",
+   "cite": [
+    "Eq. 5",
+    "Algorithm 1",
+    "Sec. 4.1",
+    "Table 1",
+    "Table 8",
+    "App. C.3",
+    "Sec. 4.3"
+   ],
+   "time": 120,
+   "body": [
+    {
+     "type": "groups",
+     "columns": 2,
+     "divider": true,
+     "size": "sm",
+     "groups": [
+      {
+       "heading": "정리",
+       "items": [
+        "경로 전체의 potential을 곱한 값이 $\\exp(\\lambda r(x_0))$와 같으면, 마지막 FK 경로 분포에서 완성 상태 $x_0$는 목표 분포를 따른다(Eq. 5)",
+        "입자 수 $k$가 유한하면 성능은 proposal, potential, 중간 보상을 무엇으로 고르느냐에 따라 달라진다",
+        "Table 1의 네 모델 모두에서 FK($k=4$)의 최고 보상 표본은 GenEval이 같은 $k$의 best-of-$n$보다 높았고, fine-tuning 모델이 있는 세 모델에서는 그 모델보다도 높았다"
+       ]
+      },
+      {
+       "heading": "토론",
+       "numbered": true,
+       "items": [
+        "Sec. 4.1의 9.1초는 A100 2장 병렬, 1장이면 17.4초다(SDXL $k=1$은 11.5초). 같은 장비라면?",
+        "Table 1의 FK 점수는 최고 보상 표본이고 IR은 steering에 쓴 보상이다(HPS는 SDXL-DPO가 높다). 목표 분포에 가까운지는 무엇으로 재나?",
+        {
+         "text": "$G_T=1$이면 곱의 지수에 $-\\lambda r_\\phi(x_T)$가 남고, Algorithm 1은 $G_0$로 다시 뽑지 않으며, App. C.3의 ESS 규칙은 표준과 반대다. 코드는?",
+         "note": true
+        },
+        {
+         "text": "$k$, $N$, 분류기 학습은 계산을 다른 곳에 쓰는데 같은 계산량의 비교가 없다. 입자들이 서로를 기다리는 시간은?",
+         "note": true
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "provenance": {
+    "정리": "verbatim: Eq. 5, Sec. 3.3, Table 1",
+    "토론 1": "verbatim: Sec. 4.1(p. 10), Table 8(p. 21) + 질문 interpretation",
+    "토론 2": "verbatim: Sec. 4.1, Table 1 + 질문 interpretation",
+    "토론 3": "derived: Sec. 3.3 Difference 정의의 곱; verbatim: Algorithm 1, App. C.3; external: Naesseth et al. §2.2.2(31쪽)",
+    "토론 4": "verbatim: Sec. 4.3 마지막 문단, App. B.2, Table 8 + interpretation"
+   },
+   "notes": [
+    "정리하겠습니다. potential의 곱이 최종 보상의 지수와 같으면 FK 경로 분포의 완성 표본은 목표 분포를 따릅니다. 입자 수가 유한할 때는 proposal, potential, 중간 보상의 선택이 성능을 정합니다. 실험에서는 입자 4개로 best-of-n과 fine-tuning 모델보다 GenEval이 높았고, 최고 보상 표본 기준입니다.",
+    "토론할 점은 네 가지입니다. 첫째, 속도 비교의 9.1초는 A100 두 장으로 병렬화한 값이고 한 장이면 17.4초입니다. 덧붙여 Fig. 2 오른쪽의 FLOPs 축은 점 간격으로 보면 로그 척도로 보입니다.",
+    "둘째, 표 1의 FK 점수는 최고 보상 표본이고 IR은 steering에 쓴 보상입니다. 쓰지 않은 HPS에서는 순서가 바뀝니다. 목표 분포에 가까운지를 무엇으로 재야 할지 의견을 듣고 싶습니다.",
+    "셋째는 제 해석입니다. Difference를 G_T = 1로 두면 식 5와 정확히 맞지 않고, Algorithm 1은 마지막 가중치로 다시 뽑지 않으므로 Max와 Sum의 보정이 출력에 어떻게 반영되는지 알 수 없습니다. 부록의 ESS 규칙도 Naesseth 등의 SMC 교재와 방향이 반대입니다. 실험 코드를 확인해야 합니다.",
+    "넷째, 입자 수, 입자당 평가 표본, 분류기 학습은 계산을 다른 곳에 쓰는데, 같은 계산량의 비교는 없습니다. 다시 뽑을 때마다 모든 입자의 점수를 기다리는 시간도 비용입니다. 이것도 절차에서 끌어낸 제 해석입니다."
+   ]
+  },
+  {
+   "id": "ending",
+   "layout": "ending",
+   "title": "감사합니다",
+   "subtitle": "Q&A",
+   "links": [
+    "FK steering · arXiv:2501.06848 · ICML 2025 (PMLR 267)",
+    "코드 · github.com/zacharyhorvitz/Fk-Diffusion-Steering"
+   ],
+   "cite": [
+    "p. 1"
+   ],
+   "time": 15,
+   "provenance": {
+    "링크": "verbatim: p. 1(arXiv 초록의 코드 링크), external: PMLR 267 페이지"
+   },
+   "notes": [
+    "들어 주셔서 감사합니다. 식 5의 보장과 실제 반환 절차의 관계에 대해 의견을 듣고 싶습니다."
+   ]
+  }
+ ]
+}

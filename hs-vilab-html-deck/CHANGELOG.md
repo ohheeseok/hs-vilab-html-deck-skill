@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.8.0 — 2026-11-27
+
+**A fifth paper, the first one built on theory.** FK steering ("A General Framework for
+Inference-time Scaling and Steering of Diffusion Models", ICML 2025, arXiv 2501.06848;
+`work/fk-steering`, 21 slides, 1200 s): a 20-minute lab seminar whose thread is the Feynman-Kac
+framework itself — the tilted target (Eq. 2), why importance sampling and best-of-n need many
+samples, the FK path distribution (Eq. 3–4), the product condition that makes the last marginal the
+target (Eq. 5), SMC weights and Algorithm 1, then the three choices (proposal, potential,
+intermediate reward) with IS, TDS and SVDD as special cases; the experiments are read as evidence
+for those choices. codex drafted, revised and did the Korean edit; agy critiqued, verified (outline
+and `deck.json`), researched and reviewed the captures twice; Claude conducted and drew the
+overview animation and the potential toggle.
+
+What the run changed in the skill:
+
+- **Script length is a build gate.** The first script ran 7.8 characters a second — about 31 minutes
+  for a 20-minute talk — while every slide's `time` added up; nothing flagged it (the references
+  pointed to a `make_script_docx.py` that does not exist). `build_deck.py` now refuses a Korean
+  script outside 3.0–5.5 characters (no spaces) a second; the five decks so far run 3.8–5.0.
+- **Brackets stay with their math.** "…다시 뽑지 않는다($\mathrm{ESS}_t<k/2$)" left ")"
+  alone on the next line; `md()` now keeps an opening "(" and closing ")" "]" (and the Korean after
+  them) in one unbreakable span with the math.
+- **"2.4초" is a number.** The number-column test now accepts 초, 배, ms and s after the value, so time
+  columns align right like the others.
+- **A compare inside a split** gets a 48 px gap instead of the slide-level 96 px, which had squeezed
+  each column of a half-width compare into four-line strips.
+- Docs: the gate and the string-literal rule for `lib.node` keys (`qa-checklist.md`); research,
+  verifier and Korean-editor notes from this run (`narrative-roles.md`); the overview as a worked
+  example and rule 13 (copies need a link, a used marker leaves, lines under nodes) in
+  `animation.md`; the FK interactions and the re-laid Fig. 7 in `interaction-rules.md`; the script
+  budget in `narrative-rules.md`.
+- The four earlier decks rebuilt with the new engine and gates: no mechanical defects.
+
 ## 0.7.0 — 2026-11-26
 
 **The Korean editor no longer needs another skill.** Until now step 7 told the conductor to run
