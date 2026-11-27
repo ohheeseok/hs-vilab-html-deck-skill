@@ -10,7 +10,7 @@ the current AI as conductor. (Adapted from hs-vilab-deck; the delegates differ.)
 | **Critic** | structure and craft: does this become a good talk for this room? | `outline.md`, `references/narrative-rules.md`, paper | `review/critic.md` | **agy** (`delegate.py review`) |
 | **Verifier** | truth: every claim, number, figure reference, condition — in the paper, where it says | `outline.md` then `deck.json`, `paper.pdf` | `review/verify.md`, `review/verify2.md` | **agy**, a separate call blind to the critic |
 | **Researcher** | what the paper cannot say: follow-up work, claims about other papers, code release | `questions` drawn from the draft | `review/research.md` | **agy** with web |
-| **Korean editor** | Korean prose after synthesis (anti-slop) | `review/deck_text.md` + the anti-slop rules | `review/korean.md` (table) | **codex** with the `heeseok-korean-anti-slop` rules, or a subagent with that skill |
+| **Korean editor** | Korean prose after synthesis (plain Korean) | `review/deck_text.md` + `references/korean-style.md` + the bundled scanner's hits | `review/korean.md` (table) | **codex**, or a subagent given the same files |
 | **Visual reviewer** | what only the eye sees on the captures | `qa/` + rules | `review/visual*.md` | **agy** |
 | **Conductor** | dispatches, answers every finding, synthesises `deck.json`, builds, fixes | all | `review/log.md`, `deck.json` | the current AI |
 

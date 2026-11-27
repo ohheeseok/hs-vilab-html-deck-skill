@@ -40,3 +40,8 @@ used here to build interfaces for Hansung University and VILAB.
 
 The design tokens (assets/tokens.css, fonts.css, base.css) are copied from
 hs-vilab-frontend-design by the same author. They contain no third-party text.
+
+scripts/scan_slop.py is copied unchanged (a provenance note added at the top) from
+heeseok-korean-anti-slop 1.3.0 (https://github.com/ohheeseok/heeseok-korean-anti-slop),
+Copyright (c) 2026 Heeseok Oh, MIT License — the same author and licence as this package.
+Part B of references/korean-style.md condenses that skill's rules for slide decks.

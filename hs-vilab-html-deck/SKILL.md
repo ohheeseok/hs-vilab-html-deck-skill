@@ -30,8 +30,9 @@ directory, `$W` is `work/<slug>/`.
 ```
 
 Design follows `references/design-system-deck.md` (from hs-vilab-frontend-design); content and
-production follow `references/narrative-rules.md` (from hs-vilab-deck). Both are bundled — this
-skill calls no other skill.
+production follow `references/narrative-rules.md` (from hs-vilab-deck); Korean prose follows
+`references/korean-style.md` with `scripts/scan_slop.py` (from heeseok-korean-anti-slop 1.3.0). All
+three are bundled — this skill calls no other skill.
 
 ## [−1] Intake
 
@@ -101,7 +102,7 @@ do not draft, and nobody reviews their own work.**
 |---|---|
 | author (draft, one revision) | codex — `delegate.py text` |
 | critic · verifier (blind to each other) · researcher | agy — `delegate.py review` / `research` |
-| Korean editor | codex with the anti-slop rules (`references/korean-style.md`) |
+| Korean editor | codex with `references/korean-style.md` and `scripts/scan_slop.py` (bundled) |
 | visual reviewer | agy — `delegate.py vision` |
 
 1. **Draft.** Build `$W/brief.md` from `references/handoff-narrative.md` with `paper.txt` inline;

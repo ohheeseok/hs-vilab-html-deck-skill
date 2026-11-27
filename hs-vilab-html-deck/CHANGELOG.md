@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.7.0 — 2026-11-26
+
+**The Korean editor no longer needs another skill.** Until now step 7 told the conductor to run
+`<anti-slop>/scripts/scan_slop.py` and to hand codex the `heeseok-korean-anti-slop` skill's own
+files — the one place where "this skill calls no other skill" was not true.
+
+- `scripts/scan_slop.py`: the scanner from heeseok-korean-anti-slop 1.3.0, copied unchanged with a
+  provenance note at the top (same output as the original on the Integral deck; MIT, same author,
+  recorded in `NOTICE`).
+- `references/korean-style.md` is now the editor's whole rulebook. Part A is this skill's own rules
+  from four decks — none of which the scanner caught: no coined labels ("통제 비교", "지움/남음",
+  "공유의 몫"), say who does what ("VLM이 조건을 줄 때"), summary and discussion items as sentences
+  with their facts on the slide, `reveals` that say what is seen, the same words in the picture and
+  the beat text, slide references that follow inserted slides, "약" only on curve readings, U+00A0
+  for pairs. Part B condenses anti-slop 1.3.0's rules for decks (the eight presentation patterns,
+  L1–L3, technical explanation) with its rule IDs kept, and says how to update from a new release.
+- `kref/` is now the deck text, the scanner's hits and `korean-style.md`.
+- `SKILL.md`, `narrative-rules.md`, `narrative-roles.md`, `README.md`: point to the bundled files.
+
 ## 0.6.0 — 2026-11-26
 
 **A fourth paper, with the overview planned from the start.** Integral ("Let Vision-Language Models

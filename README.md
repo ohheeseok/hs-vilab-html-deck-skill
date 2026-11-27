@@ -6,8 +6,9 @@
 
 - 디자인: hs-vilab-frontend-design의 토큰·글꼴·규칙(HSU 색, Geomini + Gmarket Sans, 글자 크기 사다리 80/56/48/40/36/32/28/24px, 24px 하한)
 - 제작 흐름과 내용 규칙: hs-vilab-deck(PPT판)을 HTML로 옮긴 것
+- 한국어 문장 규칙: heeseok-korean-anti-slop 1.3.0의 규칙을 덱용으로 줄여 담고, 네 덱에서 배운 규칙을 더한 것(`references/korean-style.md`, 검사기 `scripts/scan_slop.py`). 다른 스킬을 설치하지 않아도 됩니다.
 
-> **상태: 0.6.0.** 논문 네 편을 덱으로 끝까지 만들었습니다([work/self-flow-full](work/self-flow-full), [work/repa](work/repa), [work/rae](work/rae), [work/vlm-repgen](work/vlm-repgen)). 0.5.0에서 연구 내용 앞의 **overview 애니메이션**(클리커를 누를 때마다 한 구간씩 움직이는 도식)을 넣었고, 0.6.0에서는 그것을 개요 단계부터 계획했습니다.
+> **상태: 0.7.0.** 논문 네 편을 덱으로 끝까지 만들었습니다([work/self-flow-full](work/self-flow-full), [work/repa](work/repa), [work/rae](work/rae), [work/vlm-repgen](work/vlm-repgen)). 0.5.0에서 연구 내용 앞의 **overview 애니메이션**(클리커를 누를 때마다 한 구간씩 움직이는 도식)을 넣었고, 0.6.0에서는 그것을 개요 단계부터 계획했고, 0.7.0에서는 한국어 편집 규칙과 검사기를 스킬 안에 담았습니다.
 > 스킬 본문은 [hs-vilab-html-deck/SKILL.md](hs-vilab-html-deck/SKILL.md), 변경 내역은 [CHANGELOG.md](hs-vilab-html-deck/CHANGELOG.md)에 있습니다.
 > 읽기용 handout(세로 흐름 문서)과 `deck.json` 스키마 파일은 아직 없습니다.
 
@@ -68,6 +69,7 @@ hs-vilab-html-deck/          스킬 본체
     qa_render.py       Playwright 캡처 + 기계 QA (넘침, 띠 이탈, 글자 겹침, 24px 하한, 대비, 글꼴)
     export_pdf.py      배포용 렌더링 확인 PDF(토글 상태는 쪽을 나눠 펼침) + 쪽별 겹침 검사
     deck_text.py · apply_text_edits.py   한국어 편집 표를 뽑고 적용(숫자 바뀌는 행은 거부)
+    scan_slop.py       한국어 문체 후보 검사기(heeseok-korean-anti-slop 1.3.0에서 그대로 가져옴)
     brand_ai2svg.py    윤곽선 .ai → 여백 없는 SVG
   SKILL.md  VERSION  CHANGELOG.md  NOTICE
   references/          내러티브 규칙·역할, 블록, 인터랙션, 디자인, QA, 한국어 편집

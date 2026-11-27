@@ -229,20 +229,21 @@ Structural tics:
 English equivalents count: *leverage, robust, seamless, delve into, it is worth
 noting that, plays a crucial role*.
 
-### The Korean editor — heeseok-korean-anti-slop
+### The Korean editor — `korean-style.md`
 
 [0.7.2] After synthesis, every Korean string in the deck — titles, messages,
-block text, captions, and the speaker script — goes through the
-`heeseok-korean-anti-slop` skill (its presentation types in
-`references/presentation-prose.md`: fake contrast, "함께 봅니다" with no
-purpose, decorated abstractions, demonstratives with no referent, stock noun
-phrases, importance announcements, vague "~에 가깝다", reflex three-item lists;
-and its L1–L3 layers). It runs as the **Korean editor** role
-(`narrative-roles.md`) on the output of `scripts/deck_text.py`, with the
-skill's `scan_slop.py` for candidates. The editor returns a table — location,
-original, edit, rule — and the conductor applies it to `deck.json`; numbers,
-names, hedges and the claim's strength never change. When the skill is not
-installed, the editor applies the list above and this section's own lists.
+block text, captions, and the speaker script — goes through the **Korean
+editor** role (`narrative-roles.md`) with `references/korean-style.md`: this
+skill's own rules (no coined labels, who does what, summary and discussion
+items as sentences, slide references that follow the slides) and, condensed
+for decks, the rules of `heeseok-korean-anti-slop` 1.3.0 (fake contrast,
+"함께 봅니다" with no purpose, decorated abstractions, demonstratives with no
+referent, stock noun phrases, importance announcements, vague "~에 가깝다",
+reflex three-item lists; its L1–L3 layers). Both the rules and the scanner
+(`scripts/scan_slop.py`) are bundled; no other skill is needed. The editor works on
+the output of `scripts/deck_text.py` and returns a table — location, original,
+edit, rule — and the conductor applies it to `deck.json`; numbers, names,
+hedges and the claim's strength never change.
 
 ### Terminology
 One term per concept for the whole deck. If the paper says *self-attention*, the
